@@ -13,15 +13,15 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.cxf.binding.soap.SoapMessage;
+import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
+import org.apache.cxf.headers.Header;
+import org.apache.cxf.helpers.DOMUtils;
+import org.apache.cxf.message.MessageUtils;
+import org.apache.cxf.phase.Phase;
 import org.apache.log4j.Logger;
-import org.codehaus.xfire.MessageContext;
-import org.codehaus.xfire.client.Client;
-import org.codehaus.xfire.handler.AbstractHandler;
-import org.codehaus.xfire.handler.Phase;
-import org.jdom.Element;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.security.user.UserAssertion;
@@ -42,7 +42,7 @@ import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
  * @author K. Benedyczak
  * @author schuller
  */
-public class TDOutHandler extends AbstractHandler {
+public class TDOutHandler extends AbstractSoapInterceptor {
 
 	private static final Logger logger = Log.getLogger(Log.SECURITY, TDOutHandler.class);
 	public static final String WSSEC_COMPILANT_PROPERTY = "eu.unicore.security.xfireutil.wssecComilant";
@@ -60,6 +60,7 @@ public class TDOutHandler extends AbstractHandler {
 	 */
 	public TDOutHandler(List<TrustDelegation> tdChain)
 	{
+		super(Phase.PRE_PROTOCOL);
 		init(tdChain, null, null, null);		
 	}
 
@@ -71,6 +72,7 @@ public class TDOutHandler extends AbstractHandler {
 	 */
 	public TDOutHandler(List<TrustDelegation> tdChain, UserAssertion userAssertion)
 	{
+		super(Phase.PRE_PROTOCOL);
 		init(tdChain,userAssertion);
 	}
 	
@@ -84,6 +86,7 @@ public class TDOutHandler extends AbstractHandler {
 	public TDOutHandler(List<TrustDelegation> tdChain, 
 			String userDN, String callerDN)
 	{
+		super(Phase.PRE_PROTOCOL);
 		init(tdChain, null, userDN, callerDN);	
 	}
 
@@ -97,17 +100,19 @@ public class TDOutHandler extends AbstractHandler {
 	public TDOutHandler(List<TrustDelegation> tdChain, 
 			X509Certificate userCert, String callerDN)
 	{
+		super(Phase.PRE_PROTOCOL);
 		init(tdChain, userCert, null, callerDN);
 	}
 
 	protected TDOutHandler()
 	{
+		super(Phase.PRE_PROTOCOL);
+		initHandler();
 	}
 	
 	protected void initHandler()
 	{
-		setPhase(Phase.POST_INVOKE);
-		before(DSigOutHandler.class.getName());
+		getBefore().add(DSigOutHandler.class.getName());
 		String prop = System.getProperty(WSSEC_COMPILANT_PROPERTY);
 		if (prop != null && prop.equals("true"))
 		{
@@ -166,9 +171,10 @@ public class TDOutHandler extends AbstractHandler {
 			assertionListAsJDOM = new ArrayList<Element>();
 			try
 			{
-				for (TrustDelegation td: assertionList)
-					assertionListAsJDOM.add(new SAXBuilder().build(
-						td.getXML().newInputStream()).detachRootElement());
+				for (TrustDelegation td: assertionList){
+						Element el=DOMUtils.readXml(td.getXML().newInputStream()).getDocumentElement();
+						assertionListAsJDOM.add(el);
+				}
 				logger.debug("Initialised TD Outhandler with " +
 						"TD chain of length = " + assertionList.size());
 			} catch(Exception e)
@@ -184,8 +190,7 @@ public class TDOutHandler extends AbstractHandler {
 			try
 			{
 				AssertionDocument user = userA.getXML();
-				userAssertionAsJDOM=new SAXBuilder().build(
-						user.newInputStream()).detachRootElement();
+				userAssertionAsJDOM=DOMUtils.readXml(user.newInputStream()).getDocumentElement();
 			} catch(Exception e)
 			{
 				logger.fatal("Can't create USER assertion: ", e);
@@ -194,12 +199,11 @@ public class TDOutHandler extends AbstractHandler {
 		}
 	}
 	
-	public void invoke(MessageContext context) throws Exception
+	public void handleMessage(SoapMessage message)
 	{
 		//do nothing if not a client call 
 		//(is probably a misconfiguration, but make sure anyway)
-		Boolean clientMode = (Boolean) context.getProperty(Client.CLIENT_MODE);
-		if (clientMode == null || !clientMode.booleanValue())
+		if(!MessageUtils.isOutbound(message))
 			return;
 
 		if (assertionListAsJDOM == null && userAssertionAsJDOM == null)
@@ -216,30 +220,43 @@ public class TDOutHandler extends AbstractHandler {
 			logger.trace("TD DUMP end");		
 		}
 
-		Element h = context.getOutMessage().getOrCreateHeader();
-		Element insertionPoint = h;
+		List<Header> h = message.getHeaders();
+		Element insertionPoint = null;
 
 		if (useWssecElem)
 		{
 			WSSecHeader sec = new WSSecHeader(true);
 			insertionPoint = sec.getOrInsertWSSecElement(h);
 		}
-
+		
 		if (assertionListAsJDOM != null)
 		{
-			for (Element e: assertionListAsJDOM)
-				insertionPoint.addContent((Element)e.clone());
+			for (Element e: assertionListAsJDOM){
+				if(useWssecElem){
+					Document parent=insertionPoint.getOwnerDocument();
+					insertionPoint.appendChild(parent.importNode(e,true));
+				}
+				else{
+					Header header=new Header(AssertionDocument.type.getDocumentElementName(),e);
+					h.add(header);
+				}
+			}
 		}
 		if (userAssertionAsJDOM != null)
 		{
-			userAssertionAsJDOM.detach();
-			insertionPoint.addContent((Element)userAssertionAsJDOM.clone());
+			if(useWssecElem){
+				Document parent=insertionPoint.getOwnerDocument();
+				insertionPoint.appendChild(parent.importNode(userAssertionAsJDOM,true));
+			}
+			else{
+				Header header=new Header(AssertionDocument.type.getDocumentElementName(),userAssertionAsJDOM);
+				h.add(header);
+			}
 			if (logger.isTraceEnabled())
 				try
 			{
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
-					new XMLOutputter(Format.getPrettyFormat()).output(
-							userAssertionAsJDOM, bos);
+					DOMUtils.writeXml(userAssertionAsJDOM, bos);
 					logger.trace("User assertion:\n" + bos.toString());
 			} catch(Exception e)
 			{

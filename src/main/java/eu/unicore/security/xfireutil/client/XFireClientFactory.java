@@ -33,30 +33,30 @@
 
 package eu.unicore.security.xfireutil.client;
 
-import java.io.ByteArrayInputStream;
-import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.cxf.configuration.jsse.TLSClientParameters;
+import org.apache.cxf.configuration.security.AuthorizationPolicy;
+import org.apache.cxf.configuration.security.ProxyAuthorizationPolicy;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
+import org.apache.cxf.interceptor.Interceptor;
+import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
+import org.apache.cxf.jaxws.endpoint.dynamic.JaxWsDynamicClientFactory;
+import org.apache.cxf.message.Message;
+import org.apache.cxf.transport.http.HTTPConduit;
+import org.apache.cxf.transports.http.configuration.ConnectionType;
+import org.apache.cxf.transports.http.configuration.ProxyServerType;
 import org.apache.log4j.Logger;
-import org.codehaus.xfire.DefaultXFire;
-import org.codehaus.xfire.XFireFactory;
-import org.codehaus.xfire.client.Client;
-import org.codehaus.xfire.handler.Handler;
-import org.codehaus.xfire.service.Service;
-import org.codehaus.xfire.service.ServiceFactory;
-import org.codehaus.xfire.transport.Channel;
-import org.codehaus.xfire.transport.http.AbstractMessageSender;
-import org.codehaus.xfire.transport.http.CommonsHttpMessageSender;
-import org.codehaus.xfire.transport.http.HttpChannel;
 
 import eu.unicore.security.util.Log;
-import eu.unicore.security.util.client.DefaultClientConfiguration;
 import eu.unicore.security.util.client.HttpUtils;
 import eu.unicore.security.util.client.IClientConfiguration;
 
@@ -80,55 +80,23 @@ public class XFireClientFactory {
 	/** Whether to log outgoing requests */
 	public static final String LOG_OUTGOING = "log.outgoing";
 	
-
-	protected final DefaultXFire xfire;
-	protected final ReliableProxyFactory proxyMaker;
 	protected IClientConfiguration securityProperties;
 	protected Properties settings;
-	protected ServiceFactory factory;
 	
-	protected List<Handler> inHandlers;
-	protected List<Handler> outHandlers;
-	protected List<Handler> faultHandlers;
+	protected List<Interceptor<? extends Message>> inHandlers;
+	protected List<Interceptor<? extends Message>> outHandlers;
+	protected List<Interceptor<? extends Message>> faultHandlers;
 
 	/**
-	 * This constructor uses {@link JSR181ServiceFactory}.
-	 * @param sec
-	 */
-	public XFireClientFactory(IClientConfiguration sec) 
-	{
-		this(new JSR181ServiceFactory(), sec);
-	}
-
-	/**
-	 * Creates factory with default settings: no security, no HTTP proxy, no retires.
-	 * @param serviceFactory {@link ServiceFactory} which shall be used to create service
-	 * description.
-	 */
-	public XFireClientFactory(ServiceFactory serviceFactory)
-	{
-		this(serviceFactory, new DefaultClientConfiguration());
-	}
-
-	/**
-	 * Creates a factory with all settings.
-	 * @param serviceFactory {@link ServiceFactory} which shall be used to create service
-	 * description.
-	 * @param xfire
+	 *
 	 * @param securityCfg security configuration (SSL and HTTP authN)
-	 * @param properties Additional settings. See constants in this class and in {@link HttpUtils} 
 	 */
-	public XFireClientFactory(ServiceFactory serviceFactory, IClientConfiguration securityCfg)
+	public XFireClientFactory(IClientConfiguration securityCfg)
 	{
-		if (serviceFactory == null)
-			throw new IllegalArgumentException("Service Factory can not be null");
 		if (securityCfg == null)
 			throw new IllegalArgumentException("IAuthenticationConfiguration can not be null");
 		if (securityCfg.getExtraSettings() == null)
 			throw new IllegalArgumentException("Properties can not be null");
-		this.factory = serviceFactory;
-		this.xfire = (DefaultXFire)XFireFactory.newInstance().getXFire();
-		this.proxyMaker = new ReliableProxyFactory();
 		this.securityProperties = securityCfg.clone();
 		this.settings = securityCfg.getExtraSettings();
 		initHandlers();
@@ -136,13 +104,13 @@ public class XFireClientFactory {
 
 	protected void initHandlers()
 	{
-		faultHandlers = new ArrayList<Handler>();
-		inHandlers = new ArrayList<Handler>();
+		faultHandlers = new ArrayList<Interceptor<? extends Message>>();
+		inHandlers = new ArrayList<Interceptor<? extends Message>>();
 		if("true".equals(settings.getProperty(LOG_INCOMING))){
 			inHandlers.add(new LogInMessageHandler());
 		}
 		inHandlers.add(new CheckUnderstoodHeadersHandler());
-		outHandlers = new ArrayList<Handler>();
+		outHandlers = new ArrayList<Interceptor<? extends Message>>();
 		if("true".equals(settings.getProperty(LOG_OUTGOING))){
 			outHandlers.add(new LogOutMessageHandler());
 		}
@@ -161,19 +129,17 @@ public class XFireClientFactory {
 	 * @throws MalformedURLException 
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
 	public synchronized <T> T createPlainWSProxy(Class<T> iFace, String url) 
 			throws MalformedURLException
 	{
-		Service serviceModel = isLocal(url) ? getLocalService(url) : 
-			factory.create(iFace);
-		
-		Object proxy=proxyMaker.create(serviceModel, url);
+		JaxWsProxyFactoryBean factory=new JaxWsProxyFactoryBean();
+		factory.setAddress(url);
+		T proxy=factory.create(iFace);
 		doAddHandlers(proxy);
 		setupProxy(proxy, securityProperties, settings, url);
 		setupProxyInterface(iFace, getXfireClient(proxy), 
 				securityProperties, settings);
-		return (T)proxy;
+		return proxy;
 	}
 	
 	protected <T> void setupProxyInterface(Class<T> iFace, Client xfireClient, 
@@ -182,22 +148,19 @@ public class XFireClientFactory {
 	}
 
 	/**
-	 * creates a dynamic client from the wsdl of the service
-	 *
-	 * @param serviceURL the URL, the service can be found
-	 * @param sec Security Parameters
+	 * creates a dynamic client from the wsdl of the service<br/>
+	 * TODO if URL is https we are NOT using the current security settings,
+	 * but the JDK settings
+	 * 
+	 * @param serviceURL the URL where the service wsdl can be found
+	 * 
 	 * @return a Client that supports SSL Connections
 	 * @throws Exception
 	 */
 	public Client createDynamicClient(String url) throws Exception 
 	{
-		String wsdl = getServiceWSDL(url, securityProperties);		
-		Client client = new Client(new ByteArrayInputStream(wsdl.getBytes()), null);
-		client.setUrl(url);
-		logger.debug("Client created:\n" + "Service Name: "
-				+ client.getService().getSimpleName() + "\n" + "Service URL: "
-				+ client.getUrl() + "\n");
-
+		JaxWsDynamicClientFactory dcf = JaxWsDynamicClientFactory.newInstance();
+		Client client=dcf.createClient(url);
 		setupProxy(client,securityProperties,settings,url);
 		return client;
 	}
@@ -209,25 +172,23 @@ public class XFireClientFactory {
 	 */
 	protected void doAddHandlers(Object proxy){
 		Client client = getXfireClient(proxy);
-		//use our fixed message sender
-		client.setProperty(AbstractMessageSender.MESSAGE_SENDER_CLASS_NAME, HttpMessageSender.class.getName());
 		
-		List<Handler> l=getOutHandlers();
+		List<Interceptor<? extends Message>> l=getOutHandlers();
 		if(l!=null){
-			for(Handler h:l){ 
-				client.addOutHandler(h);
+			for(Interceptor<? extends Message> h:l){ 
+				client.getOutInterceptors().add(h);
 			}
 		}
-		List<Handler> l2=getInHandlers();
+		List<Interceptor<? extends Message>> l2=getInHandlers();
 		if(l2!=null){
-			for(Handler h:l2){ 
-				client.addInHandler(h);
+			for(Interceptor<? extends Message> h:l2){ 
+				client.getInInterceptors().add(h);
 			}
 		}
-		List<Handler> l3=getFaultHandlers();
+		List<Interceptor<? extends Message>> l3=getFaultHandlers();
 		if(l3!=null){
-			for(Handler h:l3){ 
-				client.addFaultHandler(h);
+			for(Interceptor<? extends Message> h:l3){ 
+				client.getOutFaultInterceptors().add(h);
 			}
 		}
 	}
@@ -236,7 +197,7 @@ public class XFireClientFactory {
 	 * returns a list of out handlers to add to the proxy client
 	 * @return
 	 */
-	protected List<Handler>getOutHandlers(){
+	protected List<Interceptor<? extends Message>>getOutHandlers(){
 		return outHandlers;
 	}
 
@@ -244,7 +205,7 @@ public class XFireClientFactory {
 	 * returns a list of in handlers to add to the proxy client
 	 * @return
 	 */
-	protected List<Handler>getInHandlers(){
+	protected List<Interceptor<? extends Message>>getInHandlers(){
 		return inHandlers;
 	}
 
@@ -252,68 +213,159 @@ public class XFireClientFactory {
 	 * returns a list of fault handlers to add to the proxy client
 	 * @return
 	 */
-	protected List<Handler>getFaultHandlers(){
+	protected List<Interceptor<? extends Message>>getFaultHandlers(){
 		return faultHandlers;
-	}
-
-	protected Service getLocalService(String url)
-	{
-		try{
-			//url will be of the form xfire.local://ServiceName/....
-			//so we take the "host" part of an URI
-			String serviceName=new URI(url).getHost();
-			return xfire.getServiceRegistry().getService(serviceName);
-		}catch(Exception mue){
-			return null;
-		}
 	}
 
 	protected boolean isLocal(String url)
 	{
 		if (url == null)
 			return false;
-		return url.startsWith("xfire.local://");
+		return url.startsWith("local://");
 	}
 	
 	/**
-	 * Configure the XFire proxy: sets up security (SSL/HTTP authn),
+	 * Configure the client proxy class: sets up security (SSL/HTTP authn),
 	 * Gzip compression, HTTP proxy, HTTP timeouts
 	 *  
-	 * @param proxy Proxy to be configured.
+	 * @param client the Proxy to be configured.
 	 * @param cnf Security configuration.
+	 * @param properties
+	 * @param uri
 	 */
-	protected void setupProxy(Client xfireClient, IClientConfiguration cnf, 
+	protected void setupProxy(Client client, IClientConfiguration cnf, 
 		Properties properties, String uri)
 	{
-		Channel channel = xfireClient.getOutChannel();
 
-		if (cnf.doHttpAuthn())
-		{
-			xfireClient.setProperty(Channel.USERNAME, cnf.getHttpUser());
-			xfireClient.setProperty(Channel.PASSWORD, cnf.getHttpPassword());
+		HTTPConduit http = (HTTPConduit) client.getConduit();
+		
+		if(cnf.doHttpAuthn()){
+			AuthorizationPolicy httpAuth=new AuthorizationPolicy();
+			httpAuth.setUserName(cnf.getHttpUser());
+			httpAuth.setPassword(cnf.getHttpPassword());
+			http.setAuthorization(httpAuth);
 		}
 		
 		if (!isLocal(uri))
 		{
-			if (!(channel instanceof HttpChannel))
-				throw new IllegalStateException("Can't configure non" +
-						" HTTP channel - it is unsupported. " +
-						"Current channel is: " + channel.getClass());
-			HttpChannel httpChannel = (HttpChannel) channel;
-			HttpClient httpClient = HttpUtils.createClient(properties);
-			httpChannel.setProperty(CommonsHttpMessageSender.HTTP_CLIENT, httpClient);
 			
-			HttpUtils.configureSSL(httpClient, cnf);
+			TLSClientParameters params = new TLSClientParameters();
+			params.setSSLSocketFactory(new MySSLSocketFactory(cnf));
+			params.setDisableCNCheck(true);
+			http.setTlsClientParameters(params);
 			
-			if (uri != null)
-				HttpUtils.configureProxy(httpClient, uri, properties);
+			Properties p=cnf.getExtraSettings();
 			
-			boolean gzipEnabled = Boolean.parseBoolean(
-					properties.getProperty(GZIP_ENABLE, "true"));
-			httpChannel.setProperty(CommonsHttpMessageSender.GZIP_ENABLED, gzipEnabled);
-			String noKeepAlive=properties.getProperty("http.disable-keep-alive","true");
-			xfireClient.setProperty(CommonsHttpMessageSender.DISABLE_KEEP_ALIVE, noKeepAlive);
+			configureHttpProxy(http, uri, properties);
+			
+			if(p.getProperty(HttpUtils.HTTP_PROXY_HOST)!=null){
+				http.getClient().setProxyServer(p.getProperty(HttpUtils.HTTP_PROXY_HOST));
+			}
+			if(p.getProperty(HttpUtils.HTTP_PROXY_PORT)!=null){
+				http.getClient().setProxyServerPort(Integer.parseInt(p.getProperty(HttpUtils.HTTP_PROXY_PORT)));
+			}
+			if(p.getProperty("http.proxyType")!=null){
+				if("SOCKS".equalsIgnoreCase(p.getProperty("http.proxyType"))){
+					http.getClient().setProxyServerType(ProxyServerType.SOCKS);
+				}
+			}
+			
+			if(p.getProperty(HttpUtils.HTTP_PROXY_USER)!=null){
+				ProxyAuthorizationPolicy ap=new ProxyAuthorizationPolicy();
+				ap.setUserName(p.getProperty(HttpUtils.HTTP_PROXY_USER));
+				if(p.getProperty(HttpUtils.HTTP_PROXY_PASS)!=null){
+					ap.setPassword(p.getProperty(HttpUtils.HTTP_PROXY_PASS));
+				}
+				http.setProxyAuthorization(ap);
+			}
 		}
+		
+		//timeouts
+		String connectTimeout=properties.getProperty(HttpUtils.CONNECT_TIMEOUT, "30000");
+		try{
+			http.getClient().setConnectionTimeout(Integer.parseInt(connectTimeout));
+		}catch(NumberFormatException fe){
+			logger.warn("Illegal connection timeout specified: "+connectTimeout);
+		}
+		
+		String socketTimeout=properties.getProperty(HttpUtils.SO_TIMEOUT, "60000");
+		try{
+			http.getClient().setReceiveTimeout(Integer.parseInt(socketTimeout));
+		}catch(NumberFormatException fe){
+			logger.warn("Illegal socket timeout specified: "+socketTimeout);
+		}
+		
+		//TODO gzip - how? Probably there is some interceptor for it?!
+		//boolean gzipEnabled = Boolean.parseBoolean(properties.getProperty(GZIP_ENABLE, "true"));
+		
+		String noKeepAlive=properties.getProperty("http.disable-keep-alive","true");
+		if(Boolean.getBoolean(noKeepAlive)){
+			http.getClient().setConnection(ConnectionType.CLOSE);
+		}
+		
+	}
+
+	private void configureHttpProxy(HTTPConduit http, String uri, Properties properties){
+		if (isNonProxyHost(uri, properties)) 
+			return;
+
+		// Setup the proxy settings
+		String proxyHost = (String) properties.getProperty(HttpUtils.HTTP_PROXY_HOST);
+		if (proxyHost == null)
+		{
+			proxyHost = System.getProperty(HttpUtils.HTTP_PROXY_HOST);
+		}
+
+		if (proxyHost != null && proxyHost.trim().length()>0)
+		{ 
+			String portS = (String) properties.getProperty(HttpUtils.HTTP_PROXY_PORT);
+			if (portS == null)
+			{
+				portS = System.getProperty(HttpUtils.HTTP_PROXY_PORT);
+			}
+			int port = 80;
+			if (portS != null)
+				port = Integer.parseInt(portS);
+
+			http.getClient().setProxyServer(proxyHost);
+			http.getClient().setProxyServerPort(port);
+			
+			String proxyType=properties.getProperty("http.proxyType");
+			if(proxyType!=null){
+				if("SOCKS".equalsIgnoreCase(proxyType)){
+					http.getClient().setProxyServerType(ProxyServerType.SOCKS);
+				}
+			}
+			
+			String user=properties.getProperty(HttpUtils.HTTP_PROXY_USER);
+			if(user!=null){
+				ProxyAuthorizationPolicy ap=new ProxyAuthorizationPolicy();
+				ap.setUserName(user);
+				String password=properties.getProperty(HttpUtils.HTTP_PROXY_PASS);
+				if(password!=null){
+					ap.setPassword(password);
+				}
+				http.setProxyAuthorization(ap);
+			}
+		}
+
+	}
+
+	private boolean isNonProxyHost(String uri, Properties properties){
+		String nonProxyHosts=properties.getProperty(HttpUtils.HTTP_NON_PROXY_HOSTS);
+		if(nonProxyHosts==null)return false;
+		try{
+			URI u=new URI(uri);
+			String host=u.getHost();
+			String[] npHosts=nonProxyHosts.split(" ");
+			for(String npHost: npHosts){
+				if(host.contains(npHost))return true;
+			}
+		}catch(URISyntaxException e){
+			logger.error("Can't resolve URI from "+uri, e);
+		}	
+
+		return false;
 	}
 
 	/**
@@ -331,17 +383,7 @@ public class XFireClientFactory {
 	
 	public static Client getXfireClient(Object proxy)
 	{
-		try 
-		{
-			ReliableProxy xp = (ReliableProxy)Proxy.getInvocationHandler(proxy);
-			return xp.getClient();
-		} catch (IllegalArgumentException iae)
-		{
-			return Client.getInstance(proxy);
-		} catch (ClassCastException cce)
-		{
-			return Client.getInstance(proxy);
-		}
+		return ClientProxy.getClient(proxy);
 	}
 
 	/**

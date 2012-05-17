@@ -56,7 +56,7 @@ public class DSigParseInHandler extends AbstractPhaseInterceptor<Message>
 	 */
 	public DSigParseInHandler(DSigDecider decider)
 	{
-		super(Phase.PRE_INVOKE);
+		super(Phase.READ);
 		getBefore().add(ReadHeadersInterceptor.class.getName());
 		getBefore().add(LogInMessageHandler.class.getName());
 		this.decider = decider;

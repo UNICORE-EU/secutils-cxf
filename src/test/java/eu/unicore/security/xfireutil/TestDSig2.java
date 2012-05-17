@@ -8,10 +8,10 @@
 
 package eu.unicore.security.xfireutil;
 
-import org.codehaus.xfire.client.Client;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
 
 import eu.unicore.security.xfireutil.client.ClientDSigUtil;
-import eu.unicore.security.xfireutil.client.XFireClientFactory;
 
 /**
  * Tests cooperation with other handler which also inserts elements into 
@@ -31,8 +31,8 @@ public class TestDSig2 extends AbstractTestBase
 			
 			ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, null);
 			
-			Client xfireClient = XFireClientFactory.getXfireClient(s);
-			xfireClient.addOutHandler(new AdditionalOutHandler());
+			Client xfireClient = ClientProxy.getClient(s);
+			xfireClient.getOutInterceptors().add(new AdditionalOutHandler());
 			
 			String sigRet = s.TestSignature2();
 			assertTrue("OK".equals(sigRet));

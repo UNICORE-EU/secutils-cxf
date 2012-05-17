@@ -3,15 +3,21 @@ package eu.unicore.security.xfireutil.client;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.xml.crypto.dsig.Reference;
 import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.soap.SOAPMessage;
 import javax.xml.transform.TransformerException;
 
+import org.apache.cxf.binding.soap.SoapMessage;
+import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
+import org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor.SAAJOutEndingInterceptor;
+import org.apache.cxf.helpers.DOMUtils;
+import org.apache.cxf.phase.Phase;
 import org.apache.log4j.Logger;
 import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.WSEncryptionPart;
@@ -20,7 +26,6 @@ import org.apache.ws.security.WSSecurityException;
 import org.apache.ws.security.components.crypto.Crypto;
 import org.apache.ws.security.message.WSSecHeader;
 import org.apache.ws.security.message.WSSecSignature;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -45,7 +50,7 @@ import eu.unicore.security.xfireutil.DSigDecider;
  * @author K. Benedyczak
  * @author schuller
  */
-public class DSigOutHandler extends AbstractHandler 
+public class DSigOutHandler extends AbstractSoapInterceptor 
 {
 	static final Logger logger = Log.getLogger(Log.SECURITY + ".dsig", DSigOutHandler.class); 
 	
@@ -55,13 +60,17 @@ public class DSigOutHandler extends AbstractHandler
 
 	public final static QName WS_SECURITY = new QName(WSS_NS_STRING, "Security");
 	
-	private DocumentBuilder docBuilder;
 	private Crypto merlin;
 	
 	private DSigDecider decider;
 	private X509Credential credential;
 	private ToBeSignedDecider partsDecider;
 	private boolean disabled = false;
+	
+	private static final Set<QName>qnameSet=new HashSet<QName>();
+	static{
+		qnameSet.add(WS_SECURITY);
+	}
 	
 	/**
 	 * Constructor initializes this handler. 
@@ -73,12 +82,7 @@ public class DSigOutHandler extends AbstractHandler
 	public DSigOutHandler(X509Credential credential, 
 			DSigDecider decider)
 	{
-		setPhase(Phase.POST_INVOKE);
-		after(TDOutHandler.class.getName());
-		after(SoapSerializerHandler.class.getName());
-		after(AddressingOutHandler.class.getName());
-		before(FaultSoapSerializerHandler.class.getName());
-		reinit(credential, decider, null);
+		this(credential, decider, null);
 	}
 
 	/**
@@ -93,11 +97,8 @@ public class DSigOutHandler extends AbstractHandler
 	public DSigOutHandler(X509Credential credential, 
 			DSigDecider decider, ToBeSignedDecider partsDecider)
 	{
-		setPhase(Phase.POST_INVOKE);
-		after(TDOutHandler.class.getName());
-		after(SoapSerializerHandler.class.getName());
-		after(AddressingOutHandler.class.getName());
-		before(FaultSoapSerializerHandler.class.getName());
+		super(Phase.PRE_PROTOCOL_ENDING);
+		getBefore().add(SAAJOutEndingInterceptor.class.getName());
 		reinit(credential, decider, partsDecider);
 	}
 	
@@ -118,34 +119,29 @@ public class DSigOutHandler extends AbstractHandler
 		this.credential = credential;
 		try
 		{
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			dbf.setNamespaceAware(true);
-			docBuilder = dbf.newDocumentBuilder();
 			merlin = new WSS4JCryptoImpl(credential);
 		} catch(Exception e)
 		{
 			logger.fatal("Could not set up digital signature out handler.", e);
 		}
-		
 	}
 	
 	
-	
-	public void invoke(MessageContext context)
+	public void handleMessage(SoapMessage message)
 	{
-		if (disabled || (decider != null && !decider.isMessageDSigCandidate(context)))
+		if (disabled || (decider != null && !decider.isMessageDSigCandidate(message)))
 			return;
 		long start = System.currentTimeMillis();
 		//build DOM
 		Document docToSign;
-		OutMessage message = (OutMessage) context.getCurrentMessage();
-		if(message==null)return;
 		try
 		{
-			W3CDOMStreamWriter writer = new W3CDOMStreamWriter(docBuilder);
-			context.setProperty(SoapSerializer.SERIALIZE_PROLOG, Boolean.TRUE);
-			message.getSerializer().writeMessage(message, writer, context);
-			docToSign = writer.getDocument();
+			SOAPMessage saajMessage=message.getContent(SOAPMessage.class);
+			if(saajMessage==null){
+				logger.fatal("No DOM representation of message found!");
+				return;
+			}
+			docToSign=saajMessage.getSOAPPart();
 		} catch(Exception e)
 		{
 			logger.fatal("IO exception while building DOM of SOAP envelope " +
@@ -167,7 +163,6 @@ public class DSigOutHandler extends AbstractHandler
 		}
 		//prepare for signing
 		WSSecSignature signatory = new MyWSSecSignature();
-//		WSSecSignature signatory = new WSSecSignature();
 		WSSConfig config = WSSConfig.getNewInstance();
 		config.setWsiBSPCompliant(true);
 		signatory.setWsConfig(config);
@@ -175,7 +170,7 @@ public class DSigOutHandler extends AbstractHandler
 		Vector<WSEncryptionPart> toBeSigned = getElementsToBeSigned(docToSign);
 		WSSecHeader secHeader = new WSSecHeader();
 	        
-	        //sign
+	    //sign
 		try
 		{
 			secHeader.insertSecurityHeader(docToSign);
@@ -204,15 +199,12 @@ public class DSigOutHandler extends AbstractHandler
 			}
 		}
 		
-		//set up XFire to write out the modified DOM instead of the original
-		message.setProperty(DOMOutHandler.DOM_MESSAGE, docToSign);
-		message.setSerializer(new DOMSerializer());
 	}
 
 	@Override
-	public QName[] getUnderstoodHeaders() 
+	public Set<QName> getUnderstoodHeaders() 
 	{
-		return new QName[] {WS_SECURITY};
+		return qnameSet;
 	}
 
 	/**

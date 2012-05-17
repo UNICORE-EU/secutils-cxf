@@ -12,10 +12,10 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import org.codehaus.xfire.DefaultXFire;
-import org.codehaus.xfire.annotations.AnnotationServiceFactory;
-import org.codehaus.xfire.client.Client;
-import org.codehaus.xfire.service.Service;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
+import org.apache.cxf.interceptor.Interceptor;
+import org.apache.cxf.message.Message;
 
 import eu.emi.security.authn.x509.X509Credential;
 import eu.emi.security.authn.x509.helpers.BinaryCertChainValidator;
@@ -24,36 +24,23 @@ import eu.unicore.samly2.SAMLConstants.AuthNClasses;
 import eu.unicore.security.UnicoreSecurityFactory;
 import eu.unicore.security.consignor.ConsignorAPI;
 import eu.unicore.security.consignor.ConsignorAssertion;
-import eu.unicore.security.xfireutil.client.XFireClientFactory;
 
 public class TestGWSignedAssertions extends AbstractTestBase
 {
 	public X509Certificate gwCert;
 	public PrivateKey gwKey;
 	
-	@SuppressWarnings("unchecked")
-	protected void setUp() throws Exception
-	{
+	@Override
+	protected void addHandlers(List<Interceptor<? extends Message>> s)throws Exception{
+
 		X509Credential credential = MockSecurityConfig.getGatewayCredential();
 		gwCert = credential.getCertificate();
 		gwKey = credential.getKey();
-
-		xfire = new DefaultXFire();
-		factory = new AnnotationServiceFactory(xfire
-				.getTransportManager());
-		Service service = factory.create(SimpleSecurityServiceImpl.class);
-		xfire.getServiceRegistry().register(service);
-		
-		List<Object> s = xfire.getInHandlers();
 
 		AuthInHandler authHandler = new AuthInHandler(true, true, true, gwCert);
 		ETDInHandler etdHandler = new ETDInHandler(null, new BinaryCertChainValidator(true));
 		s.add(authHandler);
 		s.add(etdHandler);
-		
-		jetty = new JettyServer(xfire);
-		jetty.start();
-		
 	}
 
 	public void testGWConsignorUnsigned()
@@ -71,10 +58,10 @@ public class TestGWSignedAssertions extends AbstractTestBase
 					gwCert.getSubjectX500Principal().getName(),
 					new X509Certificate[] {consignor},
 					AuthNClasses.TLS);
-			Client xfireClient = XFireClientFactory.getXfireClient(s);
+			org.apache.cxf.endpoint.Client xfireClient = ClientProxy.getClient(s);
 			GwHandler gwH = new GwHandler();
 			gwH.reinit(consignorA);
-			xfireClient.addOutHandler(gwH);
+			xfireClient.getOutInterceptors().add(gwH);
 			
 			String consignorRet = s.TestConsignor();
 			assertNull("Got: " + consignorRet, consignorRet);
@@ -101,12 +88,13 @@ public class TestGWSignedAssertions extends AbstractTestBase
 					new X509Certificate[] {consignor},
 					gwKey,
 					0, 5, AuthNClasses.TLS);
-			Client xfireClient = XFireClientFactory.getXfireClient(s);
+			Client xfireClient = ClientProxy.getClient(s);
 			GwHandler gwH = new GwHandler();
 			gwH.reinit(consignorA);
-			xfireClient.addOutHandler(gwH);
+			xfireClient.getOutInterceptors().add(gwH);
 			
 			String consignorRet = s.TestConsignor();
+			System.out.println("Expected: "+consignor.getSubjectX500Principal()+" got "+consignorRet);
 			assertTrue(X500NameUtils.equal(consignor.getSubjectX500Principal(), consignorRet));
 		} catch (Throwable e)
 		{

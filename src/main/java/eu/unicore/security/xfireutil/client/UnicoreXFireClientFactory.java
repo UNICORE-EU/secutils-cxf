@@ -40,10 +40,10 @@ import java.util.Set;
 
 import javax.jws.WebMethod;
 
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.interceptor.Interceptor;
+import org.apache.cxf.message.Message;
 import org.apache.log4j.Logger;
-import org.codehaus.xfire.client.Client;
-import org.codehaus.xfire.handler.Handler;
-import org.codehaus.xfire.service.ServiceFactory;
 
 import eu.unicore.security.util.client.DefaultClientConfiguration;
 import eu.unicore.security.util.client.IClientConfiguration;
@@ -53,7 +53,6 @@ import eu.unicore.security.xfireutil.RequiresSignature;
 import eu.unicore.security.xfireutil.client.ContextDSigDecider;
 import eu.unicore.security.xfireutil.client.DSigOutHandler;
 import eu.unicore.security.xfireutil.client.ExtendedTDOutHandler;
-import eu.unicore.security.xfireutil.client.JSR181ServiceFactory;
 import eu.unicore.security.xfireutil.client.XFireClientFactory;
 
 /**
@@ -81,21 +80,12 @@ public class UnicoreXFireClientFactory extends XFireClientFactory
 	}
 	
 	/**
-	 * This constructor uses {@link JSR181ServiceFactory}.
-	 * @param sec
-	 */
-	public UnicoreXFireClientFactory(IClientConfiguration sec){
-		this(new JSR181ServiceFactory(), sec);
-	}
-
-	/**
 	 * Constructor allowing to set all parameters. 
 	 * @param serviceFactory {@link ServiceFactory} to be used
 	 * @param sec security and client settings
 	 */
-	public UnicoreXFireClientFactory(ServiceFactory serviceFactory, 
-			IClientConfiguration sec){
-		super(serviceFactory, sec);
+	public UnicoreXFireClientFactory(IClientConfiguration sec){
+		super(sec);
 		//be careful - do this way as we need a cloned instance.
 		this.security=(IClientConfiguration) securityProperties;
 	}
@@ -117,24 +107,24 @@ public class UnicoreXFireClientFactory extends XFireClientFactory
 	}
 	
 	@SuppressWarnings("unchecked")
-	private Class<? extends Handler>loadClass(String name) throws ClassNotFoundException{
+	private Class<Interceptor<? extends Message>>loadClass(String name) throws ClassNotFoundException{
 		IClientConfiguration security = (IClientConfiguration) securityProperties;
 		if(security.getClassLoader()!=null){
-			return (Class<? extends Handler>)Class.forName(name,true,security.getClassLoader());
+			return (Class<Interceptor<? extends Message>>)Class.forName(name,true,security.getClassLoader());
 		}
 		else{
-			return (Class<? extends Handler>)Class.forName(name);
+			return (Class<Interceptor<? extends Message>>)Class.forName(name);
 		}
 	}
 	
-	private void addHandlers(List<Handler> list, String[] handlers) {
+	private void addHandlers(List<Interceptor<? extends Message>> list, String[] handlers) {
 		if (handlers == null) 
 			return;
 		for (String className: handlers) {
 			if (className!=null && className.length()!=0) {
 				try{
-					Class<? extends Handler> clazz=loadClass(className);
-					Handler h=(Handler)clazz.newInstance();
+					Class<? extends Interceptor<? extends Message>> clazz=loadClass(className);
+					Interceptor<? extends Message> h=(Interceptor<? extends Message>)clazz.newInstance();
 					if(h instanceof Configurable){
 						//initialise the handler with our client security properties
 						((Configurable) h).configure((IClientConfiguration) securityProperties);
@@ -153,7 +143,7 @@ public class UnicoreXFireClientFactory extends XFireClientFactory
 	protected <T> void setupProxyInterface(Class<T> iFace, Client xfireClient, 
 			IClientConfiguration cnf, Properties properties)
 	{
-		xfireClient.setProperty(ContextDSigDecider.SIGNED_OPERATIONS, 
+		xfireClient.getRequestContext().put(ContextDSigDecider.SIGNED_OPERATIONS, 
 				getOperationsToSign(iFace));
 	}
 

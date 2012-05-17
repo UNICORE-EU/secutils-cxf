@@ -11,6 +11,9 @@ package eu.unicore.security.xfireutil.client;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
+
 import eu.unicore.security.etd.TrustDelegation;
 
 
@@ -41,7 +44,7 @@ public class ClientTrustDelegationUtil
 	public static void addTrustDelegation(Object xfireProxy, 
 			List<TrustDelegation> tdChain)
 	{
-		Client xfireClient = XFireClientFactory.getXfireClient(xfireProxy);
+		Client xfireClient = ClientProxy.getClient(xfireProxy);
 		addTrustDelegation(xfireClient, tdChain);
 	}
 	
@@ -94,7 +97,7 @@ public class ClientTrustDelegationUtil
 			List<TrustDelegation> tdChain, X509Certificate user,
 			String callerDN)
 	{
-		Client xfireClient = XFireClientFactory.getXfireClient(xfireProxy);
+		Client xfireClient = ClientProxy.getClient(xfireProxy);
 		addTrustDelegation(xfireClient, tdChain, user, callerDN);
 	}
 
@@ -139,7 +142,7 @@ public class ClientTrustDelegationUtil
 			List<TrustDelegation> tdChain, String userDN,
 			String callerDN)
 	{
-		Client xfireClient = XFireClientFactory.getXfireClient(xfireProxy);
+		Client xfireClient = ClientProxy.getClient(xfireProxy);
 		addTrustDelegation(xfireClient, tdChain, null, userDN, callerDN);
 	}
 
@@ -183,7 +186,7 @@ public class ClientTrustDelegationUtil
 			List<TrustDelegation> tdChain, X509Certificate user, String userDN,
 			String callerDN)
 	{
-		List<?> outHandlers = xfireClient.getOutHandlers();
+		List<?> outHandlers = xfireClient.getOutInterceptors();
 		TDOutHandler tdHandler = null;
 		for (Object h: outHandlers)
 			if (h instanceof TDOutHandler)
@@ -197,7 +200,7 @@ public class ClientTrustDelegationUtil
 			tdHandler = new TDOutHandler(tdChain, user, callerDN);
 		else
 			tdHandler = new TDOutHandler(tdChain, userDN, callerDN);
-		xfireClient.addOutHandler(tdHandler);
+		xfireClient.getOutInterceptors().add(tdHandler);
 	}
 
 	/**
@@ -210,7 +213,7 @@ public class ClientTrustDelegationUtil
 	 */
 	public static void removeTrustDelegation(Object xfireProxy)
 	{
-		Client xfireClient = XFireClientFactory.getXfireClient(xfireProxy);
+		Client xfireClient = ClientProxy.getClient(xfireProxy);
 		removeTrustDelegation(xfireClient);
 	}
 	
@@ -221,7 +224,7 @@ public class ClientTrustDelegationUtil
 	 */
 	public static void removeTrustDelegation(Client xfireClient)
 	{
-		List<?> outHandlers = xfireClient.getOutHandlers();
+		List<?> outHandlers = xfireClient.getOutInterceptors();
 		for (int i=outHandlers.size()-1; i>=0; i--)
 		{
 			Object h = outHandlers.get(i);

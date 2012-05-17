@@ -10,12 +10,10 @@ package eu.unicore.security.xfireutil.client;
 
 import java.util.Set;
 
-import org.codehaus.xfire.MessageContext;
-import org.codehaus.xfire.addressing.AddressingOperationInfo;
-import org.codehaus.xfire.client.Client;
-import org.codehaus.xfire.service.OperationInfo;
-import org.codehaus.xfire.soap.AbstractSoapBinding;
+import org.apache.cxf.message.Message;
+import org.apache.cxf.message.MessageUtils;
 
+import eu.unicore.security.xfireutil.CXFUtils;
 import eu.unicore.security.xfireutil.DSigDecider;
 
 /**
@@ -32,42 +30,33 @@ public class ContextDSigDecider implements DSigDecider
 	public final static String SIGN_MESSAGE = ContextDSigDecider.class.getName() + "doSign";
 	public final static String SIGNED_OPERATIONS = ContextDSigDecider.class.getName() + "signedOperations";
 	
-	public boolean isMessageDSigCandidate(MessageContext ctx)
+	public boolean isMessageDSigCandidate(Message message)
 	{
-		if(Boolean.TRUE.equals(ctx.getProperty(Client.CLIENT_MODE)))
-			return clientCall(ctx);
+		if(MessageUtils.isOutbound(message))
+			return clientCall(message);
+		
 		return false;
 	}
 
-	private boolean clientCall(MessageContext ctx)
+	private boolean clientCall(Message ctx)
 	{
 		//manually set (e.g. for non-WSA call)?
-		if (Boolean.TRUE.equals(ctx.getProperty(SIGN_MESSAGE)))
+		if (Boolean.TRUE.equals(ctx.get(SIGN_MESSAGE)))
 			return true;
-		Client client = ctx.getClient();
+		
+		//TODO
+		
 		@SuppressWarnings("unchecked")
-		Set<String> signedOperations = (Set<String>) client.getProperty(SIGNED_OPERATIONS);
+		Set<String> signedOperations = (Set<String>) ctx.get(SIGNED_OPERATIONS);
 		if (signedOperations == null)
 			return false;
+		
 		//check if this request was signed, decided by SOAP /WSA action
-		OperationInfo oi = ctx.getExchange().getOperation();
-		AddressingOperationInfo aoi = (AddressingOperationInfo)oi.getProperty(
-			AddressingOperationInfo.ADDRESSING_OPERATION_KEY);
-		if(aoi == null)
-		{
-			//no addressing, so we are talking to a plain ws
-			if (ctx.getBinding() instanceof AbstractSoapBinding)
-			{
-				String action = ((AbstractSoapBinding)ctx.getBinding()).getSoapAction(oi);
-				if (action == null)
-					return false;
-				return signedOperations.contains(action);
-			}
-			return false;
-		}
-		String action = aoi.getInAction();
+		
+		String action=CXFUtils.getAction(ctx.getExchange());
 		if (action==null)
 			return false;
+		
 		return signedOperations.contains(action);
 	}
 }

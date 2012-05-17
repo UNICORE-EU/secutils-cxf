@@ -10,7 +10,9 @@ package eu.unicore.security.xfireutil.client;
 
 import java.util.List;
 
-import org.codehaus.xfire.client.Client;
+import org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
 
 import eu.emi.security.authn.x509.X509Credential;
 import eu.unicore.security.xfireutil.DSigDecider;
@@ -42,7 +44,7 @@ public class ClientDSigUtil
 			X509Credential securityCfg, 
 			DSigDecider decider, ToBeSignedDecider partsDecider)
 	{
-		Client xfireClient = XFireClientFactory.getXfireClient(xfireProxy);
+		Client xfireClient = ClientProxy.getClient(xfireProxy);
 		addDSigHandler(xfireClient, securityCfg, decider, partsDecider);
 	}
 	
@@ -65,7 +67,7 @@ public class ClientDSigUtil
 			X509Credential securityCfg, 
 			DSigDecider decider, ToBeSignedDecider partsDecider)
 	{
-		List<?> outHandlers = xfireClient.getOutHandlers();
+		List<?> outHandlers = xfireClient.getOutInterceptors();
 		DSigOutHandler dsHandler = null;
 		for (Object h: outHandlers)
 			if (h instanceof DSigOutHandler)
@@ -75,7 +77,10 @@ public class ClientDSigUtil
 				break;
 			}
 		dsHandler = new DSigOutHandler(securityCfg, decider, partsDecider);
-		xfireClient.addOutHandler(dsHandler);
+		xfireClient.getOutInterceptors().add(new SAAJOutInterceptor());
+		xfireClient.getOutInterceptors().add(dsHandler);
+		xfireClient.getOutInterceptors().add(new LogOutMessageHandler());
+		
 	}
 
 	/**
@@ -88,7 +93,7 @@ public class ClientDSigUtil
 	 */
 	public static void removeDSigHandlers(Object xfireProxy)
 	{
-		Client xfireClient = XFireClientFactory.getXfireClient(xfireProxy);
+		Client xfireClient = ClientProxy.getClient(xfireProxy);
 		removeDSigHandlers(xfireClient);
 	}
 	
@@ -99,7 +104,7 @@ public class ClientDSigUtil
 	 */
 	public static void removeDSigHandlers(Client xfireClient)
 	{
-		List<?> outHandlers = xfireClient.getOutHandlers();
+		List<?> outHandlers = xfireClient.getOutInterceptors();
 		for (int i=outHandlers.size()-1; i>=0; i--)
 		{
 			Object h = outHandlers.get(i);

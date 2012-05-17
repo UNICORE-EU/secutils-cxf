@@ -28,17 +28,23 @@ public class CXFUtils {
 	}
 
 	public static String getAction(Message message){
+		if(message==null)return null;
+		
 		String action=null;
-		Map<String, List<String>> headers = CastUtils.cast((Map<?, ?>)message.get(Message.PROTOCOL_HEADERS));
-		if (headers != null) {
-			List<String> sa = headers.get("SOAPAction");
-			if (sa != null && sa.size() > 0) {
-				action = sa.get(0);
-				if (action.startsWith("\"")) {
-					action = action.substring(1, action.length() - 1);
+		
+		if(message.get(Message.PROTOCOL_HEADERS)!=null){
+			Map<String, List<String>> headers = CastUtils.cast((Map<?, ?>)message.get(Message.PROTOCOL_HEADERS));
+			if (headers != null) {
+				List<String> sa = headers.get("SOAPAction");
+				if (sa != null && sa.size() > 0) {
+					action = sa.get(0);
+					if (action.startsWith("\"")) {
+						action = action.substring(1, action.length() - 1);
+					}
 				}
 			}
 		}
+		
 		if(action==null && message instanceof SoapMessage){
 			Header wsaAction=((SoapMessage)message).getHeader(Names.WSA_ACTION_QNAME);
 			if(wsaAction!=null){
