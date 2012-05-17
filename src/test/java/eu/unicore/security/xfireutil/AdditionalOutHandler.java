@@ -29,7 +29,7 @@ public class AdditionalOutHandler extends AbstractSoapInterceptor
 {
 	public AdditionalOutHandler()
 	{
-		super(Phase.POST_INVOKE);
+		super(Phase.PRE_PROTOCOL);
 		getBefore().add(DSigOutHandler.class.getName());
 	}
 	
@@ -42,7 +42,8 @@ public class AdditionalOutHandler extends AbstractSoapInterceptor
 		Element wsSecEl = sec.getOrInsertWSSecElement(h);
 		Document doc = DOMUtils.createDocument();
 		Element added = doc.createElementNS("http://test.org", "tol:Tola");
-		wsSecEl.appendChild(added);
+		Document parent=wsSecEl.getOwnerDocument();
+		wsSecEl.appendChild(parent.importNode(added,true));
 		System.out.println("Additional element added");
 	}
 }

@@ -80,7 +80,7 @@ public class CheckUnderstoodHeadersHandler extends AbstractSoapInterceptor {
 	 */
 	public CheckUnderstoodHeadersHandler()
 	{
-		super(Phase.PRE_INVOKE);
+		super(Phase.PRE_PROTOCOL);
 		addUnderstoodHeaders(defaultHeaders);
 	}
 	
