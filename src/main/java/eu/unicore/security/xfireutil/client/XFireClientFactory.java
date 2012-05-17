@@ -254,30 +254,7 @@ public class XFireClientFactory {
 			params.setDisableCNCheck(true);
 			http.setTlsClientParameters(params);
 			
-			Properties p=cnf.getExtraSettings();
-			
 			configureHttpProxy(http, uri, properties);
-			
-			if(p.getProperty(HttpUtils.HTTP_PROXY_HOST)!=null){
-				http.getClient().setProxyServer(p.getProperty(HttpUtils.HTTP_PROXY_HOST));
-			}
-			if(p.getProperty(HttpUtils.HTTP_PROXY_PORT)!=null){
-				http.getClient().setProxyServerPort(Integer.parseInt(p.getProperty(HttpUtils.HTTP_PROXY_PORT)));
-			}
-			if(p.getProperty("http.proxyType")!=null){
-				if("SOCKS".equalsIgnoreCase(p.getProperty("http.proxyType"))){
-					http.getClient().setProxyServerType(ProxyServerType.SOCKS);
-				}
-			}
-			
-			if(p.getProperty(HttpUtils.HTTP_PROXY_USER)!=null){
-				ProxyAuthorizationPolicy ap=new ProxyAuthorizationPolicy();
-				ap.setUserName(p.getProperty(HttpUtils.HTTP_PROXY_USER));
-				if(p.getProperty(HttpUtils.HTTP_PROXY_PASS)!=null){
-					ap.setPassword(p.getProperty(HttpUtils.HTTP_PROXY_PASS));
-				}
-				http.setProxyAuthorization(ap);
-			}
 		}
 		
 		//timeouts
