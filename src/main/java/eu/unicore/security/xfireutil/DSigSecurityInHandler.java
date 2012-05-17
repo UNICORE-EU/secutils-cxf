@@ -1,0 +1,258 @@
+package eu.unicore.security.xfireutil;
+
+
+import java.security.PublicKey;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.Vector;
+
+import javax.xml.crypto.dsig.Reference;
+import javax.xml.crypto.dsig.XMLSignature;
+import javax.xml.namespace.QName;
+
+import org.apache.cxf.binding.soap.SoapMessage;
+import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
+import org.apache.cxf.headers.Header;
+import org.apache.cxf.phase.Phase;
+import org.apache.log4j.Logger;
+import org.apache.ws.security.WSConstants;
+import org.apache.ws.security.WSEncryptionPart;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import eu.unicore.security.SecurityTokens;
+import eu.unicore.security.SignatureStatus;
+import eu.unicore.security.dsig.DSigException;
+import eu.unicore.security.dsig.DigSignatureUtil;
+import eu.unicore.security.util.Log;
+import eu.unicore.security.xfireutil.client.ToBeSignedDecider;
+
+
+/**
+ * Checks if there is signature in the SOAP header. If it is present then it is
+ * verified with CONSIGNOR certificate (i.e. the consignor certificate MUST be the
+ * same as digital signature creator).</br>
+ * 
+ * According to the verification result is saved in   
+ * the security tokens.</br>
+ * 
+ * <p>
+ * This handler must be AFTER {@link AuthInHandler} handler that sets consignor 
+ * into security context and AFTER {@link DSigParseInHandler} (which in PARSE phase).
+ * <p>
+ * The signature is searched only if the DOM of the message was build by the 
+ * {@link DSigParseInHandler}.
+ *
+ * @see SecurityTokens
+ * @author K. Benedyczak
+ */
+public class DSigSecurityInHandler extends AbstractSoapInterceptor
+{
+	private static Logger logger = Log.getLogger(Log.SECURITY + ".dsig",
+			DSigSecurityInHandler.class);
+	
+	private static final String WSS_NS_STRING = "http://docs.oasis-open.org/wss/2004/01/" +
+		"oasis-200401-wss-wssecurity-secext-1.0.xsd"; 
+//	private static final Namespace WSS_NS = Namespace.getNamespace(WSS_NS_STRING);
+//	private static final Namespace XMLDS_NS = Namespace.getNamespace(
+//			"http://www.w3.org/2000/09/xmldsig#");
+	
+	private static final String XML_DS_STRING = "http://www.w3.org/2000/09/xmldsig#";
+
+	public static final QName WS_SECURITY=new QName(WSS_NS_STRING,"Security");
+	private ToBeSignedDecider partsDecider;
+	
+	private final static Set<QName>qnameSet=new HashSet<QName>();
+	static{
+		qnameSet.add(WS_SECURITY);
+	}
+	
+	public DSigSecurityInHandler(ToBeSignedDecider partsDecider)
+	{
+		super(Phase.PRE_INVOKE);
+		getAfter().add(DSigParseInHandler.class.getName());
+		getAfter().add(AuthInHandler.class.getName());
+		this.partsDecider = partsDecider;
+	}
+	
+	public void handleMessage(SoapMessage message) 
+	{
+		SecurityTokens securityTokens = (SecurityTokens) message.get(SecurityTokens.KEY);
+		if (securityTokens == null)
+		{
+			logger.error("No security context found. You should add " + 
+					AuthInHandler.class.getName() + " handler.");
+			return;
+		}
+		
+		securityTokens.setMessageSignatureStatus(SignatureStatus.UNCHECKED);
+		Document doc = (Document) message.get(DSigParseInHandler.DOCUMENT_DOM_KEY);
+		if (doc == null)
+		{
+			logger.debug("No DOM representation of message found, " +
+				"signature won't be checked");
+			return;
+		}
+		
+		long start = System.currentTimeMillis();
+		
+		if (securityTokens.getConsignorCertificate() == null)
+		{
+			logger.debug("No consignor found in security context so" +
+					" skipping signature verification.");
+			return;
+		}
+	
+		X509Certificate consignorCert = securityTokens.getConsignorCertificate();
+		//we trust that consignor was properly verified by GW or transport layer
+		PublicKey consignorsKey = consignorCert.getPublicKey();
+		
+		Header wssHeader = message.getHeader(WS_SECURITY);
+		
+		
+		if (wssHeader == null)
+		{
+			logger.debug("No security header element found, " +
+					"skipping signature verification.");
+			securityTokens.setMessageSignatureStatus(SignatureStatus.UNSIGNED);
+			return;
+		}
+		
+		Element secHeader = (Element)wssHeader.getObject();
+		
+		if (secHeader.getElementsByTagNameNS(XML_DS_STRING,"Signature").getLength()==0)
+		{
+			logger.debug("No Signature was found in header, " +
+					"skipping signature verification.");
+			securityTokens.setMessageSignatureStatus(SignatureStatus.UNSIGNED);
+			return;
+		}
+
+		long preVerify = System.currentTimeMillis();
+	        boolean signedOK;
+		@SuppressWarnings("rawtypes")
+		List signedRefs = new ArrayList();
+	        try
+	        {
+	        	logger.trace("Starting signature verification");
+	        	signedOK = verifySignature(doc, consignorsKey, signedRefs);
+	        } catch (Exception e)
+	        {
+	        	logger.warn("Error while checking signature of request: " + e + 
+	        			"\n" + e.getCause());
+			securityTokens.setMessageSignatureStatus(SignatureStatus.WRONG);
+		        return;
+	        }
+		if (signedOK)
+		{
+			logger.debug("Signature present and CORRECT");
+			if (checkCompletness(signedRefs, doc))
+				securityTokens.setMessageSignatureStatus(
+						SignatureStatus.OK);
+			else
+				securityTokens.setMessageSignatureStatus(
+						SignatureStatus.OK_BUT_NOT_IN_POLICY);
+		} else
+		{
+			logger.warn("Signature present but INCORRECT!!");
+			securityTokens.setMessageSignatureStatus(SignatureStatus.WRONG);
+		}
+		long end = System.currentTimeMillis();
+		logger.debug("Total time: " + (end-start) + " where actual verification was: " + 
+				(end-preVerify));
+	}
+	
+	@Override
+	public Set<QName> getUnderstoodHeaders() {
+		return qnameSet;
+	}
+
+	
+	@SuppressWarnings("unchecked")
+	private boolean verifySignature(Document signedDocument, PublicKey validatingKey,
+			@SuppressWarnings("rawtypes") List signedReferences) 
+		throws DSigException
+	{
+		NodeList nl = signedDocument.getElementsByTagNameNS(
+				WSS_NS_STRING, "Security");
+		if (nl.getLength() == 0)
+			throw new DSigException("Document not signed");
+		org.w3c.dom.Element securityElement = (org.w3c.dom.Element) nl.item(0);
+		nl = securityElement.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
+		if (nl.getLength() == 0)
+			throw new DSigException("Document not signed");
+		DigSignatureUtil dsigEngine = new DigSignatureUtil();
+		Node signatureNode = nl.item(0);
+		
+		signedReferences.addAll(dsigEngine.getReferencesFromSignature(signatureNode));
+		
+		return dsigEngine.verifyDetachedSignature(signedDocument, validatingKey, 
+				signatureNode);
+	}
+	
+	private boolean checkCompletness(List<?> signed, Document signedDocument)
+	{
+		Vector<WSEncryptionPart> shallBeSigned;
+		if (partsDecider != null)
+			shallBeSigned = partsDecider.getElementsToBeSigned(signedDocument);
+		else
+		{
+			shallBeSigned = new Vector<WSEncryptionPart>();
+			shallBeSigned.add(new WSEncryptionPart("Body",
+				"http://schemas.xmlsoap.org/soap/envelope/", ""));
+		}
+		Set<String> signedIds = new HashSet<String>();
+		for (Object o: signed)
+		{
+			Reference ref = (Reference) o;
+			signedIds.add(ref.getURI());
+		}
+
+		for (WSEncryptionPart part: shallBeSigned)
+		{
+			logger.trace("Required part: " + part.getName());
+			NodeList nl = signedDocument.getElementsByTagNameNS(
+					part.getNamespace(), part.getName());
+			//no such element in document so it can't be signed.
+			if (nl.getLength() == 0)
+				continue;
+			//here I'm not sure... The node list can contain more then 1 element.
+			//What to do then? I check if every one of them is signed.
+			for (int i=0; i<nl.getLength(); i++)
+				if (!checkIfNodeSigned(signedIds, nl.item(i)))
+					return false;
+		}
+		return true;
+	}
+	
+	private boolean checkIfNodeSigned(Set<String> signedIds, Node n)
+	{
+		NamedNodeMap attrs = n.getAttributes();
+		Node idAttr = attrs.getNamedItemNS(WSConstants.WSU_NS, "Id");
+		//is it ok? when no wsu:Id assume that the node isn't signed
+		if (idAttr == null)
+		{
+			logger.info("Assuming that element {" + n.getNamespaceURI() + 
+					"}" + n.getLocalName() +
+					" is not signed as it doesn't have wsu:Id attribute");
+			return false;
+		}
+		String id = "#" + idAttr.getNodeValue();//getTextContent();
+		if (signedIds.contains(id))
+				return true;
+		logger.info("Didn't find among signed references a required element: {"
+				+ n.getNamespaceURI() + "}" + n.getLocalName() + 
+				" with id " + id);
+		return false;
+	}
+}
+
+
+

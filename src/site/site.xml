@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="xfire-secutilsWithDSig">
+  <bannerLeft>
+    <name>UNICORE 6/Xfire security digital signatures support</name>
+    <src>images/unicorelogo.gif</src>
+    <href>http://www.unicore.eu/</href>
+  </bannerLeft>
+  
+  <body>
+    <menu name="UNIOCRE Security DigSig">
+      <item name="Overview" href="index.html"/>
+    </menu>
+	<menu ref="reports"/>
+  </body>
+</project>

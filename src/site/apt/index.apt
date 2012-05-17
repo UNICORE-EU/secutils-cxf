@@ -1,0 +1,17 @@
+ ----
+ UNICORE 6/XFire digital signatures support
+ ----
+ 
+Overview
+
+	This library is useful for developers who want to create either clients or servers
+with support for UNICORE 6 security including digital signing of SOAP messages. 
+The key benefit of using this module is ease of use and a minimal number of dependencies: using xfire-secutils your project 
+doesn't depend on e.g. uas-core package which is fairly big and brings many further 
+dependencies. This module is a small extension of <<<xfire-secutils>>> module. It is
+separated as it has more dependencies (namely Xalan and WSS4J).
+
+	As the module's name says it is designed for XFire based clients/services.
+
+	The usage is similar as in case of <<<xfire-secutils>>> so check its documentation 
+for introductory text. For further details please refer to JavaDocs. 

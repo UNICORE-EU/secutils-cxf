@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<FindBugsFilter>
+  <LastVersion value="-1" relOp="NEQ"/>
+  <And>
+    <Class name="eu.unicore.security.xfireutil.client.ReliableProxy"/>
+    <Method name="handleCanonicalMethods"/>
+    <Bug pattern="DM_NUMBER_CTOR"/>
+  </And>
+</FindBugsFilter>
