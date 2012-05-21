@@ -121,6 +121,12 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 		return (String)getTokens().getContext().get(SecurityTokens.CTX_SOAP_ACTION);
 	}
 	
+	@Override
+	public String TestIP() throws RemoteException {
+		SecurityTokens tokens = getTokens();
+		return tokens.getClientIP();
+	}
+
 	public static class SimpleUserAttributeHandler implements UserAttributeHandler 
 	{
 		@Override

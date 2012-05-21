@@ -36,6 +36,8 @@ import org.w3c.dom.Element;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AttributeStatementType;
 import xmlbeans.org.oasis.saml2.assertion.AttributeType;
+import xmlbeans.org.oasis.saml2.assertion.AuthnStatementType;
+import xmlbeans.org.oasis.saml2.assertion.SubjectLocalityType;
 import eu.emi.security.authn.x509.impl.CertificateUtils;
 import eu.emi.security.authn.x509.impl.FormatMode;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
@@ -301,17 +303,21 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			logger.debug("No consignor info in request -> " +
 			"request didn't come through a gateway");
 		X509Certificate[] consignor = null;
-
+		String clientIP = null;
+		
 		if (cAssertion != null && useGatewayAssertions)
 		{
 			consignor = processConsignorAssertion(cAssertion);
-			if (consignor != null)
-				logger.debug("Using consignor info from Gateway.");			
+			if (consignor != null){
+				logger.debug("Using consignor info from Gateway.");
+				clientIP = extractIPFromConsignorAssertion(cAssertion);
+			}
 		}
 
 		if (cAssertion == null && useSSLData)
 		{
 			consignor = getSSLCertPath(message);
+			clientIP = getClientIP(message);
 			if (consignor != null)
 				logger.debug("Using consignor info from SSL connection.");
 		}
@@ -323,6 +329,8 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			logger.debug("No valid Consignor info received, request is not authenticated.");
 		else
 			mainToken.setConsignor(consignor);
+		
+		mainToken.setClientIP(clientIP);
 	}	
 
 	protected X509Certificate[] getSSLCertPath(SoapMessage message)
@@ -330,6 +338,24 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		HttpServletRequest req =(HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
 		X509Certificate[] certs = (X509Certificate[])req.getAttribute("javax.servlet.request.X509Certificate");
 		return certs;
+	}
+
+	protected String getClientIP(SoapMessage message)
+	{
+		HttpServletRequest req =(HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
+		if (req == null)
+			return null; 
+		return req.getRemoteAddr();
+	}
+	protected String extractIPFromConsignorAssertion(ConsignorAssertion cAssertion)
+	{
+		AuthnStatementType[] authNs = cAssertion.getAuthStatements();
+		if (authNs == null || authNs.length == 0)
+			return null;
+		SubjectLocalityType loc = authNs[0].getSubjectLocality();
+		if (loc == null)
+			return null;
+		return loc.getAddress();
 	}
 
 	protected HTTPAuthNTokens getHTTPCredentials(SoapMessage message)

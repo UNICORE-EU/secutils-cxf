@@ -21,6 +21,8 @@ import javax.jws.WebService;
 public interface SimpleSecurityService
 {
 	@WebMethod()
+	public String TestIP() throws RemoteException;
+	@WebMethod()
 	public String TestConsignor() throws RemoteException;
 	@WebMethod()
 	public String TestUser() throws RemoteException;

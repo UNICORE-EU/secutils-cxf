@@ -57,7 +57,7 @@ public class TestGWSignedAssertions extends AbstractTestBase
 			ConsignorAssertion consignorA = engine.generateConsignorToken(
 					gwCert.getSubjectX500Principal().getName(),
 					new X509Certificate[] {consignor},
-					AuthNClasses.TLS);
+					AuthNClasses.TLS, "127.0.0.1");
 			org.apache.cxf.endpoint.Client xfireClient = ClientProxy.getClient(s);
 			GwHandler gwH = new GwHandler();
 			gwH.reinit(consignorA);
@@ -87,7 +87,7 @@ public class TestGWSignedAssertions extends AbstractTestBase
 					gwCert.getSubjectX500Principal().getName(),
 					new X509Certificate[] {consignor},
 					gwKey,
-					0, 5, AuthNClasses.TLS);
+					0, 5, AuthNClasses.TLS, "127.0.0.1");
 			Client xfireClient = ClientProxy.getClient(s);
 			GwHandler gwH = new GwHandler();
 			gwH.reinit(consignorA);

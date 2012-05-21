@@ -46,7 +46,7 @@ public class TestAuthN extends AbstractTestBase
 			ConsignorAssertion consignorA = engine.generateConsignorToken(
 					gwCredential.getCertificate().getSubjectX500Principal().getName(),
 					new X509Certificate[] {consignor},
-					AuthNClasses.TLS);
+					AuthNClasses.TLS, "127.0.0.1");
 			Client xfireClient = ClientProxy.getClient(s);
 			GwHandler gwH = new GwHandler();
 			gwH.reinit(consignorA);
@@ -56,6 +56,10 @@ public class TestAuthN extends AbstractTestBase
 			
 			String consignorRet = s.TestConsignor();
 			assertTrue(X500NameUtils.equal(consignor.getSubjectX500Principal(), consignorRet));
+			
+			String ip = s.TestIP();
+			assertEquals("127.0.0.1", ip);
+
 		} catch (Throwable e)
 		{
 			e.printStackTrace();
@@ -85,7 +89,7 @@ public class TestAuthN extends AbstractTestBase
 			ConsignorAssertion consignorA = engine.generateConsignorToken(
 					gwCredential.getCertificate().getSubjectX500Principal().getName(),
 					proxyC.getCertificateChain(),
-					AuthNClasses.TLS);
+					AuthNClasses.TLS, "127.0.0.1");
 			Client xfireClient = ClientProxy.getClient(s);
 			GwHandler gwH = new GwHandler();
 			gwH.reinit(consignorA);
