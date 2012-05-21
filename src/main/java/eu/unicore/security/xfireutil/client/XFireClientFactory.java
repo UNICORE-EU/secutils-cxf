@@ -276,7 +276,7 @@ public class XFireClientFactory {
 		//boolean gzipEnabled = Boolean.parseBoolean(properties.getProperty(GZIP_ENABLE, "true"));
 		
 		String noKeepAlive=properties.getProperty("http.disable-keep-alive","true");
-		if(Boolean.getBoolean(noKeepAlive)){
+		if(Boolean.parseBoolean(noKeepAlive)){
 			http.getClient().setConnection(ConnectionType.CLOSE);
 		}
 		

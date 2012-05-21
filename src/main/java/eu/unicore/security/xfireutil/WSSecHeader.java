@@ -47,8 +47,8 @@ public class WSSecHeader
 	public static final String ATTR_UNDERSTAND = "mustUnderstand";
 
 
-	private String actor;
-	private boolean mustUnderstand;
+	private final String actor;
+	private final boolean mustUnderstand;
 
 	/**
 	 * Creates instance with no actor set.
@@ -111,13 +111,17 @@ public class WSSecHeader
 	public Element findWSSecElement(List<Header> headers)
 	{
 		for(Header h: headers){
+			System.out.println("header "+h.getName());
 			if(!h.getName().equals(wsse))continue;
 
 			Element e = (Element)h.getObject();
-			String a=e.getAttributeNS(SOAP11_URI, ATTR_ACTOR);
-			if (a == null && actor == null)
+			boolean isActorSet=e.hasAttributeNS(SOAP11_URI, ATTR_ACTOR);
+					 
+			if (!isActorSet && actor == null)
 				return e;
-			if (actor != null && a != null && actor.equals(a))
+			
+			String a=e.getAttributeNS(SOAP11_URI, ATTR_ACTOR);
+			if (actor != null && actor.equals(a))
 				return e;
 		}
 

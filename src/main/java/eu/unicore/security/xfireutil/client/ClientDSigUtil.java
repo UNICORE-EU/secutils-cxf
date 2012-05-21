@@ -10,7 +10,6 @@ package eu.unicore.security.xfireutil.client;
 
 import java.util.List;
 
-import org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
 
@@ -68,19 +67,22 @@ public class ClientDSigUtil
 			DSigDecider decider, ToBeSignedDecider partsDecider)
 	{
 		List<?> outHandlers = xfireClient.getOutInterceptors();
-		DSigOutHandler dsHandler = null;
+	
 		for (Object h: outHandlers)
 			if (h instanceof DSigOutHandler)
 			{
-				dsHandler = (DSigOutHandler)h;
-				outHandlers.remove(dsHandler);
+				outHandlers.remove(h);
 				break;
 			}
-		dsHandler = new DSigOutHandler(securityCfg, decider, partsDecider);
-		xfireClient.getOutInterceptors().add(new SAAJOutInterceptor());
-		xfireClient.getOutInterceptors().add(dsHandler);
-		xfireClient.getOutInterceptors().add(new LogOutMessageHandler());
 		
+		for (Object h: outHandlers)
+			if (h instanceof OnDemandSAAJOutInterceptor)
+			{
+				outHandlers.remove(h);
+				break;
+			}
+		xfireClient.getOutInterceptors().add(new OnDemandSAAJOutInterceptor(decider));
+		xfireClient.getOutInterceptors().add(new DSigOutHandler(securityCfg, decider, partsDecider));
 	}
 
 	/**
@@ -108,7 +110,7 @@ public class ClientDSigUtil
 		for (int i=outHandlers.size()-1; i>=0; i--)
 		{
 			Object h = outHandlers.get(i);
-			if (h instanceof DSigOutHandler)
+			if (h instanceof DSigOutHandler || h instanceof OnDemandSAAJOutInterceptor)
 				outHandlers.remove(i);
 		}
 	}

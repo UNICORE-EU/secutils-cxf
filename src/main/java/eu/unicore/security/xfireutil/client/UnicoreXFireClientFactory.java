@@ -45,15 +45,11 @@ import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.message.Message;
 import org.apache.log4j.Logger;
 
+import eu.unicore.security.util.Log;
 import eu.unicore.security.util.client.DefaultClientConfiguration;
 import eu.unicore.security.util.client.IClientConfiguration;
-import eu.unicore.security.util.Log;
 import eu.unicore.security.xfireutil.OperationsRequiringSignature;
 import eu.unicore.security.xfireutil.RequiresSignature;
-import eu.unicore.security.xfireutil.client.ContextDSigDecider;
-import eu.unicore.security.xfireutil.client.DSigOutHandler;
-import eu.unicore.security.xfireutil.client.ExtendedTDOutHandler;
-import eu.unicore.security.xfireutil.client.XFireClientFactory;
 
 /**
  * Extends {@link eu.unicore.security.xfireutil.client.XFireClientFactory}. 
@@ -98,8 +94,11 @@ public class UnicoreXFireClientFactory extends XFireClientFactory
 		IClientConfiguration security = (IClientConfiguration) securityProperties;
 		
 		addHandlers(outHandlers, security.getOutHandlerClassNames());
-		if (security.doSignMessage())
+		if (security.doSignMessage()){
+			outHandlers.add(new OnDemandSAAJOutInterceptor(decider));
 			outHandlers.add(new DSigOutHandler(security.getCredential(), decider));
+		}
+			
 		if (security.getETDSettings() != null)
 			outHandlers.add(new ExtendedTDOutHandler(security));
 
@@ -143,6 +142,7 @@ public class UnicoreXFireClientFactory extends XFireClientFactory
 	protected <T> void setupProxyInterface(Class<T> iFace, Client xfireClient, 
 			IClientConfiguration cnf, Properties properties)
 	{
+		super.setupProxyInterface(iFace, xfireClient, cnf, properties);
 		xfireClient.getRequestContext().put(ContextDSigDecider.SIGNED_OPERATIONS, 
 				getOperationsToSign(iFace));
 	}

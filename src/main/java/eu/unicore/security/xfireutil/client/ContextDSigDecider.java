@@ -32,28 +32,26 @@ public class ContextDSigDecider implements DSigDecider
 	
 	public boolean isMessageDSigCandidate(Message message)
 	{
-		if(MessageUtils.isOutbound(message))
+		if(MessageUtils.isOutbound(message)){
 			return clientCall(message);
+		}
 		
 		return false;
 	}
 
-	private boolean clientCall(Message ctx)
+	private boolean clientCall(Message message)
 	{
 		//manually set (e.g. for non-WSA call)?
-		if (Boolean.TRUE.equals(ctx.get(SIGN_MESSAGE)))
+		if (Boolean.TRUE.equals(message.get(SIGN_MESSAGE)))
 			return true;
 		
-		//TODO
-		
 		@SuppressWarnings("unchecked")
-		Set<String> signedOperations = (Set<String>) ctx.get(SIGNED_OPERATIONS);
+		Set<String> signedOperations = (Set<String>) message.get(SIGNED_OPERATIONS);
 		if (signedOperations == null)
 			return false;
 		
-		//check if this request was signed, decided by SOAP /WSA action
-		
-		String action=CXFUtils.getAction(ctx.getExchange());
+		//check if this request should be signed, decided by SOAP/WSA action
+		String action=CXFUtils.getAction(message);
 		if (action==null)
 			return false;
 		

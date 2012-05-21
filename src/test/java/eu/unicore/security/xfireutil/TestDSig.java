@@ -69,9 +69,8 @@ public class TestDSig extends AbstractTestBase
 			MockSecurityConfig config = new MockSecurityConfig(
 					false, true, true); 
 			SimpleSecurityService s = makeProxy(config);
-
 			ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, null);
-			
+
 			String sigRet = s.TestSignature();
 			assertTrue(SignatureStatus.OK.name().equals(sigRet));
 		} catch (Throwable e)
@@ -145,11 +144,10 @@ public class TestDSig extends AbstractTestBase
 			String sigRet = s.TestSignature();
 			assertTrue(SignatureStatus.OK_BUT_NOT_IN_POLICY.name().equals(sigRet));
 			
-			
 			ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, null);
-			
 			sigRet = s.TestSignature();
 			assertTrue(SignatureStatus.OK.name().equals(sigRet));
+
 		} catch (Throwable e)
 		{
 			e.printStackTrace();

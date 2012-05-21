@@ -131,6 +131,7 @@ public class DSigOutHandler extends AbstractSoapInterceptor
 	{
 		if (disabled || (decider != null && !decider.isMessageDSigCandidate(message)))
 			return;
+		
 		long start = System.currentTimeMillis();
 		//build DOM
 		Document docToSign;

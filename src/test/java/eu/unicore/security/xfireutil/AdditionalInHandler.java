@@ -16,7 +16,7 @@ public class AdditionalInHandler extends AbstractSoapInterceptor
 {
 	public AdditionalInHandler()
 	{
-		super(Phase.INVOKE);
+		super(Phase.PRE_INVOKE);
 	}
 	
 	public void handleMessage(SoapMessage ctx)
@@ -35,11 +35,14 @@ public class AdditionalInHandler extends AbstractSoapInterceptor
 		{
 			return;
 		}
-		if (wsSecEl == null)
+		if (wsSecEl == null){
 			return;
+		}
+		
 		Element el =DOMUtils.getFirstChildWithName(wsSecEl, "http://test.org", "Tola");
-		if (el != null)
+		if (el != null){
 			msg.put("tola", new Boolean(true));
+		}
 	}
 }
 

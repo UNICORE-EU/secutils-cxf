@@ -16,7 +16,7 @@ import javax.jws.WebService;
 /**
  * @author K. Benedyczak
  */
-@WebService()
+@WebService(targetNamespace="http://xfireutil.security.unicore.eu")
 @OperationsRequiringSignature(operations={"TestSignature2Action"})
 public interface SimpleSecurityService
 {

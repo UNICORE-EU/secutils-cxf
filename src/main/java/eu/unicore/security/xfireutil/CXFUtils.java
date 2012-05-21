@@ -23,10 +23,6 @@ public class CXFUtils {
 		return msg.getDestination().getAddress().getAddress().getValue().startsWith("local://");
 	}
 
-	public static String getAction(Exchange exchange){
-		return getAction(exchange.getInMessage());
-	}
-
 	public static String getAction(Message message){
 		if(message==null)return null;
 		
