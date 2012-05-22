@@ -45,20 +45,24 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.configuration.security.ProxyAuthorizationPolicy;
+import org.apache.cxf.databinding.AbstractDataBinding;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.interceptor.Interceptor;
+import org.apache.cxf.jaxb.JAXBDataBinding;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.cxf.jaxws.endpoint.dynamic.JaxWsDynamicClientFactory;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.ConnectionType;
 import org.apache.cxf.transports.http.configuration.ProxyServerType;
+import org.apache.cxf.xmlbeans.XmlBeansDataBinding;
 import org.apache.log4j.Logger;
 
 import eu.unicore.security.util.Log;
 import eu.unicore.security.util.client.HttpUtils;
 import eu.unicore.security.util.client.IClientConfiguration;
+import eu.unicore.security.xfireutil.XmlBinding;
 
 /**
  * Helper to create web service clients using XFire. This class will configure 
@@ -134,6 +138,9 @@ public class XFireClientFactory {
 	{
 		JaxWsProxyFactoryBean factory=new JaxWsProxyFactoryBean();
 		factory.setAddress(url);
+		AbstractDataBinding binding=getBinding(iFace);
+		logger.debug("Using databinding "+binding.getClass().getName());
+		factory.setDataBinding(binding);
 		T proxy=factory.create(iFace);
 		doAddHandlers(proxy);
 		setupProxy(proxy, securityProperties, settings, url);
@@ -379,4 +386,17 @@ public class XFireClientFactory {
 		client.executeMethod(method);
 		return method.getResponseBodyAsString();
 	}
+	
+	public static AbstractDataBinding getBinding(Class<?>clazz){
+		XmlBinding annot=(XmlBinding)clazz.getAnnotation(XmlBinding.class);
+		if(annot==null || "xmlbeans".equalsIgnoreCase(annot.name())){
+			return new XmlBeansDataBinding();
+		}
+		else if("jaxb".equalsIgnoreCase(annot.name())){
+			return new JAXBDataBinding();
+		}
+		
+		throw new IllegalArgumentException("Unknown databinding: "+annot.name());
+	}
+	
 }

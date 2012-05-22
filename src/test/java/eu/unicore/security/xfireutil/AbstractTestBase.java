@@ -42,6 +42,7 @@ public abstract class AbstractTestBase extends TestCase
 		factory.setBus(servlet.getBus());
 		factory.setEndpointName(serviceQName);
 		factory.setAddress("/"+serviceName);
+		//factory.setDataBinding(getBinding(iFace));
 		
 		List<Interceptor<? extends Message>> s = factory.getInInterceptors();
 		addHandlers(s);
