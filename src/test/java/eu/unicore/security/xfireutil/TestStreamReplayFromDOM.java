@@ -13,7 +13,6 @@ import junit.framework.TestCase;
 
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamReader;
-import org.codehaus.xfire.util.stax.W3CDOMStreamReader2;
 import org.w3c.dom.Document;
 
 import eu.unicore.security.dsig.StandaloneCanonizer;

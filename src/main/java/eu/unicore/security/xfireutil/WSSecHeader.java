@@ -73,7 +73,6 @@ public class WSSecHeader
 
 	public Element getOrInsertWSSecElement(List<Header> headers)
 	{
-
 		//TODO
 		//if (!isSOAP11(header))
 		//	throw new Exception("Unsupported SOAP version");
@@ -111,7 +110,6 @@ public class WSSecHeader
 	public Element findWSSecElement(List<Header> headers)
 	{
 		for(Header h: headers){
-			System.out.println("header "+h.getName());
 			if(!h.getName().equals(wsse))continue;
 
 			Element e = (Element)h.getObject();

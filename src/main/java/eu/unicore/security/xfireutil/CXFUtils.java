@@ -1,8 +1,16 @@
 package eu.unicore.security.xfireutil;
 
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.headers.Header;
@@ -12,6 +20,7 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.service.invoker.MethodDispatcher;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.ws.addressing.Names;
+import org.w3c.dom.Node;
 
 public class CXFUtils {
 
@@ -60,4 +69,18 @@ public class CXFUtils {
 		return md.getMethod(bop);
 	}
 
+	/**
+	 * write DOM node to output stream in raw format (no indent)
+	 * @param n
+	 * @param os
+	 * @throws TransformerException
+	 */
+	public static void writeXml(Node n, OutputStream os) throws TransformerException{
+		TransformerFactory tf = TransformerFactory.newInstance();
+		// identity
+		Transformer t = tf.newTransformer();
+		t.setOutputProperty(OutputKeys.INDENT, "no");
+		t.transform(new DOMSource(n), new StreamResult(os));
+	}
+	
 }

@@ -440,7 +440,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		try
 		{
 			ByteArrayOutputStream os=new ByteArrayOutputStream();
-			DOMUtils.writeXml(assertions.get(0), os);
+			CXFUtils.writeXml(assertions.get(0), os);
 			AssertionDocument aDoc = AssertionDocument.Factory.parse(os.toString());
 			ConsignorAssertion ca = new ConsignorAssertion(aDoc);
 			assertions.remove(0);

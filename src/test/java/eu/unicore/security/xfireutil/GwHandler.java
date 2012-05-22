@@ -17,7 +17,6 @@ import org.apache.cxf.headers.Header;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.phase.Phase;
 import org.apache.log4j.Logger;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -68,6 +67,7 @@ public class GwHandler extends AbstractSoapInterceptor
 		}
 	}
 
+
 	public void handleMessage(SoapMessage context)
 	{
 		List<Header>h=context.getHeaders();
@@ -76,7 +76,7 @@ public class GwHandler extends AbstractSoapInterceptor
 		{
 			Header header=new Header(AssertionDocument.type.getDocumentElementName(),assertionAsJDOM);
 			h.add(header);
-			
+
 			if (logger.isTraceEnabled()){
 				try
 				{

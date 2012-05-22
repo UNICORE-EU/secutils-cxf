@@ -6,18 +6,22 @@
   <packaging>jar</packaging>
   <version>1.0.0-SNAPSHOT</version>
   <name>secutils-cxf</name>
+
   <parent>
     <groupId>eu.unicore</groupId>
     <artifactId>unicore-parent-endorsed</artifactId>
     <version>1.8</version>
   </parent>
+
   <properties>
     <cxf.version>2.6.0</cxf.version>
   </properties>
+
   <scm>
     <connection>scm:svn:https://unicore.svn.sourceforge.net/svnroot/unicore/securityFramework/secutils-cxf/trunk</connection>
     <developerConnection>scm:svn:https://unicore.svn.sourceforge.net/svnroot/unicore/securityFramework/secutils-cxf/trunk</developerConnection>
   </scm>
+
   <developers>
     <developer>
       <name>Krzysztof Benedyczak</name>
@@ -85,12 +89,7 @@
       <artifactId>xalan</artifactId>
       <version>2.7.1</version>
     </dependency>
-    <!-- jdom -->
-    <dependency>
-      <groupId>jdom</groupId>
-      <artifactId>jdom</artifactId>
-      <version>1.0</version>
-    </dependency>
+
     <!-- cxf stuff -->
     <dependency>
       <groupId>org.apache.cxf</groupId>
@@ -107,14 +106,8 @@
       <artifactId>cxf-rt-transports-http</artifactId>
       <version>${cxf.version}</version>
     </dependency>
-    <!-- we enforce newer version of wstx parser as the one used by xfire normally 
-			is buggy -->
-    <dependency>
-      <groupId>org.codehaus.woodstox</groupId>
-      <artifactId>wstx-asl</artifactId>
-      <version>3.2.4</version>
-    </dependency>
   </dependencies>
+
   <repositories>
     <repository>
       <id>unicore.eu</id>
@@ -122,6 +115,7 @@
       <url>http://unicore-dev.zam.kfa-juelich.de/maven</url>
     </repository>
   </repositories>
+
   <build>
     <plugins>
       <plugin>
@@ -133,4 +127,5 @@
       </plugin>
     </plugins>
   </build>
+
 </project>

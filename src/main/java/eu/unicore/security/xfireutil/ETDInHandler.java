@@ -44,7 +44,6 @@ import javax.security.auth.x500.X500Principal;
 
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
-import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.phase.Phase;
 import org.apache.log4j.Logger;
@@ -350,7 +349,7 @@ public class ETDInHandler extends AbstractSoapInterceptor
 			ByteArrayOutputStream os=new ByteArrayOutputStream();
 			try
 			{
-				DOMUtils.writeXml(assertions.get(i), os);
+				CXFUtils.writeXml(assertions.get(i), os);
 				//bruteforce - try to parse - if ok, than use it.
 				TrustDelegation tmp;
 			
