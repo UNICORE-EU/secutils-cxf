@@ -27,7 +27,7 @@ import eu.emi.security.authn.x509.impl.FormatMode;
 import eu.emi.security.authn.x509.impl.SocketFactoryCreator;
 import eu.unicore.security.util.Log;
 import eu.unicore.security.util.LoggingX509TrustManager;
-import eu.unicore.security.util.client.HostnameToCertificateChecker;
+import eu.unicore.security.util.client.HostnameMismatchCallbackImpl;
 import eu.unicore.security.util.client.IClientConfiguration;
 import eu.unicore.security.util.client.NoAuthKeyManager;
 
@@ -38,7 +38,7 @@ import eu.unicore.security.util.client.NoAuthKeyManager;
  * 
  * 
  * <p>
- * AuthSSLProtocolSocketFactory validate the identity of the HTTPS server 
+ * MySSLSocketFactory validates the identity of the HTTPS server 
  * using a provided {@link X509CertChainValidator}, can present {@link X509Credential} 
  * to authenticate the client and install a standard 
  * </p>
@@ -167,7 +167,7 @@ public class MySSLSocketFactory extends SSLSocketFactory
 		{
 			Socket socket = socketfactory.createSocket(host, port,
 					localAddress, localPort); 
-			addListeners((SSLSocket) socket);
+			checkHostname((SSLSocket) socket);
 			return socket;
 		} else
 		{
@@ -178,19 +178,16 @@ public class MySSLSocketFactory extends SSLSocketFactory
 					port);
 			socket.bind(localaddr);
 			socket.connect(remoteaddr, timeout);
-			addListeners((SSLSocket) socket);
+			checkHostname((SSLSocket) socket);
 			return socket;
 		}
 	}
 
-	private void addListeners(SSLSocket socket) throws IOException
+	private void checkHostname(SSLSocket socket) throws IOException
 	{
-		HostnameToCertificateChecker checker = new HostnameToCertificateChecker(
+		HostnameMismatchCallbackImpl callback = new HostnameMismatchCallbackImpl(
 				sec.getServerHostnameCheckingMode());
-		socket.addHandshakeCompletedListener(checker);
-		socket.startHandshake();
-		socket.getSession();
-		checker.waitForFinished();
+		SocketFactoryCreator.connectWithHostnameChecking(socket, callback);
 	}
 	
 	/**
@@ -202,7 +199,7 @@ public class MySSLSocketFactory extends SSLSocketFactory
 	{
 		Socket socket = getSSLContext().getSocketFactory().createSocket(host, 
 				port, clientHost, clientPort);
-		addListeners((SSLSocket) socket);
+		checkHostname((SSLSocket) socket);
 		return socket;
 	}
 
@@ -214,7 +211,7 @@ public class MySSLSocketFactory extends SSLSocketFactory
 	{
 		Socket socket = getSSLContext().getSocketFactory().createSocket(host,
 				port);
-		addListeners((SSLSocket) socket);
+		checkHostname((SSLSocket) socket);
 		return socket;
 	}
 
@@ -227,7 +224,7 @@ public class MySSLSocketFactory extends SSLSocketFactory
 	{
 		Socket socket2 = getSSLContext().getSocketFactory().createSocket(socket,
 				host, port, autoClose);
-		addListeners((SSLSocket) socket2);		
+		checkHostname((SSLSocket) socket2);
 		return socket2;
 	}
 
@@ -243,15 +240,16 @@ public class MySSLSocketFactory extends SSLSocketFactory
 
 	@Override
 	public Socket createSocket(InetAddress host, int port) throws IOException {
-		return getSSLContext().getSocketFactory().createSocket(host,port);
+		Socket socket = getSSLContext().getSocketFactory().createSocket(host,port);
+		checkHostname((SSLSocket) socket);
+		return socket;
 	}
 
 	@Override
 	public Socket createSocket(InetAddress address, int port,
 			InetAddress localAddress, int localPort) throws IOException {
-		return getSSLContext().getSocketFactory().createSocket(address, port, localAddress, localPort);
+		Socket socket = getSSLContext().getSocketFactory().createSocket(address, port, localAddress, localPort);
+		checkHostname((SSLSocket) socket);
+		return socket;
 	}
-	
-	
-	
 }
