@@ -1,8 +1,4 @@
-1) check if W3CDOMStreamReader2 is still needed
-
-2) Soap v12 checks are removed/disabled in WSSecHeader
-
-3) Signature checks fail?
+ - Soap v12 checks are removed/disabled in WSSecHeader
 
 Expected downstream changes:
 

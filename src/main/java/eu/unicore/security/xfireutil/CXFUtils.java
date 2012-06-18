@@ -19,6 +19,7 @@ import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.service.invoker.MethodDispatcher;
 import org.apache.cxf.service.model.BindingOperationInfo;
+import org.apache.cxf.transport.servlet.ServletDestination;
 import org.apache.cxf.ws.addressing.Names;
 import org.w3c.dom.Node;
 
@@ -29,7 +30,7 @@ public class CXFUtils {
 	}
 
 	public static boolean isLocalCall(Message msg){
-		return msg.getDestination().getAddress().getAddress().getValue().startsWith("local://");
+		return msg.getDestination()==null || !(msg.getDestination() instanceof ServletDestination);
 	}
 
 	public static String getAction(Message message){
