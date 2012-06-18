@@ -17,9 +17,12 @@ import org.apache.cxf.headers.Header;
 import org.apache.cxf.helpers.CastUtils;
 import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
+import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.apache.cxf.service.invoker.MethodDispatcher;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.transport.servlet.ServletDestination;
+import org.apache.cxf.ws.addressing.AddressingProperties;
+import org.apache.cxf.ws.addressing.ContextUtils;
 import org.apache.cxf.ws.addressing.Names;
 import org.w3c.dom.Node;
 
@@ -83,5 +86,19 @@ public class CXFUtils {
 		t.setOutputProperty(OutputKeys.INDENT, "no");
 		t.transform(new DOMSource(n), new StreamResult(os));
 	}
+
 	
+	/**
+	 * get the current message (stored thread-locally)
+	 */
+	public static Message getCurrentMessage(){
+		return PhaseInterceptorChain.getCurrentMessage();
+	}
+	
+	/**
+	 * get the ws-addressing properties from the current message
+	 */
+	public static AddressingProperties getAddressingProperties(){
+		return ContextUtils.retrieveMAPs(getCurrentMessage(), false, false);
+	}
 }
