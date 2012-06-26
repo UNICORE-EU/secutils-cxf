@@ -156,9 +156,11 @@ public class TestAuthN extends AbstractTestBase
 			System.out.println("\nTest no SSL\n");
 			MockSecurityConfig config = new MockSecurityConfig(false, false, false); 
 			SimpleSecurityService s = makeProxy(config);
-			
-			String consignorRet = s.TestConsignor();
-			assertTrue(consignorRet == null);
+			for (int i=0; i<1000; i++)
+			{
+				String consignorRet = s.TestConsignor();
+				assertTrue(consignorRet == null);
+			}
 		} catch (Throwable e)
 		{
 			e.printStackTrace();
