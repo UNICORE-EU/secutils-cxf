@@ -25,8 +25,8 @@ import org.w3c.dom.Element;
 
 import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.security.user.UserAssertion;
-import eu.unicore.security.util.Log;
 import eu.unicore.security.xfireutil.WSSecHeader;
+import eu.unicore.util.Log;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 
 /**

@@ -20,7 +20,7 @@ import org.apache.ws.security.WSConstants;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import eu.unicore.security.util.Log;
+import eu.unicore.util.Log;
 
 
 

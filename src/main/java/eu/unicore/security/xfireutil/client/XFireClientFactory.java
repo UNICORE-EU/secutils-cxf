@@ -59,10 +59,10 @@ import org.apache.cxf.transports.http.configuration.ProxyServerType;
 import org.apache.cxf.xmlbeans.XmlBeansDataBinding;
 import org.apache.log4j.Logger;
 
-import eu.unicore.security.util.Log;
-import eu.unicore.security.util.client.HttpUtils;
-import eu.unicore.security.util.client.IClientConfiguration;
 import eu.unicore.security.xfireutil.XmlBinding;
+import eu.unicore.util.Log;
+import eu.unicore.util.httpclient.HttpUtils;
+import eu.unicore.util.httpclient.IClientConfiguration;
 
 /**
  * Helper to create web service clients using XFire. This class will configure 

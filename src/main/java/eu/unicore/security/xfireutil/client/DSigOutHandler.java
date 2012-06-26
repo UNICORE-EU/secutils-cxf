@@ -31,8 +31,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import eu.emi.security.authn.x509.X509Credential;
-import eu.unicore.security.util.Log;
 import eu.unicore.security.xfireutil.DSigDecider;
+import eu.unicore.util.Log;
 
 
 /**

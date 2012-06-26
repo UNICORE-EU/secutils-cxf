@@ -53,13 +53,13 @@ import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import eu.emi.security.authn.x509.X509CertChainValidator;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.security.SecurityTokens;
+import eu.unicore.security.SelfCallChecker;
 import eu.unicore.security.TrustDelegationException;
 import eu.unicore.security.UnicoreSecurityFactory;
 import eu.unicore.security.ValidationResult;
 import eu.unicore.security.etd.ETDApi;
 import eu.unicore.security.etd.TrustDelegation;
-import eu.unicore.security.util.Log;
-import eu.unicore.security.util.SelfCallChecker;
+import eu.unicore.util.Log;
 
 /**
  * Checks trust delegation<br/>

@@ -31,8 +31,8 @@ import eu.unicore.security.SecurityTokens;
 import eu.unicore.security.SignatureStatus;
 import eu.unicore.security.dsig.DSigException;
 import eu.unicore.security.dsig.DigSignatureUtil;
-import eu.unicore.security.util.Log;
 import eu.unicore.security.xfireutil.client.ToBeSignedDecider;
+import eu.unicore.util.Log;
 
 
 /**

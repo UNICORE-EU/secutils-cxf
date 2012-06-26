@@ -25,11 +25,11 @@ import eu.emi.security.authn.x509.X509Credential;
 import eu.emi.security.authn.x509.impl.CertificateUtils;
 import eu.emi.security.authn.x509.impl.FormatMode;
 import eu.emi.security.authn.x509.impl.SocketFactoryCreator;
-import eu.unicore.security.util.Log;
-import eu.unicore.security.util.LoggingX509TrustManager;
-import eu.unicore.security.util.client.HostnameMismatchCallbackImpl;
-import eu.unicore.security.util.client.IClientConfiguration;
-import eu.unicore.security.util.client.NoAuthKeyManager;
+import eu.unicore.security.canl.LoggingX509TrustManager;
+import eu.unicore.util.Log;
+import eu.unicore.util.httpclient.HostnameMismatchCallbackImpl;
+import eu.unicore.util.httpclient.IClientConfiguration;
+import eu.unicore.util.httpclient.NoAuthKeyManager;
 
 
 /**

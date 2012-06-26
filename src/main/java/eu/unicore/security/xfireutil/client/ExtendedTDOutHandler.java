@@ -28,9 +28,9 @@ import eu.unicore.security.etd.ETDApi;
 import eu.unicore.security.etd.InconsistentTDChainException;
 import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.security.user.UserAssertion;
-import eu.unicore.security.util.Log;
-import eu.unicore.security.util.client.ETDClientSettings;
-import eu.unicore.security.util.client.IClientConfiguration;
+import eu.unicore.util.Log;
+import eu.unicore.util.httpclient.ETDClientSettings;
+import eu.unicore.util.httpclient.IClientConfiguration;
 
 
 /**

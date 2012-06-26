@@ -13,16 +13,17 @@ import java.net.URL;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.cxf.transport.servlet.CXFNonSpringServlet;
-import org.mortbay.jetty.servlet.Context;
-import org.mortbay.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 
 import eu.emi.security.authn.x509.impl.KeystoreCertChainValidator;
 import eu.emi.security.authn.x509.impl.KeystoreCredential;
-import eu.unicore.security.util.ConfigurationException;
-import eu.unicore.security.util.client.DefaultClientConfiguration;
-import eu.unicore.security.util.jetty.JettyLogger;
-import eu.unicore.security.util.jetty.JettyProperties;
-import eu.unicore.security.util.jetty.JettyServerBase;
+import eu.unicore.util.configuration.ConfigurationException;
+import eu.unicore.util.httpclient.DefaultClientConfiguration;
+import eu.unicore.util.jetty.JettyLogger;
+import eu.unicore.util.jetty.JettyProperties;
+import eu.unicore.util.jetty.JettyServerBase;
 
 
 
@@ -62,16 +63,17 @@ public class JettyServer extends JettyServerBase
 
 	private static JettyProperties getJettyProperties() 
 	{
-		JettyProperties ret = getSimpleTestSettings();
+		JettyProperties ret = JettyProperties.getSimpleTestSettings();
 		ret.setProperty(JettyProperties.REQUIRE_CLIENT_AUTHN, "false");
 		return ret;
 	}
 	
 	@Override
-	protected Context createRootContext() throws ConfigurationException
+	protected Handler createRootHandler() throws ConfigurationException
 	{
-		Context root=new Context(getServer(), "/", Context.SESSIONS);
+		ServletContextHandler root = new ServletContextHandler(getServer(), "/", ServletContextHandler.SESSIONS);
 		root.addServlet(new ServletHolder(servlet), "/services/*");
 		return root;
+
 	}
 }

@@ -5,7 +5,7 @@ import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.transport.http.HTTPConduit;
 
-import eu.unicore.security.util.client.HttpUtils;
+import eu.unicore.util.httpclient.HttpUtils;
 
 public class TestClient extends AbstractTestBase{
 

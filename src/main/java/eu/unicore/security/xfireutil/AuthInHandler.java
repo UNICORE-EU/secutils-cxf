@@ -48,7 +48,7 @@ import eu.unicore.security.UserAttributeHandler;
 import eu.unicore.security.consignor.ConsignorAPI;
 import eu.unicore.security.consignor.ConsignorAssertion;
 import eu.unicore.security.user.UserAssertion;
-import eu.unicore.security.util.Log;
+import eu.unicore.util.Log;
 
 /**
  * Security in-handler for Unicore6. Extracts consignor and user information

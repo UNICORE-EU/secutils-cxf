@@ -13,10 +13,10 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.transport.servlet.CXFNonSpringServlet;
 
 import eu.emi.security.authn.x509.impl.KeystoreCertChainValidator;
-import eu.unicore.security.util.client.IClientConfiguration;
 import eu.unicore.security.xfireutil.client.LogInMessageHandler;
 import eu.unicore.security.xfireutil.client.UnicoreXFireClientFactory;
 import eu.unicore.security.xfireutil.client.XFireClientFactory;
+import eu.unicore.util.httpclient.IClientConfiguration;
 
 /**
  * @author schuller

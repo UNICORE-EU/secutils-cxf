@@ -16,9 +16,9 @@ import org.apache.cxf.staxutils.W3CDOMStreamReader;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 
-import eu.unicore.security.util.DOMUtilities;
-import eu.unicore.security.util.Log;
+import eu.unicore.security.dsig.DOMUtilities;
 import eu.unicore.security.xfireutil.client.LogInMessageHandler;
+import eu.unicore.util.Log;
 
 
 

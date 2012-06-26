@@ -1,6 +1,6 @@
 package eu.unicore.security.xfireutil.client;
 
-import eu.unicore.security.util.client.IClientConfiguration;
+import eu.unicore.util.httpclient.IClientConfiguration;
 
 /**
  * allows to configure a handler with security properties

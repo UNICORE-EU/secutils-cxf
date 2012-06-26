@@ -45,11 +45,11 @@ import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.message.Message;
 import org.apache.log4j.Logger;
 
-import eu.unicore.security.util.Log;
-import eu.unicore.security.util.client.DefaultClientConfiguration;
-import eu.unicore.security.util.client.IClientConfiguration;
 import eu.unicore.security.xfireutil.OperationsRequiringSignature;
 import eu.unicore.security.xfireutil.RequiresSignature;
+import eu.unicore.util.Log;
+import eu.unicore.util.httpclient.DefaultClientConfiguration;
+import eu.unicore.util.httpclient.IClientConfiguration;
 
 /**
  * Extends {@link eu.unicore.security.xfireutil.client.XFireClientFactory}. 

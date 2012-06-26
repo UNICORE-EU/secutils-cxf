@@ -11,8 +11,8 @@ package eu.unicore.security.xfireutil;
 import eu.emi.security.authn.x509.X509Credential;
 import eu.emi.security.authn.x509.impl.KeystoreCertChainValidator;
 import eu.emi.security.authn.x509.impl.KeystoreCredential;
-import eu.unicore.security.util.client.DefaultClientConfiguration;
-import eu.unicore.security.util.client.IClientConfiguration;
+import eu.unicore.util.httpclient.DefaultClientConfiguration;
+import eu.unicore.util.httpclient.IClientConfiguration;
 
 
 /**
