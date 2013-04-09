@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.xml.crypto.dsig.Reference;
 import javax.xml.crypto.dsig.XMLSignature;
 import javax.xml.namespace.QName;
 
@@ -18,12 +17,9 @@ import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
 import org.apache.cxf.phase.Phase;
 import org.apache.log4j.Logger;
-import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.WSEncryptionPart;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -31,6 +27,7 @@ import eu.unicore.security.SecurityTokens;
 import eu.unicore.security.SignatureStatus;
 import eu.unicore.security.dsig.DSigException;
 import eu.unicore.security.dsig.DigSignatureUtil;
+import eu.unicore.security.dsig.IdAttribute;
 import eu.unicore.security.xfireutil.client.ToBeSignedDecider;
 import eu.unicore.util.Log;
 
@@ -57,23 +54,25 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 {
 	private static Logger logger = Log.getLogger(Log.SECURITY + ".dsig",
 			DSigSecurityInHandler.class);
-	
+
 	private static final String WSS_NS_STRING = "http://docs.oasis-open.org/wss/2004/01/" +
-		"oasis-200401-wss-wssecurity-secext-1.0.xsd"; 
-//	private static final Namespace WSS_NS = Namespace.getNamespace(WSS_NS_STRING);
-//	private static final Namespace XMLDS_NS = Namespace.getNamespace(
-//			"http://www.w3.org/2000/09/xmldsig#");
-	
+			"oasis-200401-wss-wssecurity-secext-1.0.xsd"; 
+
 	private static final String XML_DS_STRING = "http://www.w3.org/2000/09/xmldsig#";
 
 	public static final QName WS_SECURITY=new QName(WSS_NS_STRING,"Security");
+
+	private static final String WSSUTIL_NS_STRING = 
+			"http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd";
+	public static final IdAttribute WS_ID_ATTRIBUTE=new IdAttribute(WSSUTIL_NS_STRING, "Id");
+
 	private ToBeSignedDecider partsDecider;
-	
+
 	private final static Set<QName>qnameSet=new HashSet<QName>();
 	static{
 		qnameSet.add(WS_SECURITY);
 	}
-	
+
 	public DSigSecurityInHandler(ToBeSignedDecider partsDecider)
 	{
 		super(Phase.PRE_INVOKE);
@@ -81,7 +80,13 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 		getAfter().add(AuthInHandler.class.getName());
 		this.partsDecider = partsDecider;
 	}
-	
+
+	@Override
+	public Set<QName> getUnderstoodHeaders() {
+		return qnameSet;
+	}
+
+
 	public void handleMessage(SoapMessage message) 
 	{
 		SecurityTokens securityTokens = (SecurityTokens) message.get(SecurityTokens.KEY);
@@ -91,32 +96,18 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 					AuthInHandler.class.getName() + " handler.");
 			return;
 		}
-		
+
 		securityTokens.setMessageSignatureStatus(SignatureStatus.UNCHECKED);
 		Document doc = (Document) message.get(DSigParseInHandler.DOCUMENT_DOM_KEY);
 		if (doc == null)
 		{
 			logger.debug("No DOM representation of message found, " +
-				"signature won't be checked");
+					"signature won't be checked");
 			return;
 		}
-		
-		long start = System.currentTimeMillis();
-		
-		if (securityTokens.getConsignorCertificate() == null)
-		{
-			logger.debug("No consignor found in security context so" +
-					" skipping signature verification.");
-			return;
-		}
-	
-		X509Certificate consignorCert = securityTokens.getConsignorCertificate();
-		//we trust that consignor was properly verified by GW or transport layer
-		PublicKey consignorsKey = consignorCert.getPublicKey();
-		
+
 		Header wssHeader = message.getHeader(WS_SECURITY);
-		
-		
+
 		if (wssHeader == null)
 		{
 			logger.debug("No security header element found, " +
@@ -124,9 +115,9 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 			securityTokens.setMessageSignatureStatus(SignatureStatus.UNSIGNED);
 			return;
 		}
-		
+
 		Element secHeader = (Element)wssHeader.getObject();
-		
+
 		if (secHeader.getElementsByTagNameNS(XML_DS_STRING,"Signature").getLength()==0)
 		{
 			logger.debug("No Signature was found in header, " +
@@ -135,30 +126,55 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 			return;
 		}
 
-		long preVerify = System.currentTimeMillis();
-	        boolean signedOK;
-		@SuppressWarnings("rawtypes")
-		List signedRefs = new ArrayList();
-	        try
-	        {
-	        	logger.trace("Starting signature verification");
-	        	signedOK = verifySignature(doc, consignorsKey, signedRefs);
-	        } catch (Exception e)
-	        {
-	        	logger.warn("Error while checking signature of request: " + e + 
-	        			"\n" + e.getCause());
+		try
+		{
+			verify(securityTokens, doc, secHeader);
+		} catch (Exception e)
+		{
+			logger.warn("Error while checking signature of request: " + e + 
+					"\n" + e.getCause());
 			securityTokens.setMessageSignatureStatus(SignatureStatus.WRONG);
-		        return;
-	        }
+			return;
+		}
+
+	}
+
+	/**
+	 * @param securityTokens
+	 * @param doc DOM document
+	 * @param secHeader WS-Security header INCLUDING signature
+	 * @throws Exception
+	 */
+	protected void verify(SecurityTokens securityTokens, Document doc, Element secHeader)throws Exception{
+		long start = System.currentTimeMillis();
+
+		if (securityTokens.getConsignorCertificate() == null)
+		{
+			logger.debug("No consignor found in security context so" +
+					" skipping signature verification.");
+			return;
+		}
+		X509Certificate consignorCert = securityTokens.getConsignorCertificate();
+		//we trust that consignor was properly verified by GW or transport layer
+		PublicKey consignorsKey = consignorCert.getPublicKey();
+
+		long preVerify = System.currentTimeMillis();
+		boolean signedOK;
+		try
+		{
+			logger.trace("Starting signature verification");
+			signedOK = verifySignature(doc, consignorsKey);
+		} catch (Exception e)
+		{
+			logger.warn("Error while checking signature of request: " + e + 
+					"\n" + e.getCause());
+			securityTokens.setMessageSignatureStatus(SignatureStatus.WRONG);
+			return;
+		}
 		if (signedOK)
 		{
 			logger.debug("Signature present and CORRECT");
-			if (checkCompletness(signedRefs, doc))
-				securityTokens.setMessageSignatureStatus(
-						SignatureStatus.OK);
-			else
-				securityTokens.setMessageSignatureStatus(
-						SignatureStatus.OK_BUT_NOT_IN_POLICY);
+			securityTokens.setMessageSignatureStatus(SignatureStatus.OK);
 		} else
 		{
 			logger.warn("Signature present but INCORRECT!!");
@@ -168,36 +184,53 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 		logger.debug("Total time: " + (end-start) + " where actual verification was: " + 
 				(end-preVerify));
 	}
-	
-	@Override
-	public Set<QName> getUnderstoodHeaders() {
-		return qnameSet;
-	}
 
-	
-	@SuppressWarnings("unchecked")
-	private boolean verifySignature(Document signedDocument, PublicKey validatingKey,
-			@SuppressWarnings("rawtypes") List signedReferences) 
-		throws DSigException
-	{
+	private boolean verifySignature(Document signedDocument, PublicKey validatingKey) 
+			throws DSigException
+			{
 		NodeList nl = signedDocument.getElementsByTagNameNS(
 				WSS_NS_STRING, "Security");
 		if (nl.getLength() == 0)
 			throw new DSigException("Document not signed");
+		if (nl.getLength() > 1)
+			throw new DSigException("Document contains more then one wss:Security element. This is not supported and may indicate an attack on XML digital signature.");
 		org.w3c.dom.Element securityElement = (org.w3c.dom.Element) nl.item(0);
-		nl = securityElement.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
-		if (nl.getLength() == 0)
+
+		List<org.w3c.dom.Element> signatures = getChildElements(securityElement, XMLSignature.XMLNS, "Signature");
+		if (signatures.size() == 0)
 			throw new DSigException("Document not signed");
+		if (signatures.size() > 1)
+			throw new DSigException("Document's wss:Security element contains more then one dsig:Signature element. This is not supported and may indicate an attack on XML digital signature.");
 		DigSignatureUtil dsigEngine = new DigSignatureUtil();
-		Node signatureNode = nl.item(0);
-		
-		signedReferences.addAll(dsigEngine.getReferencesFromSignature(signatureNode));
-		
-		return dsigEngine.verifyDetachedSignature(signedDocument, validatingKey, 
-				signatureNode);
+		Node signatureNode = signatures.get(0);
+		List<org.w3c.dom.Element> required = getRequiredElements(signedDocument);
+
+		return dsigEngine.verifyDetachedSignature(signedDocument, required, WS_ID_ATTRIBUTE, 
+				validatingKey, signatureNode);
+			}
+
+	private List<org.w3c.dom.Element> getChildElements(org.w3c.dom.Element from, String ns, String localName)
+	{
+		List<org.w3c.dom.Element> ret = new ArrayList<org.w3c.dom.Element>();
+		NodeList children = from.getChildNodes();
+		for (int i=0; i<children.getLength(); i++)
+		{
+			Node child = children.item(i);
+			if (!(child instanceof org.w3c.dom.Element))
+				continue;
+			org.w3c.dom.Element childE = (org.w3c.dom.Element) child;
+			if (localName.equals(childE.getLocalName()) && ns.equals(childE.getNamespaceURI()))
+				ret.add(childE);
+		}
+		return ret;
 	}
-	
-	private boolean checkCompletness(List<?> signed, Document signedDocument)
+
+	/**
+	 * @param signedDocument
+	 * @return a list of DOM elements which should be signed according to our policy. If policy
+	 * is not set only the Body element is returned.
+	 */
+	private List<org.w3c.dom.Element> getRequiredElements(Document signedDocument)
 	{
 		Vector<WSEncryptionPart> shallBeSigned;
 		if (partsDecider != null)
@@ -206,15 +239,9 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 		{
 			shallBeSigned = new Vector<WSEncryptionPart>();
 			shallBeSigned.add(new WSEncryptionPart("Body",
-				"http://schemas.xmlsoap.org/soap/envelope/", ""));
+					"http://schemas.xmlsoap.org/soap/envelope/", ""));
 		}
-		Set<String> signedIds = new HashSet<String>();
-		for (Object o: signed)
-		{
-			Reference ref = (Reference) o;
-			signedIds.add(ref.getURI());
-		}
-
+		List<org.w3c.dom.Element> ret = new ArrayList<org.w3c.dom.Element>();
 		for (WSEncryptionPart part: shallBeSigned)
 		{
 			logger.trace("Required part: " + part.getName());
@@ -223,35 +250,14 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 			//no such element in document so it can't be signed.
 			if (nl.getLength() == 0)
 				continue;
-			//here I'm not sure... The node list can contain more then 1 element.
-			//What to do then? I check if every one of them is signed.
+			//The node list can contain more then 1 element.
+			//We check if every one of them is signed.
 			for (int i=0; i<nl.getLength(); i++)
-				if (!checkIfNodeSigned(signedIds, nl.item(i)))
-					return false;
+				ret.add((org.w3c.dom.Element)nl.item(i));
 		}
-		return true;
+		return ret;
 	}
-	
-	private boolean checkIfNodeSigned(Set<String> signedIds, Node n)
-	{
-		NamedNodeMap attrs = n.getAttributes();
-		Node idAttr = attrs.getNamedItemNS(WSConstants.WSU_NS, "Id");
-		//is it ok? when no wsu:Id assume that the node isn't signed
-		if (idAttr == null)
-		{
-			logger.info("Assuming that element {" + n.getNamespaceURI() + 
-					"}" + n.getLocalName() +
-					" is not signed as it doesn't have wsu:Id attribute");
-			return false;
-		}
-		String id = "#" + idAttr.getNodeValue();//getTextContent();
-		if (signedIds.contains(id))
-				return true;
-		logger.info("Didn't find among signed references a required element: {"
-				+ n.getNamespaceURI() + "}" + n.getLocalName() + 
-				" with id " + id);
-		return false;
-	}
+
 }
 
 

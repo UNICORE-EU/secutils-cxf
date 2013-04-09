@@ -10,7 +10,7 @@ package eu.unicore.security.xfireutil;
 
 import java.security.cert.X509Certificate;
 
-import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLException;
 
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
@@ -156,13 +156,8 @@ public class TestAuthN extends AbstractTestBase
 			System.out.println("\nTest no SSL\n");
 			MockSecurityConfig config = new MockSecurityConfig(false, false, false); 
 			SimpleSecurityService s = makeProxy(config);
-			
-			//this for is additional test for deadlocks in connection handling (TODO: create a separate, simplified, test)
-			for (int i=0; i<1000; i++)
-			{
-				String consignorRet = s.TestConsignor();
-				assertTrue(consignorRet == null);
-			}
+			String consignorRet = s.TestConsignor();
+			assertTrue(consignorRet == null);
 		} catch (Throwable e)
 		{
 			e.printStackTrace();
@@ -187,7 +182,7 @@ public class TestAuthN extends AbstractTestBase
 			while (ee != null) 
 			{
 				ee = ee.getCause();
-				if (ee instanceof SSLHandshakeException)
+				if (ee instanceof SSLException)
 				{
 					correctCause = true;
 					break;
@@ -226,7 +221,7 @@ public class TestAuthN extends AbstractTestBase
 			while (ee != null) 
 			{
 				ee = ee.getCause();
-				if (ee instanceof SSLHandshakeException)
+				if (ee instanceof SSLException)
 				{
 					correctCause = true;
 					break;
@@ -246,11 +241,18 @@ public class TestAuthN extends AbstractTestBase
 		{
 			System.out.println("\nTest HTTP\n");
 			MockSecurityConfig config = new MockSecurityConfig(true, false, false); 
+			config.getExtraSettings().put("http.disable-keep-alive","true");
+			config.getExtraSettings().put("http.allow-chunking","true");
 			SimpleSecurityService s = makeProxy(config);
 			
-			String httpRet = s.TestHTTPCreds();
-			String http = MockSecurityConfig.HTTP_USER + "-" + MockSecurityConfig.HTTP_PASSWD;
-			assertTrue(http.equals(httpRet));
+			int n=10;
+			
+			for (int i=0; i<n; i++)
+			{
+				String httpRet = s.TestHTTPCreds();
+				String http = MockSecurityConfig.HTTP_USER + "-" + MockSecurityConfig.HTTP_PASSWD;
+				assertTrue(http.equals(httpRet));
+			}
 			
 		} catch (Throwable e)
 		{

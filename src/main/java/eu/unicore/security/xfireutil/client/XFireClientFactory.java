@@ -279,6 +279,7 @@ public class XFireClientFactory {
 			logger.warn("Illegal socket timeout specified: "+socketTimeout);
 		}
 		
+		
 		//TODO gzip - how? Probably there is some interceptor for it?!
 		//boolean gzipEnabled = Boolean.parseBoolean(properties.getProperty(GZIP_ENABLE, "true"));
 		
@@ -286,6 +287,10 @@ public class XFireClientFactory {
 		if(Boolean.parseBoolean(noKeepAlive)){
 			http.getClient().setConnection(ConnectionType.CLOSE);
 		}
+		
+		// chunking
+		String allowChunking=properties.getProperty("http.allow-chunking","true");
+		http.getClient().setAllowChunking(Boolean.parseBoolean(allowChunking));
 		
 	}
 

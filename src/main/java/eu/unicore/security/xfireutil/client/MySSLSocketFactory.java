@@ -78,7 +78,7 @@ public class MySSLSocketFactory extends SSLSocketFactory
 			}
 			
 			X509TrustManager tm = SocketFactoryCreator.getSSLTrustManager(sec.getValidator());
-			tm = new LoggingX509TrustManager(tm);
+			tm = new LoggingX509TrustManager(tm,"ssl");
 			if (log.isTraceEnabled())
 				debugTS(sec.getValidator());
 			

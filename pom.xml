@@ -14,7 +14,8 @@
   </parent>
 
   <properties>
-    <cxf.version>2.6.0</cxf.version>
+    <cxf.version>2.7.4</cxf.version>
+    <jetty.version>8.1.4.v20120524</jetty.version>
   </properties>
 
   <scm>
@@ -45,23 +46,34 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>8.1.4.v20120524</version>
+      <version>${jetty.version}</version> 
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlets</artifactId>
-      <version>8.1.4.v20120524</version>
+      <version>${jetty.version}</version>
     </dependency>
     <dependency>
       <groupId>eu.unicore.security</groupId>
       <artifactId>securityLibrary</artifactId>
-      <version>3.0.0-SNAPSHOT</version>
+      <version>3.0.1</version>
     </dependency>
     <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
-	</dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+                  	<exclusions>
+				<exclusion>
+					<artifactId>commons-logging</artifactId>
+					<groupId>commons-logging</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.1</version>
+		</dependency>
     <dependency>
       <groupId>org.apache.ws.security</groupId>
       <artifactId>wss4j</artifactId>

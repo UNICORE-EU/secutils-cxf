@@ -21,8 +21,8 @@ import eu.emi.security.authn.x509.impl.KeystoreCertChainValidator;
 import eu.emi.security.authn.x509.impl.KeystoreCredential;
 import eu.unicore.util.configuration.ConfigurationException;
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
+import eu.unicore.util.jetty.HttpServerProperties;
 import eu.unicore.util.jetty.JettyLogger;
-import eu.unicore.util.jetty.JettyProperties;
 import eu.unicore.util.jetty.JettyServerBase;
 
 
@@ -61,13 +61,14 @@ public class JettyServer extends JettyServerBase
 		initServer();
 	}
 
-	private static JettyProperties getJettyProperties() 
+	private static HttpServerProperties getJettyProperties() 
 	{
-		JettyProperties ret = JettyProperties.getSimpleTestSettings();
-		ret.setProperty(JettyProperties.REQUIRE_CLIENT_AUTHN, "false");
+		HttpServerProperties ret = HttpServerProperties.getSimpleTestSettings();
+		ret.setProperty(HttpServerProperties.REQUIRE_CLIENT_AUTHN, "false");
+		ret.setProperty(HttpServerProperties.USE_NIO, "false");
 		return ret;
 	}
-	
+
 	@Override
 	protected Handler createRootHandler() throws ConfigurationException
 	{

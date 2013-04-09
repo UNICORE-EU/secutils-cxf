@@ -87,10 +87,7 @@ import eu.unicore.util.Log;
 public class AuthInHandler extends AbstractSoapInterceptor
 {
 	protected static final Logger logger = Log.getLogger(Log.SECURITY, AuthInHandler.class);
-
-//	public static final Namespace SAML2_NS = Namespace.getNamespace(
-//			"urn:oasis:names:tc:SAML:2.0:assertion");
-
+	
 	public static final String SAML2_NS = "urn:oasis:names:tc:SAML:2.0:assertion";
 	/**
 	 * Under this key in the context of SecurityTokens all saml assertions that were not consumed by
@@ -347,6 +344,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			return null; 
 		return req.getRemoteAddr();
 	}
+
 	protected String extractIPFromConsignorAssertion(ConsignorAssertion cAssertion)
 	{
 		AuthnStatementType[] authNs = cAssertion.getAuthStatements();
