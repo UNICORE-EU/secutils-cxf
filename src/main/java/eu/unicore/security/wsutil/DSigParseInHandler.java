@@ -6,10 +6,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.apache.cxf.binding.soap.SoapMessage;
+import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.binding.soap.interceptor.ReadHeadersInterceptor;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.message.Message;
-import org.apache.cxf.phase.AbstractPhaseInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamReader;
@@ -41,7 +42,7 @@ import eu.unicore.util.Log;
  * 
  * @author K. Benedyczak
  */
-public class DSigParseInHandler extends AbstractPhaseInterceptor<Message>
+public class DSigParseInHandler extends AbstractSoapInterceptor
 {
 	protected static final Logger logger = Log.getLogger(Log.SECURITY + ".dsig",
 			DSigParseInHandler.class);
@@ -62,7 +63,7 @@ public class DSigParseInHandler extends AbstractPhaseInterceptor<Message>
 		this.decider = decider;
 	}
 
-	public void handleMessage(Message message){
+	public void handleMessage(SoapMessage message){
 		if (decider == null || decider.isMessageDSigCandidate(message)){
 			try{
 				buildDOM(message);
