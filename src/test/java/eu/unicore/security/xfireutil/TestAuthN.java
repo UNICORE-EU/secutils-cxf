@@ -245,8 +245,7 @@ public class TestAuthN extends AbstractTestBase
 			config.getExtraSettings().put("http.allow-chunking","true");
 			SimpleSecurityService s = makeProxy(config);
 			
-			int n=10;
-			
+			int n=5000;
 			for (int i=0; i<n; i++)
 			{
 				String httpRet = s.TestHTTPCreds();
@@ -270,10 +269,13 @@ public class TestAuthN extends AbstractTestBase
 			MockSecurityConfig config = new MockSecurityConfig(true, false, false); 
 			SimpleSecurityService s = makePlainProxy(config);
 			
-			String httpRet = s.TestHTTPCreds();
-			String http = MockSecurityConfig.HTTP_USER + "-" + MockSecurityConfig.HTTP_PASSWD;
-			assertTrue(http.equals(httpRet));
-			
+			int n=100;
+			for (int i=0; i<n; i++)
+			{
+				String httpRet = s.TestHTTPCreds();
+				String http = MockSecurityConfig.HTTP_USER + "-" + MockSecurityConfig.HTTP_PASSWD;
+				assertTrue(http.equals(httpRet));
+			}
 		} catch (Throwable e)
 		{
 			e.printStackTrace();

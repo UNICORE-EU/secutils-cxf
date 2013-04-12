@@ -33,6 +33,7 @@ public abstract class AbstractTestBase extends TestCase
 	
 	protected void setUp() throws Exception
 	{
+		System.setProperty("javax.net.debug","ssl,handshake");
 		CXFNonSpringServlet servlet=new CXFNonSpringServlet();
 		jetty = new JettyServer(servlet);
 		jetty.start();

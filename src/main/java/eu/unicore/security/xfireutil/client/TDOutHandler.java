@@ -252,15 +252,16 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 				Header header=new Header(AssertionDocument.type.getDocumentElementName(),userAssertionAsJDOM);
 				h.add(header);
 			}
-			if (logger.isTraceEnabled())
+			if (logger.isTraceEnabled()){
 				try
-			{
+				{
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
 					DOMUtils.writeXml(userAssertionAsJDOM, bos);
 					logger.trace("User assertion:\n" + bos.toString());
-			} catch(Exception e)
-			{
-				logger.warn("Can't output user assertion", e);
+				} catch(Exception e)
+				{
+					logger.warn("Can't output user assertion", e);
+				}
 			}
 		}
 	}
