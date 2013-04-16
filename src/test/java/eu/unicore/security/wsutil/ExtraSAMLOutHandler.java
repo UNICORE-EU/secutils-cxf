@@ -44,7 +44,7 @@ public class ExtraSAMLOutHandler extends AbstractSoapInterceptor
 		Element wsSecEl = sec.getOrInsertWSSecElement(h);
 		try{
 			Assertion a = new Assertion();
-			Document doc=DOMUtils.readXml(a.getXML().newInputStream());
+			Document doc=DOMUtils.readXml(a.getXMLBeanDoc().newInputStream());
 			Document parent=wsSecEl.getOwnerDocument();
 			wsSecEl.appendChild(parent.importNode(doc.getDocumentElement(),true));
 		}catch(Exception e){

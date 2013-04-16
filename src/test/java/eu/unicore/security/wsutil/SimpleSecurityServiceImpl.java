@@ -30,7 +30,7 @@ import eu.unicore.security.etd.TrustDelegation;
 /**
  * @author K. Benedyczak
  */
-@WebService(endpointInterface="eu.unicore.security.xfireutil.SimpleSecurityService")
+@WebService(endpointInterface="eu.unicore.security.wsutil.SimpleSecurityService")
 public class SimpleSecurityServiceImpl implements SimpleSecurityService
 {
 	

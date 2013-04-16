@@ -5,17 +5,17 @@ import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.transport.http.HTTPConduit;
 
-import eu.unicore.util.httpclient.HttpUtils;
+import eu.unicore.util.httpclient.HttpClientProperties;
 
 public class TestClient extends AbstractTestBase{
 
 	public void testHttpProxySettings()throws Exception{
 
 		MockSecurityConfig sec = new MockSecurityConfig(true, false, false); 
-		sec.getExtraSettings().setProperty(HttpUtils.HTTP_PROXY_HOST, "http://foo");
-		sec.getExtraSettings().setProperty(HttpUtils.HTTP_PROXY_PORT, "123");
-		sec.getExtraSettings().setProperty(HttpUtils.HTTP_PROXY_USER, "user");
-		sec.getExtraSettings().setProperty(HttpUtils.HTTP_PROXY_PASS, "pass");
+		sec.getHttpClientProperties().setProperty(HttpClientProperties.HTTP_PROXY_HOST, "http://foo");
+		sec.getHttpClientProperties().setProperty(HttpClientProperties.HTTP_PROXY_PORT, "123");
+		sec.getHttpClientProperties().setProperty(HttpClientProperties.HTTP_PROXY_USER, "user");
+		sec.getHttpClientProperties().setProperty(HttpClientProperties.HTTP_PROXY_PASS, "pass");
 		SimpleSecurityService s = makeProxy(sec);
 		
 		Client xfc=ClientProxy.getClient(s);

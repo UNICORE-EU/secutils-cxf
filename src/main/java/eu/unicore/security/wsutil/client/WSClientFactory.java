@@ -38,10 +38,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.io.IOUtils;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.configuration.security.ProxyAuthorizationPolicy;
@@ -57,10 +55,14 @@ import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.ConnectionType;
 import org.apache.cxf.transports.http.configuration.ProxyServerType;
 import org.apache.cxf.xmlbeans.XmlBeansDataBinding;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.log4j.Logger;
 
 import eu.unicore.security.wsutil.XmlBinding;
 import eu.unicore.util.Log;
+import eu.unicore.util.httpclient.HttpClientProperties;
 import eu.unicore.util.httpclient.HttpUtils;
 import eu.unicore.util.httpclient.IClientConfiguration;
 
@@ -75,17 +77,9 @@ import eu.unicore.util.httpclient.IClientConfiguration;
 public class WSClientFactory {
 
 	protected static final Logger logger = Log.getLogger(Log.CLIENT, WSClientFactory.class);
-
-	//FIXME - this configuration should go to one place
-	/** Whether to enable gzip compression*/
-	public static final String GZIP_ENABLE = "http.gzipEnable";
-	/** Whether to log incoming responses */
-	public static final String LOG_INCOMING = "log.incoming";
-	/** Whether to log outgoing requests */
-	public static final String LOG_OUTGOING = "log.outgoing";
 	
 	protected IClientConfiguration securityProperties;
-	protected Properties settings;
+	protected HttpClientProperties settings;
 	
 	protected List<Interceptor<? extends Message>> inHandlers;
 	protected List<Interceptor<? extends Message>> outHandlers;
@@ -99,10 +93,10 @@ public class WSClientFactory {
 	{
 		if (securityCfg == null)
 			throw new IllegalArgumentException("IAuthenticationConfiguration can not be null");
-		if (securityCfg.getExtraSettings() == null)
-			throw new IllegalArgumentException("Properties can not be null");
+		if (securityCfg.getHttpClientProperties() == null)
+			throw new IllegalArgumentException("HTTP settings can not be null");
 		this.securityProperties = securityCfg.clone();
-		this.settings = securityCfg.getExtraSettings();
+		this.settings=securityProperties.getHttpClientProperties();
 		initHandlers();
 	}
 
@@ -110,14 +104,13 @@ public class WSClientFactory {
 	{
 		faultHandlers = new ArrayList<Interceptor<? extends Message>>();
 		inHandlers = new ArrayList<Interceptor<? extends Message>>();
-		if("true".equals(settings.getProperty(LOG_INCOMING))){
-			inHandlers.add(new LogInMessageHandler());
-		}
-		inHandlers.add(new CheckUnderstoodHeadersHandler());
 		outHandlers = new ArrayList<Interceptor<? extends Message>>();
-		if("true".equals(settings.getProperty(LOG_OUTGOING))){
+		
+		if(securityProperties.isMessageLogging()){
+			inHandlers.add(new LogInMessageHandler());	
 			outHandlers.add(new LogOutMessageHandler());
 		}
+		inHandlers.add(new CheckUnderstoodHeadersHandler());
 		outHandlers.add(new CheckUnderstoodHeadersHandler());
 	}
 	
@@ -143,14 +136,13 @@ public class WSClientFactory {
 		factory.setDataBinding(binding);
 		T proxy=factory.create(iFace);
 		doAddHandlers(proxy);
-		setupProxy(proxy, securityProperties, settings, url);
-		setupProxyInterface(iFace, getXfireClient(proxy), 
-				securityProperties, settings);
+		setupProxy(proxy, url);
+		setupProxyInterface(iFace, getXfireClient(proxy));
 		return proxy;
 	}
 	
-	protected <T> void setupProxyInterface(Class<T> iFace, Client xfireClient, 
-			IClientConfiguration cnf, Properties properties)
+	//TODO can this be removed?
+	protected <T> void setupProxyInterface(Class<T> iFace, Client xfireClient)
 	{
 	}
 
@@ -168,7 +160,7 @@ public class WSClientFactory {
 	{
 		JaxWsDynamicClientFactory dcf = JaxWsDynamicClientFactory.newInstance();
 		Client client=dcf.createClient(url);
-		setupProxy(client,securityProperties,settings,url);
+		setupProxy(client,url);
 		return client;
 	}
 
@@ -240,77 +232,59 @@ public class WSClientFactory {
 	 * @param properties
 	 * @param uri
 	 */
-	protected void setupProxy(Client client, IClientConfiguration cnf, 
-		Properties properties, String uri)
+	protected void setupWSClientProxy(Client client, String uri)
 	{
-
 		HTTPConduit http = (HTTPConduit) client.getConduit();
 		
-		if(cnf.doHttpAuthn()){
+		if(securityProperties.doHttpAuthn()){
 			AuthorizationPolicy httpAuth=new AuthorizationPolicy();
-			httpAuth.setUserName(cnf.getHttpUser());
-			httpAuth.setPassword(cnf.getHttpPassword());
+			httpAuth.setUserName(securityProperties.getHttpUser());
+			httpAuth.setPassword(securityProperties.getHttpPassword());
 			http.setAuthorization(httpAuth);
 		}
 		
 		if (!isLocal(uri))
 		{
-			
 			TLSClientParameters params = new TLSClientParameters();
-			params.setSSLSocketFactory(new MySSLSocketFactory(cnf));
+			params.setSSLSocketFactory(new MySSLSocketFactory(securityProperties));
 			params.setDisableCNCheck(true);
 			http.setTlsClientParameters(params);
-			
-			configureHttpProxy(http, uri, properties);
+			configureHttpProxy(http, uri);
 		}
 		
 		//timeouts
-		String connectTimeout=properties.getProperty(HttpUtils.CONNECT_TIMEOUT, "30000");
-		try{
-			http.getClient().setConnectionTimeout(Integer.parseInt(connectTimeout));
-		}catch(NumberFormatException fe){
-			logger.warn("Illegal connection timeout specified: "+connectTimeout);
-		}
-		
-		String socketTimeout=properties.getProperty(HttpUtils.SO_TIMEOUT, "60000");
-		try{
-			http.getClient().setReceiveTimeout(Integer.parseInt(socketTimeout));
-		}catch(NumberFormatException fe){
-			logger.warn("Illegal socket timeout specified: "+socketTimeout);
-		}
-		
+		http.getClient().setConnectionTimeout(settings.getIntValue(HttpClientProperties.CONNECT_TIMEOUT));
+		http.getClient().setReceiveTimeout(settings.getIntValue(HttpClientProperties.SO_TIMEOUT));
 		
 		//TODO gzip - how? Probably there is some interceptor for it?!
 		//boolean gzipEnabled = Boolean.parseBoolean(properties.getProperty(GZIP_ENABLE, "true"));
 		
-		String noKeepAlive=properties.getProperty("http.disable-keep-alive","true");
-		if(Boolean.parseBoolean(noKeepAlive)){
+		if(settings.getBooleanValue(HttpClientProperties.CONNECTION_CLOSE)){
 			http.getClient().setConnection(ConnectionType.CLOSE);
 		}
 		
-		// chunking
-		String allowChunking=properties.getProperty("http.allow-chunking","true");
-		http.getClient().setAllowChunking(Boolean.parseBoolean(allowChunking));
+		boolean allowChunking=settings.getBooleanValue(HttpClientProperties.ALLOW_CHUNKING);
+		http.getClient().setAllowChunking(allowChunking);
 		
 	}
 
-	private void configureHttpProxy(HTTPConduit http, String uri, Properties properties){
-		if (isNonProxyHost(uri, properties)) 
+	private void configureHttpProxy(HTTPConduit http, String uri){
+		if (isNonProxyHost(uri)) 
 			return;
 
 		// Setup the proxy settings
-		String proxyHost = (String) properties.getProperty(HttpUtils.HTTP_PROXY_HOST);
+		String proxyHost = settings.getValue(HttpClientProperties.HTTP_PROXY_HOST);
 		if (proxyHost == null)
 		{
-			proxyHost = System.getProperty(HttpUtils.HTTP_PROXY_HOST);
+			proxyHost = System.getProperty("http."+HttpClientProperties.HTTP_PROXY_HOST);
 		}
 
 		if (proxyHost != null && proxyHost.trim().length()>0)
 		{ 
-			String portS = (String) properties.getProperty(HttpUtils.HTTP_PROXY_PORT);
+			String portS = settings.getValue(HttpClientProperties.HTTP_PROXY_PORT);
 			if (portS == null)
 			{
-				portS = System.getProperty(HttpUtils.HTTP_PROXY_PORT);
+				portS = System.getProperty("http."+HttpClientProperties.HTTP_PROXY_PORT);
 			}
 			int port = 80;
 			if (portS != null)
@@ -319,18 +293,14 @@ public class WSClientFactory {
 			http.getClient().setProxyServer(proxyHost);
 			http.getClient().setProxyServerPort(port);
 			
-			String proxyType=properties.getProperty("http.proxyType");
-			if(proxyType!=null){
-				if("SOCKS".equalsIgnoreCase(proxyType)){
-					http.getClient().setProxyServerType(ProxyServerType.SOCKS);
-				}
-			}
+			String proxyType=settings.getValue(HttpClientProperties.HTTP_PROXY_TYPE);
+			http.getClient().setProxyServerType(ProxyServerType.fromValue(proxyType));
 			
-			String user=properties.getProperty(HttpUtils.HTTP_PROXY_USER);
+			String user=settings.getValue(HttpClientProperties.HTTP_PROXY_USER);
 			if(user!=null){
 				ProxyAuthorizationPolicy ap=new ProxyAuthorizationPolicy();
 				ap.setUserName(user);
-				String password=properties.getProperty(HttpUtils.HTTP_PROXY_PASS);
+				String password=settings.getValue(HttpClientProperties.HTTP_PROXY_PASS);
 				if(password!=null){
 					ap.setPassword(password);
 				}
@@ -340,8 +310,8 @@ public class WSClientFactory {
 
 	}
 
-	private boolean isNonProxyHost(String uri, Properties properties){
-		String nonProxyHosts=properties.getProperty(HttpUtils.HTTP_NON_PROXY_HOSTS);
+	private boolean isNonProxyHost(String uri){
+		String nonProxyHosts=settings.getValue(HttpClientProperties.HTTP_NON_PROXY_HOSTS);
 		if(nonProxyHosts==null)return false;
 		try{
 			URI u=new URI(uri);
@@ -364,10 +334,9 @@ public class WSClientFactory {
 	 * @param proxy Proxy to be configured.
 	 * @param cnf Security configuration.
 	 */
-	protected void setupProxy(Object proxy, IClientConfiguration cnf, 
-		Properties properties, String uri)
+	protected void setupProxy(Object proxy, String uri)
 	{
-		setupProxy(getXfireClient(proxy), cnf, properties, uri);
+		setupWSClientProxy(getXfireClient(proxy), uri);
 	}
 	
 	public static Client getXfireClient(Object proxy)
@@ -387,9 +356,9 @@ public class WSClientFactory {
 	{
 		HttpClient client = HttpUtils.createClient(url, sec);
 		String wsdlurl = url + "?wsdl";
-		GetMethod method = new GetMethod(wsdlurl);
-		client.executeMethod(method);
-		return method.getResponseBodyAsString();
+		HttpGet method = new HttpGet(wsdlurl);
+		HttpResponse response=client.execute(method);
+		return IOUtils.toString(response.getEntity().getContent());
 	}
 	
 	public static AbstractDataBinding getBinding(Class<?>clazz){

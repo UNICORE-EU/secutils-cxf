@@ -57,7 +57,7 @@ public class GwHandler extends AbstractSoapInterceptor
 		assertionAsJDOM = null;
 		try
 		{
-			AssertionDocument ad = assertion.getXML();
+			AssertionDocument ad = assertion.getXMLBeanDoc();
 			Document doc=DOMUtils.readXml(ad.newInputStream());
 			assertionAsJDOM=doc.getDocumentElement();
 		} catch(Exception e)

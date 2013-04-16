@@ -18,7 +18,6 @@ import eu.unicore.security.SignatureStatus;
 import eu.unicore.security.wsutil.client.ClientDSigUtil;
 import eu.unicore.security.wsutil.client.ToBeSignedDecider;
 import eu.unicore.security.wsutil.client.UnicoreWSClientFactory;
-import eu.unicore.security.wsutil.client.WSClientFactory;
 
 public class TestDSig extends AbstractTestBase
 {
@@ -88,8 +87,6 @@ public class TestDSig extends AbstractTestBase
 			System.out.println("\nTest Good signature\n");
 			MockSecurityConfig config = new MockSecurityConfig(
 					false, true, true);
-			config.getExtraSettings().setProperty(WSClientFactory.LOG_INCOMING, "true");
-			config.getExtraSettings().setProperty(WSClientFactory.LOG_OUTGOING, "true");
 			SimpleSecurityService s = makeSecuredProxy(config);
 
 			String sigRet = s.TestSignature();

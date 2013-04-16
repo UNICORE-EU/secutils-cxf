@@ -13,10 +13,6 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.transport.servlet.CXFNonSpringServlet;
 
 import eu.emi.security.authn.x509.impl.KeystoreCertChainValidator;
-import eu.unicore.security.wsutil.AuthInHandler;
-import eu.unicore.security.wsutil.DSigParseInHandler;
-import eu.unicore.security.wsutil.DSigSecurityInHandler;
-import eu.unicore.security.wsutil.ETDInHandler;
 import eu.unicore.security.wsutil.client.LogInMessageHandler;
 import eu.unicore.security.wsutil.client.UnicoreWSClientFactory;
 import eu.unicore.security.wsutil.client.WSClientFactory;
@@ -37,7 +33,6 @@ public abstract class AbstractTestBase extends TestCase
 	
 	protected void setUp() throws Exception
 	{
-		System.setProperty("javax.net.debug","ssl,handshake");
 		CXFNonSpringServlet servlet=new CXFNonSpringServlet();
 		jetty = new JettyServer(servlet);
 		jetty.start();

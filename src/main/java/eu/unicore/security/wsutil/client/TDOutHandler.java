@@ -172,7 +172,7 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 			try
 			{
 				for (TrustDelegation td: assertionList){
-						Element el=DOMUtils.readXml(td.getXML().newInputStream()).getDocumentElement();
+						Element el=DOMUtils.readXml(td.getXMLBeanDoc().newInputStream()).getDocumentElement();
 						assertionListAsJDOM.add(el);
 				}
 				logger.debug("Initialised TD Outhandler with " +
@@ -189,7 +189,7 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 		{
 			try
 			{
-				AssertionDocument user = userA.getXML();
+				AssertionDocument user = userA.getXMLBeanDoc();
 				userAssertionAsJDOM=DOMUtils.readXml(user.newInputStream()).getDocumentElement();
 			} catch(Exception e)
 			{
@@ -216,7 +216,7 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 		{
 			logger.trace("TD DUMP begin");
 			for(TrustDelegation td: assertionList)
-				logger.trace(td.getXML().toString());
+				logger.trace(td.getXMLBeanDoc().toString());
 			logger.trace("TD DUMP end");		
 		}
 

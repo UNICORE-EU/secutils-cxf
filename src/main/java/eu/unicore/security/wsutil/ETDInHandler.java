@@ -36,6 +36,8 @@ package eu.unicore.security.wsutil;
 import java.io.ByteArrayOutputStream;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -62,6 +64,9 @@ import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.util.Log;
 
 /**
+ * 
+ * FIXME needs review for U7
+ * 
  * Checks trust delegation<br/>
  *
  * Expects security context in the message context, so this depends
@@ -338,7 +343,10 @@ public class ETDInHandler extends AbstractSoapInterceptor
 			}
 		}
 		ETDApi etd = UnicoreSecurityFactory.getETDEngine();
-		ValidationResult res = etd.isTrustDelegated(td, delegationTarget, user, validator);
+		X509Certificate delegationIssuer = td.get(td.size()-1).getIssuerFromSignature()[0];
+		Collection<X509Certificate>trustedIssuers = new HashSet<X509Certificate>();
+		trustedIssuers.add(delegationIssuer);
+		ValidationResult res = etd.isTrustDelegated(td, delegationTarget, user, validator, trustedIssuers);
 		if(logger.isDebugEnabled()){
 			logger.debug("Validation of supplied TD result: " + res.isValid());
 		}

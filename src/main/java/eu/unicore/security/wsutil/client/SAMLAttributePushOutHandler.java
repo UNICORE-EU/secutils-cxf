@@ -160,7 +160,7 @@ public class SAMLAttributePushOutHandler extends AbstractSoapInterceptor impleme
 	{
 		for (Assertion a: rawAssertions)
 		{
-			AssertionDocument asDoc = a.getXML();
+			AssertionDocument asDoc = a.getXMLBeanDoc();
 			try{
 				Element elem = DOMUtils.readXml(asDoc.newInputStream()).getDocumentElement();
 				toBeInserted.add(elem);

@@ -35,7 +35,6 @@ package eu.unicore.security.wsutil.client;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.jws.WebMethod;
@@ -139,10 +138,9 @@ public class UnicoreWSClientFactory extends WSClientFactory
 	}
 
 	@Override
-	protected <T> void setupProxyInterface(Class<T> iFace, Client xfireClient, 
-			IClientConfiguration cnf, Properties properties)
+	protected <T> void setupProxyInterface(Class<T> iFace, Client xfireClient)
 	{
-		super.setupProxyInterface(iFace, xfireClient, cnf, properties);
+		super.setupProxyInterface(iFace, xfireClient);
 		xfireClient.getRequestContext().put(ContextDSigDecider.SIGNED_OPERATIONS, 
 				getOperationsToSign(iFace));
 	}

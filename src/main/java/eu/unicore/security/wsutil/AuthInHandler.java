@@ -279,19 +279,21 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		}
 
 		//extract any additional attributes and process them
-		if( userA.getAttributes()!=null && userAttributeHandlers.size()>0){
-			for(AttributeStatementType attrStatement: userA.getAttributes()){
-				for(AttributeType attr: attrStatement.getAttributeArray()){
-					String nameFormat=attr.getNameFormat();
-					if(UserAssertion.ROLE_NAME_FORMAT.equals(nameFormat))continue;
-					String name=attr.getName();
-					XmlObject[] values=attr.getAttributeValueArray();
-					for(UserAttributeHandler h: userAttributeHandlers){
-						h.processUserDefinedAttribute(name, nameFormat, values, mainToken);
-					}
-				}
-			}
-		}
+		
+//		if( userA.getAttributes()!=null && userAttributeHandlers.size()>0){
+//			for(AttributeStatementType attrStatement: userA.getAttributes()){
+//				for(AttributeType attr: attrStatement.getAttributeArray()){
+//					String nameFormat=attr.getNameFormat();
+//					if(UserAssertion.ROLE_NAME_FORMAT.equals(nameFormat))continue;
+//					String name=attr.getName();
+//					XmlObject[] values=attr.getAttributeValueArray();
+//					for(UserAttributeHandler h: userAttributeHandlers){
+//						h.processUserDefinedAttribute(name, nameFormat, values, mainToken);
+//					}
+//				}
+//			}
+//		}
+
 	}
 	
 	protected void processConsignor(ConsignorAssertion cAssertion, SecurityTokens mainToken, SoapMessage message)
@@ -347,13 +349,14 @@ public class AuthInHandler extends AbstractSoapInterceptor
 
 	protected String extractIPFromConsignorAssertion(ConsignorAssertion cAssertion)
 	{
-		AuthnStatementType[] authNs = cAssertion.getAuthStatements();
-		if (authNs == null || authNs.length == 0)
-			return null;
-		SubjectLocalityType loc = authNs[0].getSubjectLocality();
-		if (loc == null)
-			return null;
-		return loc.getAddress();
+		return null;
+//		AuthnStatementType[] authNs = cAssertion.getAuthStatements();
+//		if (authNs == null || authNs.length == 0)
+//			return null;
+//		SubjectLocalityType loc = authNs[0].getSubjectLocality();
+//		if (loc == null)
+//			return null;
+//		return loc.getAddress();
 	}
 
 	protected HTTPAuthNTokens getHTTPCredentials(SoapMessage message)

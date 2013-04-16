@@ -15,9 +15,9 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.commons.httpclient.ConnectTimeoutException;
-import org.apache.commons.httpclient.params.HttpConnectionParams;
-import org.apache.commons.httpclient.protocol.SecureProtocolSocketFactory;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.log4j.Logger;
 
 import eu.emi.security.authn.x509.X509CertChainValidator;
@@ -141,7 +141,7 @@ public class MySSLSocketFactory extends SSLSocketFactory
 	 * @param localPort
 	 *                the port on the local machine
 	 * @param params
-	 *                {@link HttpConnectionParams Http connection parameters}
+	 *                {@link HttpParams Http connection parameters}
 	 * 
 	 * @return Socket a new socket
 	 * 
@@ -152,15 +152,15 @@ public class MySSLSocketFactory extends SSLSocketFactory
 	 */
 	public Socket createSocket(final String host, final int port,
 			final InetAddress localAddress, final int localPort,
-			final HttpConnectionParams params) throws IOException,
-			UnknownHostException, ConnectTimeoutException
+			final HttpParams params) throws IOException,
+			UnknownHostException
 	{
 		if (params == null)
 		{
 			throw new IllegalArgumentException(
 					"Parameters may not be null");
 		}
-		int timeout = params.getConnectionTimeout();
+		int timeout = HttpConnectionParams.getConnectionTimeout(params);
 		SSLSocketFactory socketfactory = getSSLContext()
 				.getSocketFactory();
 		if (timeout == 0)
