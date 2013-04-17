@@ -78,7 +78,6 @@ public class MockSecurityConfig extends DefaultClientConfiguration
 			ret.setEtdSettings(getETDSettings().clone());
 			ret.setExtraSecurityTokens(getExtraSecurityTokens());
 			ret.setHttpClientProperties(getHttpClientProperties());
-			ret.setExtraSettings(getExtraSettings());
 			ret.setInHandlerClassNames(getInHandlerClassNames());
 			ret.setOutHandlerClassNames(getOutHandlerClassNames());
 			return ret;

@@ -26,76 +26,55 @@ public class TestDSig extends AbstractTestBase
 		//decide to sign only body content element...
 		public Vector<WSEncryptionPart> getElementsToBeSigned(
 				Document docToSign)
-		{
+				{
 			WSEncryptionPart part = new WSEncryptionPart(
 					"TestSignature",
-					"http://xfireutil.security.unicore.eu",  
+					"http://cxfutil.security.unicore.eu",  
 					"");
 			Vector<WSEncryptionPart> ret = new Vector<WSEncryptionPart>();
 			ret.add(part);
 			return ret;
-		}
-	}
-	
-	public void testWrongElementSigned()
-	{
-		try
-		{
-			System.out.println("\nTest wrong element signed\n");
-			MockSecurityConfig config = new MockSecurityConfig(
-					false, true, true);
-			SimpleSecurityService s = makeProxy(config);
-
-			ToBeSignedDecider partsDecider = new MyDecider();
-			
-			ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, partsDecider);
-			
-			String sigRet = s.TestSignature();
-			assertTrue(SignatureStatus.OK_BUT_NOT_IN_POLICY.name().equals(sigRet));
-		} catch (Throwable e)
-		{
-			e.printStackTrace();
-			fail();
-		}
+				}
 	}
 
-	
-	public void testNormalDSig()
+	public void testWrongElementSigned()throws Exception
 	{
-		try
-		{
-			System.out.println("\nTest Good signature\n");
-			MockSecurityConfig config = new MockSecurityConfig(
-					false, true, true); 
-			SimpleSecurityService s = makeProxy(config);
-			ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, null);
+		System.out.println("\nTest wrong element signed\n");
+		MockSecurityConfig config = new MockSecurityConfig(
+				false, true, true);
+		SimpleSecurityService s = makeProxy(config);
 
-			String sigRet = s.TestSignature();
-			assertTrue(SignatureStatus.OK.name().equals(sigRet));
-		} catch (Throwable e)
-		{
-			e.printStackTrace();
-			fail();
-		}
+		ToBeSignedDecider partsDecider = new MyDecider();
+
+		ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, partsDecider);
+
+		String sigRet = s.TestSignature();
+		assertEquals(SignatureStatus.OK_BUT_NOT_IN_POLICY.name(),sigRet);
+	}
+
+
+	public void testNormalDSig() throws Exception
+	{
+		System.out.println("\nTest Good signature\n");
+		MockSecurityConfig config = new MockSecurityConfig(
+				false, true, true); 
+		SimpleSecurityService s = makeProxy(config);
+		ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, null);
+
+		String sigRet = s.TestSignature();
+		assertEquals(SignatureStatus.OK.name(),sigRet);
 	}
 
 	//as above, but using SecuredXFireClientFactory and with logging
-	public void testNormalDSig2()
+	public void testNormalDSig2() throws Exception
 	{
-		try
-		{
-			System.out.println("\nTest Good signature\n");
-			MockSecurityConfig config = new MockSecurityConfig(
-					false, true, true);
-			SimpleSecurityService s = makeSecuredProxy(config);
+		System.out.println("\nTest Good signature\n");
+		MockSecurityConfig config = new MockSecurityConfig(
+				false, true, true);
+		SimpleSecurityService s = makeSecuredProxy(config);
 
-			String sigRet = s.TestSignature();
-			assertTrue(SignatureStatus.OK.name().equals(sigRet));
-		} catch (Throwable e)
-		{
-			e.printStackTrace();
-			fail();
-		}
+		String sigRet = s.TestSignature();
+		assertEquals(SignatureStatus.OK.name(),sigRet);
 	}
 
 	public void testDSigAnnotations()
@@ -106,50 +85,35 @@ public class TestDSig extends AbstractTestBase
 		assertTrue(toSign.contains("TestSignatureAction"));
 		assertTrue(toSign.contains("TestSignature2Action"));
 	}
-	
-	public void testNoDSig()
+
+	public void testNoDSig()throws Exception
 	{
-		try
-		{
-			System.out.println("\nTest lack of signature\n");
-			MockSecurityConfig config = new MockSecurityConfig(
-					false, true, true); 
-			SimpleSecurityService s = makeProxy(config);
-			
-			String sigRet = s.TestSignature();
-			assertTrue(SignatureStatus.UNSIGNED.name().equals(sigRet));
-		} catch (Throwable e)
-		{
-			e.printStackTrace();
-			fail();
-		}
+		System.out.println("\nTest lack of signature\n");
+		MockSecurityConfig config = new MockSecurityConfig(
+				false, true, true); 
+		SimpleSecurityService s = makeProxy(config);
+
+		String sigRet = s.TestSignature();
+		assertEquals(SignatureStatus.UNSIGNED.name(),sigRet);
 	}
 
-	public void testChangingConfig()
+	public void testChangingConfig() throws Exception
 	{
-		try
-		{
-			System.out.println("\nTest changing the configuration signed\n");
-			MockSecurityConfig config = new MockSecurityConfig(
-					false, true, true);
-			SimpleSecurityService s = makeProxy(config);
+		System.out.println("\nTest changing the configuration signed\n");
+		MockSecurityConfig config = new MockSecurityConfig(
+				false, true, true);
+		SimpleSecurityService s = makeProxy(config);
 
-			ToBeSignedDecider partsDecider = new MyDecider();
-			
-			ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, partsDecider);
-			
-			String sigRet = s.TestSignature();
-			assertTrue(SignatureStatus.OK_BUT_NOT_IN_POLICY.name().equals(sigRet));
-			
-			ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, null);
-			sigRet = s.TestSignature();
-			assertTrue(SignatureStatus.OK.name().equals(sigRet));
+		ToBeSignedDecider partsDecider = new MyDecider();
 
-		} catch (Throwable e)
-		{
-			e.printStackTrace();
-			fail();
-		}
+		ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, partsDecider);
+
+		String sigRet = s.TestSignature();
+		assertEquals(SignatureStatus.OK_BUT_NOT_IN_POLICY.name(),sigRet);
+
+		ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, null);
+		sigRet = s.TestSignature();
+		assertTrue(SignatureStatus.OK.name().equals(sigRet));
 	}
 
 }

@@ -241,11 +241,9 @@ public class TestAuthN extends AbstractTestBase
 		{
 			System.out.println("\nTest HTTP\n");
 			MockSecurityConfig config = new MockSecurityConfig(true, false, false); 
-			config.getExtraSettings().put("http.disable-keep-alive","true");
-			config.getExtraSettings().put("http.allow-chunking","true");
 			SimpleSecurityService s = makeProxy(config);
 			
-			int n=5000;
+			int n=100;
 			for (int i=0; i<n; i++)
 			{
 				String httpRet = s.TestHTTPCreds();

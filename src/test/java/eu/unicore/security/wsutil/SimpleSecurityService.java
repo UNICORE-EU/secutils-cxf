@@ -19,7 +19,7 @@ import eu.unicore.security.wsutil.RequiresSignature;
 /**
  * @author K. Benedyczak
  */
-@WebService(targetNamespace="http://xfireutil.security.unicore.eu")
+@WebService(targetNamespace="http://cxfutil.security.unicore.eu")
 @OperationsRequiringSignature(operations={"TestSignature2Action"})
 public interface SimpleSecurityService
 {
