@@ -49,7 +49,7 @@ public class TestDSig extends AbstractTestBase
 		ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, partsDecider);
 
 		String sigRet = s.TestSignature();
-		assertEquals(SignatureStatus.OK_BUT_NOT_IN_POLICY.name(),sigRet);
+		assertEquals(SignatureStatus.WRONG.name(),sigRet);
 	}
 
 
@@ -109,7 +109,7 @@ public class TestDSig extends AbstractTestBase
 		ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, partsDecider);
 
 		String sigRet = s.TestSignature();
-		assertEquals(SignatureStatus.OK_BUT_NOT_IN_POLICY.name(),sigRet);
+		assertEquals(SignatureStatus.WRONG.name(),sigRet);
 
 		ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, null);
 		sigRet = s.TestSignature();
