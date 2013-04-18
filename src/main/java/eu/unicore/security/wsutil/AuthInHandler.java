@@ -334,17 +334,12 @@ public class AuthInHandler extends AbstractSoapInterceptor
 
 	protected X509Certificate[] getSSLCertPath(SoapMessage message)
 	{
-		HttpServletRequest req =(HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
-		X509Certificate[] certs = (X509Certificate[])req.getAttribute("javax.servlet.request.X509Certificate");
-		return certs;
+		return CXFUtils.getSSLCerts(message);
 	}
 
 	protected String getClientIP(SoapMessage message)
 	{
-		HttpServletRequest req =(HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
-		if (req == null)
-			return null; 
-		return req.getRemoteAddr();
+		return CXFUtils.getClientIP(message);
 	}
 
 	protected String extractIPFromConsignorAssertion(ConsignorAssertion cAssertion)
@@ -360,7 +355,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 
 	protected HTTPAuthNTokens getHTTPCredentials(SoapMessage message)
 	{
-		
 		HttpServletRequest req =(HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
 		if (req == null)
 			return null; 

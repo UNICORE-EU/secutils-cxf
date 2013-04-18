@@ -2,9 +2,11 @@ package eu.unicore.security.wsutil;
 
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -20,6 +22,7 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.apache.cxf.service.invoker.MethodDispatcher;
 import org.apache.cxf.service.model.BindingOperationInfo;
+import org.apache.cxf.transport.http.AbstractHTTPDestination;
 import org.apache.cxf.transport.servlet.ServletDestination;
 import org.apache.cxf.ws.addressing.AddressingProperties;
 import org.apache.cxf.ws.addressing.ContextUtils;
@@ -86,7 +89,6 @@ public class CXFUtils {
 		t.setOutputProperty(OutputKeys.INDENT, "no");
 		t.transform(new DOMSource(n), new StreamResult(os));
 	}
-
 	
 	/**
 	 * get the current message (stored thread-locally)
@@ -101,4 +103,37 @@ public class CXFUtils {
 	public static AddressingProperties getAddressingProperties(){
 		return ContextUtils.retrieveMAPs(getCurrentMessage(), false, false);
 	}
+	
+	/**
+	 * get the client's SSL certificates from the SOAP message
+	 * @param message - the incomping SOAP message
+	 * @return client's certificate path retrieved via the HttpServletRequest
+	 */
+	public static X509Certificate[] getSSLCerts(SoapMessage message){
+		X509Certificate[] certs =null;
+		HttpServletRequest req =(HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
+		if(req!=null){
+			certs = (X509Certificate[])req.getAttribute("javax.servlet.request.X509Certificate");
+		}
+		return certs;
+	}
+	
+	/**
+	 * get the client's IP address from the SOAP message
+	 * @param message - the incoming SOAP message
+	 * @return the remote address as retrieved via the HttpServletRequest
+	 */
+	public static String getClientIP(SoapMessage message){
+		HttpServletRequest req = (HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
+		return req!=null? req.getRemoteAddr() : null ;
+	}
+	
+	/**
+	 * get the HttpServletRequest
+	 * @param message - the incoming SOAP message
+	 */
+	public static HttpServletRequest getServletRequest(SoapMessage message){
+		return (HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
+	}
+	
 }
