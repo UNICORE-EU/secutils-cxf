@@ -88,6 +88,12 @@
       <artifactId>xalan</artifactId>
       <version>2.7.1</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.xmlbeans</groupId>
+      <artifactId>xmlbeans</artifactId>
+      <version>2.6.0</version>
+    </dependency>
+
     <!-- cxf stuff -->
     <dependency>
       <groupId>org.apache.cxf</groupId>
