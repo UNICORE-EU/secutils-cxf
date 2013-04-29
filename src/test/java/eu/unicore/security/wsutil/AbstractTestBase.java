@@ -46,6 +46,7 @@ public abstract class AbstractTestBase extends TestCase
 		
 		List<Interceptor<? extends Message>> s = factory.getInInterceptors();
 		addHandlers(s);
+		factory.getOutInterceptors().add(new ConditionalGetServerOutHandler());
 		factory.create();
 	}
 
@@ -66,6 +67,7 @@ public abstract class AbstractTestBase extends TestCase
 		s.add(addHandler);
 		s.add(etdHandler);
 		s.add(new LogInMessageHandler());
+		s.add(new ConditionalGetServerInHandler());
 	}
 	
 	

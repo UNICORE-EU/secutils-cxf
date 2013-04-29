@@ -51,6 +51,7 @@ import org.apache.cxf.jaxb.JAXBDataBinding;
 import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
 import org.apache.cxf.jaxws.endpoint.dynamic.JaxWsDynamicClientFactory;
 import org.apache.cxf.message.Message;
+import org.apache.cxf.service.factory.ReflectionServiceFactoryBean;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.ConnectionType;
 import org.apache.cxf.transports.http.configuration.ProxyServerType;
@@ -58,6 +59,7 @@ import org.apache.cxf.xmlbeans.XmlBeansDataBinding;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import eu.unicore.security.wsutil.XmlBinding;
@@ -95,6 +97,9 @@ public class WSClientFactory {
 			throw new IllegalArgumentException("IAuthenticationConfiguration can not be null");
 		if (securityCfg.getHttpClientProperties() == null)
 			throw new IllegalArgumentException("HTTP settings can not be null");
+		// I know I'm evil but the error messages from this class just clutter up the logs and make
+		// the admins nervous
+		Logger.getLogger(ReflectionServiceFactoryBean.class).setLevel(Level.FATAL);
 		this.securityProperties = securityCfg.clone();
 		this.settings=securityProperties.getHttpClientProperties();
 		initHandlers();
@@ -112,6 +117,8 @@ public class WSClientFactory {
 		}
 		inHandlers.add(new CheckUnderstoodHeadersHandler());
 		outHandlers.add(new CheckUnderstoodHeadersHandler());
+		inHandlers.add(new ConditionalGetInHandler());
+		outHandlers.add(new ConditionalGetOutHandler());
 	}
 	
 	/**

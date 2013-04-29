@@ -10,6 +10,7 @@ package eu.unicore.security.wsutil;
 
 import java.rmi.RemoteException;
 import java.security.cert.X509Certificate;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -25,6 +26,7 @@ import eu.unicore.security.HTTPAuthNTokens;
 import eu.unicore.security.SecurityTokens;
 import eu.unicore.security.UserAttributeHandler;
 import eu.unicore.security.etd.TrustDelegation;
+import eu.unicore.security.wsutil.client.ConditionalGetUtil;
 
 
 /**
@@ -33,10 +35,10 @@ import eu.unicore.security.etd.TrustDelegation;
 @WebService(endpointInterface="eu.unicore.security.wsutil.SimpleSecurityService")
 public class SimpleSecurityServiceImpl implements SimpleSecurityService
 {
-	
+
 	@Resource
 	private WebServiceContext context;
-	
+
 	private SecurityTokens getTokens()
 	{
 		MessageContext ctx = context.getMessageContext();
@@ -57,7 +59,7 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 			return "OK";
 		return "baad";
 	}
-	
+
 	public String TestConsignor() throws RemoteException
 	{
 		SecurityTokens tokens = getTokens();
@@ -113,19 +115,35 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 		String v = (String) tokens.getContext().get("PREF_preference");
 		return "preference|"+v;
 	}
-	
+
 	@Override
 	public String TestAction() throws RemoteException
 	{
 		//return the action as retrieved from by the AuthIn handler
 		return (String)getTokens().getContext().get(SecurityTokens.CTX_SOAP_ACTION);
 	}
-	
+
 	@Override
 	public String TestIP() throws RemoteException {
 		SecurityTokens tokens = getTokens();
 		return tokens.getClientIP();
 	}
+
+	public static String currentRepresentation="test123";
+	public static Calendar lastMod=Calendar.getInstance();
+
+	@Override
+	public String TestConditionalGet() throws RemoteException {
+		if(ConditionalGetUtil.Server.mustSendData(lastMod, computeEtag())){
+			return currentRepresentation;	
+		}
+		else return "";
+	}
+
+	private String computeEtag(){
+		return ConditionalGetUtil.Server.md5(currentRepresentation);
+	}
+
 
 	public static class SimpleUserAttributeHandler implements UserAttributeHandler 
 	{
