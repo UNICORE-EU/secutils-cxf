@@ -186,7 +186,7 @@ public class ConditionalGetUtil {
 		 * converts the  byte-array into a more user-friendly hex string
 		 * @param bytes
 		 */
-		private static String hexString(byte[] bytes){
+		public static String hexString(byte[] bytes){
 			StringBuilder hexString = new StringBuilder();
 			for (int i=0;i<bytes.length;i++) {
 				String hex = Integer.toHexString(0xFF & bytes[i]); 
