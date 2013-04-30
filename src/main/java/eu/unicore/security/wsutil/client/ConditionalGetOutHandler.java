@@ -65,7 +65,7 @@ public class ConditionalGetOutHandler extends AbstractSoapInterceptor {
 
 	private static final ThreadLocal<String>etags=new ThreadLocal<String>();
 	private static final ThreadLocal<String>lastModified=new ThreadLocal<String>();
-	
+
 	//header namespace
 	public static final String CG_HEADER_NS="http://www.unicore.eu/unicore/ws";
 
@@ -86,12 +86,12 @@ public class ConditionalGetOutHandler extends AbstractSoapInterceptor {
 			String etag=etags.get();
 			String modifiedTime=lastModified.get();
 			if(etag == null && modifiedTime == null) return null;
-			
+
 			StringBuilder sb=new StringBuilder();
 			sb.append("<cget:"+CG_HEADER+" xmlns:cget=\""+CG_HEADER_NS+"\">");
 			if(etag!=null)sb.append("<cget:IfNoneMatch>"+etag+"</cget:IfNoneMatch>");
 			if(modifiedTime!=null)sb.append("<cget:IfModifiedSince>"+modifiedTime+"</cget:IfModifiedSince>");
-			
+
 			sb.append("</cget:"+CG_HEADER+">");
 			try{
 				header= DOMUtils.readXml(
@@ -118,18 +118,21 @@ public class ConditionalGetOutHandler extends AbstractSoapInterceptor {
 	}
 
 	public synchronized void handleMessage(SoapMessage message) {
-		//do nothing if not client call
-		if(!MessageUtils.isOutbound(message))
-			return;
+		try{
+			//do nothing if not client call
+			if(!MessageUtils.isOutbound(message))
+				return;
 
-		Element header=buildHeader();
-		if(header == null)return;
+			Element header=buildHeader();
+			if(header == null)return;
 
-		List<Header> h = message.getHeaders();
-		h.add(new Header(headerQName,header));
-		
-		etags.remove();
-		lastModified.remove();
+			List<Header> h = message.getHeaders();
+			h.add(new Header(headerQName,header));
+		}
+		finally{
+			etags.remove();
+			lastModified.remove();
+		}
 	}
 
 	public static void setEtag(String etag){

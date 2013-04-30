@@ -24,29 +24,6 @@ public class ConditionalGetUtil {
 		iso,
 	};
 
-	public static String md5(String string){
-		try{
-			MessageDigest md=MessageDigest.getInstance("MD5");
-			md.update(string.getBytes());
-			return hexString(md.digest());
-		}catch(Exception ex){
-			throw new RuntimeException(ex);
-		}
-	}
-	/**
-	 * converts the  byte-array into a more user-friendly hex string
-	 * @param bytes
-	 */
-	private static String hexString(byte[] bytes){
-		StringBuilder hexString = new StringBuilder();
-		for (int i=0;i<bytes.length;i++) {
-			String hex = Integer.toHexString(0xFF & bytes[i]); 
-			if(hex.length()==1)hexString.append('0');
-			hexString.append(hex);
-		}
-		return hexString.toString();
-	}
-
 	public static class Client {
 
 		/**
@@ -204,6 +181,20 @@ public class ConditionalGetUtil {
 			}
 		}
 		
+
+		/**
+		 * converts the  byte-array into a more user-friendly hex string
+		 * @param bytes
+		 */
+		private static String hexString(byte[] bytes){
+			StringBuilder hexString = new StringBuilder();
+			for (int i=0;i<bytes.length;i++) {
+				String hex = Integer.toHexString(0xFF & bytes[i]); 
+				if(hex.length()==1)hexString.append('0');
+				hexString.append(hex);
+			}
+			return hexString.toString();
+		}
 	}
 
 }

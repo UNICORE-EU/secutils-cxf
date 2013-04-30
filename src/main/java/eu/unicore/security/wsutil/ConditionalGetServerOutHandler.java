@@ -84,8 +84,8 @@ public class ConditionalGetServerOutHandler extends AbstractSoapInterceptor {
 			String etag=etags.get();
 			String modifiedTime=lastModified.get();
 			Boolean noMod=notModified.get();
-			if(noMod==null && (etag == null && lastModified ==null)) return null;
-			
+			if(noMod==null && etag == null && lastModified ==null) return null;
+
 			StringBuilder sb=new StringBuilder();
 			sb.append("<cget:"+CG_HEADER+" xmlns:cget=\""+CG_HEADER_NS+"\">");
 			if(noMod!=null){
@@ -95,7 +95,7 @@ public class ConditionalGetServerOutHandler extends AbstractSoapInterceptor {
 				if(etag!=null)sb.append("<cget:Etag>"+etag+"</cget:Etag>");
 				if(lastModified!=null)sb.append("<cget:LastModified>"+modifiedTime+"</cget:LastModified>");
 			}
-			
+
 			sb.append("</cget:"+CG_HEADER+">");
 			try{
 				header= DOMUtils.readXml(
@@ -105,7 +105,6 @@ public class ConditionalGetServerOutHandler extends AbstractSoapInterceptor {
 			}
 
 			if(logger.isDebugEnabled()){
-				logger.debug("(Re-)initialised outhandler");
 				try{
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
 					DOMUtils.writeXml(header, bos);
@@ -122,19 +121,21 @@ public class ConditionalGetServerOutHandler extends AbstractSoapInterceptor {
 	}
 
 	public synchronized void handleMessage(SoapMessage message) {
-		//do nothing if not client call
-		if(!MessageUtils.isOutbound(message))
-			return;
+		try{
+			//do nothing if not client call
+			if(!MessageUtils.isOutbound(message))
+				return;
 
-		Element header=buildHeader();
-		if(header == null)return;
-
-		List<Header> h = message.getHeaders();
-		h.add(new Header(headerQName,header));
-		
-		etags.remove();
-		lastModified.remove();
-		notModified.remove();
+			Element header=buildHeader();
+			if(header == null)return;
+			List<Header> h = message.getHeaders();
+			h.add(new Header(headerQName,header));
+		}
+		finally{
+			etags.remove();
+			lastModified.remove();
+			notModified.remove();
+		}
 	}
 
 	public static void setEtag(String etag){

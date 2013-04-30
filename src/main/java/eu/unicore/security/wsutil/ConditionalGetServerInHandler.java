@@ -55,7 +55,7 @@ import eu.unicore.util.Log;
  */
 public class ConditionalGetServerInHandler extends AbstractSoapInterceptor
 {
-	private static final Logger logger = Log.getLogger(Log.CLIENT,ConditionalGetServerInHandler.class);
+	private static final Logger logger = Log.getLogger(Log.SERVICES,ConditionalGetServerInHandler.class);
 
 	private static final ThreadLocal<String>etag=new ThreadLocal<String>();
 
@@ -97,7 +97,7 @@ public class ConditionalGetServerInHandler extends AbstractSoapInterceptor
 		String ims= imsEl!=null? imsEl.getTextContent() : null; 
 
 		if(logger.isDebugEnabled()){
-			logger.debug("Extracted info IfNoneMatch="+inm + " IfModifiedSince="+ims);		
+			logger.debug("Extracted IfNoneMatch="+inm + " IfModifiedSince="+ims);		
 		}
 		etag.set(inm);
 		lastModified.set(ims);

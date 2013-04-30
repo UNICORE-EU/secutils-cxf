@@ -111,7 +111,12 @@ public class ConditionalGetInHandler extends AbstractSoapInterceptor
 		}
 
 		if(logger.isDebugEnabled()){
-			logger.debug("Extracted info IfNonMatch="+inm + " IfModifiedSince="+ims);		
+			if(notModEl==null){
+				logger.debug("Extracted ETag="+inm + " LastModidied="+ims);
+			}
+			else{
+				logger.debug("Not modified");
+			}
 		}
 		etag.set(inm);
 		lastModified.set(ims);

@@ -10,8 +10,8 @@ package eu.unicore.security.wsutil;
 
 import java.util.Calendar;
 
-import eu.unicore.security.wsutil.client.ConditionalGetUtil;
 import eu.unicore.security.wsutil.client.ConditionalGetInHandler;
+import eu.unicore.security.wsutil.client.ConditionalGetUtil;
 
 
 public class TestConditionalGet extends AbstractTestBase
@@ -28,8 +28,8 @@ public class TestConditionalGet extends AbstractTestBase
 			
 			String userRet = s.TestConditionalGet();
 			assertNotNull(userRet);
-			String etag = ConditionalGetInHandler.getEtag();
-			String lastmod = ConditionalGetInHandler.getLastModified();
+			String etag = ConditionalGetUtil.Client.getEtag();
+			String lastmod = ConditionalGetUtil.Client.getLastModified();
 			System.out.println("etag = "+etag);
 			System.out.println("lastModified = "+lastmod);
 			
