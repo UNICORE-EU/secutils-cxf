@@ -81,27 +81,27 @@ public class ClientVOUtil
 	public static void addVOAssertions(Object xfireProxy, List<Assertion> assertions) 
 		throws IOException
 	{
-		Client xfireClient = WSClientFactory.getXfireClient(xfireProxy);
+		Client xfireClient = WSClientFactory.getWSClient(xfireProxy);
 		addVOAssertions(xfireClient, assertions);
 	}
 	
 	/**
 	 * Sets SAML attribute assertions to be attached to the requests 
-	 * produced by the Xfire client. This method is for use 
-	 * with custom code with manipulates XFire default implementations of clients 
+	 * produced by the WS client. This method is for use 
+	 * with custom code with manipulates default implementations of clients 
 	 * and proxies.  
 	 * <p>
 	 * The handler is either added or updated with the new configuration. 
 	 *  
-	 * @param xfireClient XFire client underlying XFire proxy.
+	 * @param wsClient WS client
 	 * @param assertions List of assertions to be used.
 	 * @throws IOException 
 	 * @throws JDOMException 
 	 */
-	public static void addVOAssertions(Client xfireClient, List<Assertion> assertions) 
+	public static void addVOAssertions(Client wsClient, List<Assertion> assertions) 
 		throws IOException
 	{
-		List<?> outHandlers = xfireClient.getOutInterceptors();
+		List<?> outHandlers = wsClient.getOutInterceptors();
 		SAMLAttributePushOutHandler voHandler = null;
 		for (Object h: outHandlers)
 			if (h instanceof SAMLAttributePushOutHandler)
@@ -113,31 +113,31 @@ public class ClientVOUtil
 			outHandlers.remove(voHandler);
 
 		voHandler = new SAMLAttributePushOutHandler(assertions);
-		xfireClient.getOutInterceptors().add(voHandler);
+		wsClient.getOutInterceptors().add(voHandler);
 	}
 
 	/**
 	 * Removes all vo handlers from the given proxy.
 	 * <p>
-	 * It is assumed that standard XFireProxy was used (so don't use this 
+	 * It is assumed that standard WS Proxy was used (so don't use this 
 	 * method clients obtained with WSRFLite or other higher level frameworks
 	 *  -- see other method).
-	 * @param xfireProxy Object used to make WS calls via XFire.
+	 * @param wsProxy Proxy object used to make WS calls
 	 */
-	public static void removeVOHandlers(Object xfireProxy)
+	public static void removeVOHandlers(Object wsProxy)
 	{
-		Client xfireClient = WSClientFactory.getXfireClient(xfireProxy);
-		removeVOHandlers(xfireClient);
+		Client wsClient = WSClientFactory.getWSClient(wsProxy);
+		removeVOHandlers(wsClient);
 	}
 	
 	/**
 	 * Removes all vo handlers from the given proxy.
 	 * <p>
-	 * @param xfireClient XFire client underlying XFire proxy.
+	 * @param wsClient WS client
 	 */
-	public static void removeVOHandlers(Client xfireClient)
+	public static void removeVOHandlers(Client wsClient)
 	{
-		List<?> outHandlers = xfireClient.getOutInterceptors();
+		List<?> outHandlers = wsClient.getOutInterceptors();
 		for (int i=outHandlers.size()-1; i>=0; i--)
 		{
 			Object h = outHandlers.get(i);
@@ -147,27 +147,27 @@ public class ClientVOUtil
 	}
 	
 	/**
-	 * Returns actually configured list of assertions for the XFire proxy. 
+	 * Returns actually configured list of assertions for the WS proxy. 
 	 *  
-	 * @param xfireProxy Object used to make WS calls via XFire.
+	 * @param wsProxy Proxy object used to make WS calls.
 	 * @return list of configured assertions or null if VO handler is not configured.
 	 */
-	public static List<Assertion> getConfiguredVOAssertions(Object xfireProxy) 
+	public static List<Assertion> getConfiguredVOAssertions(Object wsProxy) 
 		throws IOException
 	{
-		Client xfireClient = WSClientFactory.getXfireClient(xfireProxy);
-		return getConfiguredVOAssertions(xfireClient);
+		Client wsClient = WSClientFactory.getWSClient(wsProxy);
+		return getConfiguredVOAssertions(wsClient);
 	}
 
 	/**
-	 * Returns actually configured list of assertions for the XFire client. 
+	 * Returns actually configured list of assertions for the WS client. 
 	 * <p>
-	 * @param xfireClient XFire client underlying XFire proxy.
+	 * @param wsClient WS client underlying WS proxy.
 	 * @return list of configured assertions or null if VO handler is not configured.
 	 */
-	public static List<Assertion> getConfiguredVOAssertions(Client xfireClient)
+	public static List<Assertion> getConfiguredVOAssertions(Client wsClient)
 	{
-		List<?> outHandlers = xfireClient.getOutInterceptors();
+		List<?> outHandlers = wsClient.getOutInterceptors();
 		for (int i=outHandlers.size()-1; i>=0; i--)
 		{
 			Object h = outHandlers.get(i);

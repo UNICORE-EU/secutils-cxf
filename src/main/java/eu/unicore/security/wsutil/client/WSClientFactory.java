@@ -45,6 +45,7 @@ import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.configuration.security.ProxyAuthorizationPolicy;
 import org.apache.cxf.databinding.AbstractDataBinding;
 import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.feature.Feature;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.jaxb.JAXBDataBinding;
@@ -83,9 +84,11 @@ public class WSClientFactory {
 	protected IClientConfiguration securityProperties;
 	protected HttpClientProperties settings;
 	
-	protected List<Interceptor<? extends Message>> inHandlers;
-	protected List<Interceptor<? extends Message>> outHandlers;
-	protected List<Interceptor<? extends Message>> faultHandlers;
+	protected final List<Interceptor<? extends Message>> inHandlers = new ArrayList<Interceptor<? extends Message>>();
+	protected final List<Interceptor<? extends Message>> outHandlers = new ArrayList<Interceptor<? extends Message>>();
+	protected final List<Interceptor<? extends Message>> faultHandlers = new ArrayList<Interceptor<? extends Message>>();
+	
+	protected final List<Feature> features = new ArrayList<Feature>();
 
 	/**
 	 *
@@ -103,14 +106,14 @@ public class WSClientFactory {
 		this.securityProperties = securityCfg.clone();
 		this.settings=securityProperties.getHttpClientProperties();
 		initHandlers();
+		initFeatures();
 	}
 
+	/**
+	 * add default in/out/fault handlers<br/>
+	 */
 	protected void initHandlers()
 	{
-		faultHandlers = new ArrayList<Interceptor<? extends Message>>();
-		inHandlers = new ArrayList<Interceptor<? extends Message>>();
-		outHandlers = new ArrayList<Interceptor<? extends Message>>();
-		
 		if(securityProperties.isMessageLogging()){
 			inHandlers.add(new LogInMessageHandler());	
 			outHandlers.add(new LogOutMessageHandler());
@@ -121,6 +124,14 @@ public class WSClientFactory {
 		outHandlers.add(new ConditionalGetOutHandler());
 	}
 	
+	/**
+	 * add {@link Feature} classes for client calls<br/>
+	 * the default implementation does nothing
+	 */
+	protected void initFeatures(){
+		System.out.println("INIT");
+	}
+
 	/**
 	 * 
 	 * Create a proxy for the plain web service at the given URL, 
@@ -143,8 +154,9 @@ public class WSClientFactory {
 		factory.setDataBinding(binding);
 		T proxy=factory.create(iFace);
 		doAddHandlers(proxy);
+		doAddFeatures(proxy);
 		setupProxy(proxy, url);
-		setupProxyInterface(iFace, getXfireClient(proxy));
+		setupProxyInterface(iFace, getWSClient(proxy));
 		return proxy;
 	}
 	
@@ -177,52 +189,32 @@ public class WSClientFactory {
 	 * @param proxy
 	 */
 	protected void doAddHandlers(Object proxy){
-		Client client = getXfireClient(proxy);
+		Client client = getWSClient(proxy);
 		
-		List<Interceptor<? extends Message>> l=getOutHandlers();
-		if(l!=null){
-			for(Interceptor<? extends Message> h:l){ 
+		for(Interceptor<? extends Message> h: outHandlers){ 
 				client.getOutInterceptors().add(h);
-			}
 		}
-		List<Interceptor<? extends Message>> l2=getInHandlers();
-		if(l2!=null){
-			for(Interceptor<? extends Message> h:l2){ 
+		
+		for(Interceptor<? extends Message> h: inHandlers){ 
 				client.getInInterceptors().add(h);
-			}
 		}
-		List<Interceptor<? extends Message>> l3=getFaultHandlers();
-		if(l3!=null){
-			for(Interceptor<? extends Message> h:l3){ 
+		
+		for(Interceptor<? extends Message> h:faultHandlers){ 
 				client.getOutFaultInterceptors().add(h);
-			}
 		}
 	}
 
 	/**
-	 * returns a list of out handlers to add to the proxy client
-	 * @return
+	 * add any handlers directly to the proxy object
+	 * @param proxy
 	 */
-	protected List<Interceptor<? extends Message>>getOutHandlers(){
-		return outHandlers;
+	protected void doAddFeatures(Object proxy){
+		Client client = getWSClient(proxy);
+		for(Feature f: features){ 
+			f.initialize(client, null);	
+		}
 	}
-
-	/**
-	 * returns a list of in handlers to add to the proxy client
-	 * @return
-	 */
-	protected List<Interceptor<? extends Message>>getInHandlers(){
-		return inHandlers;
-	}
-
-	/**
-	 * returns a list of fault handlers to add to the proxy client
-	 * @return
-	 */
-	protected List<Interceptor<? extends Message>>getFaultHandlers(){
-		return faultHandlers;
-	}
-
+	
 	protected boolean isLocal(String url)
 	{
 		if (url == null)
@@ -343,10 +335,14 @@ public class WSClientFactory {
 	 */
 	protected void setupProxy(Object proxy, String uri)
 	{
-		setupWSClientProxy(getXfireClient(proxy), uri);
+		setupWSClientProxy(getWSClient(proxy), uri);
 	}
 	
-	public static Client getXfireClient(Object proxy)
+	/**
+	 * get the (implementation-specific) client object
+	 * @param proxy - the proxy object
+	 */
+	public static Client getWSClient(Object proxy)
 	{
 		return ClientProxy.getClient(proxy);
 	}

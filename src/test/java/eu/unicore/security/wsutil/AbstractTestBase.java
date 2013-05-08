@@ -88,14 +88,14 @@ public abstract class AbstractTestBase extends TestCase
 	{
 		String addr="https://localhost:" + (JettyServer.PORT) + "/services/" 
 				+ serviceName;
-		return new WSClientFactory(sec).createPlainWSProxy(SimpleSecurityService.class, addr);
+		return getWSClientFactory(sec).createPlainWSProxy(SimpleSecurityService.class, addr);
 	}
 	
 	protected SimpleSecurityService makePlainProxy(IClientConfiguration sec) throws Exception
 	{
 		String addr="http://localhost:" + (JettyServer.PORT+1) + "/services/" 
 				+ serviceName;
-		return new WSClientFactory(sec).createPlainWSProxy(SimpleSecurityService.class, addr);
+		return getWSClientFactory(sec).createPlainWSProxy(SimpleSecurityService.class, addr);
 	}
 
 
@@ -106,4 +106,7 @@ public abstract class AbstractTestBase extends TestCase
 		return new UnicoreWSClientFactory(sec).createPlainWSProxy(SimpleSecurityService.class, addr);
 	}
 
+	protected WSClientFactory getWSClientFactory(IClientConfiguration sec){
+		return new WSClientFactory(sec);
+	}
 }
