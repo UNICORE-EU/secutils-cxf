@@ -33,7 +33,6 @@
 
 package eu.unicore.security.wsutil.client;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -91,23 +90,10 @@ public class WSClientFactory {
 	
 	protected final List<Feature> features = new ArrayList<Feature>();
 
-	protected final RetryFeature retryFeature;
-	
 	/**
-	 *
-	 * @param securityCfg security configuration (e.g. SSL and HTTP authN)
+	 * @param securityCfg
 	 */
 	public WSClientFactory(IClientConfiguration securityCfg)
-	{
-		this(securityCfg, true);
-	}
-	
-	/**
-	 * 
-	 * @param securityCfg
-	 * @param enableRetries - whether to enable the {@link RetryFeature}
-	 */
-	public WSClientFactory(IClientConfiguration securityCfg, boolean enableRetries)
 	{
 		if (securityCfg == null)
 			throw new IllegalArgumentException("IAuthenticationConfiguration can not be null");
@@ -119,15 +105,6 @@ public class WSClientFactory {
 		this.securityProperties = securityCfg.clone();
 		this.settings=securityProperties.getHttpClientProperties();
 		initHandlers();
-		retryFeature = enableRetries? new RetryFeature(this) : null;
-		if(retryFeature!=null){
-			retryFeature.getRecoverableExceptions().add(IOException.class);
-			features.add(retryFeature);
-		}
-	}
-
-	public RetryFeature getRetry(){
-		return retryFeature;
 	}
 
 	/**
@@ -187,8 +164,8 @@ public class WSClientFactory {
 
 	/**
 	 * creates a dynamic client from the wsdl of the service<br/>
-	 * TODO if URL is https we are NOT using the current security settings,
-	 * but the JDK settings
+	 * Note: if the URL is https, the JDK SSL settings are used, NOT the 
+	 * UNICORE security settings,
 	 * 
 	 * @param serviceURL the URL where the service wsdl can be found
 	 * 
@@ -299,6 +276,17 @@ public class WSClientFactory {
 		configureHttpProxy(http, uri);
 		
 	}
+	
+
+	/**
+	 * @param proxy
+	 * @param retry
+	 */
+	public void setupRetry(Object proxy, RetryFeature retry){
+		Client client = getWSClient(proxy);
+		retry.initialize(client, null);	
+	}
+	
 	
 	private void configureHttpProxy(HTTPConduit http, String uri){
 		if (isNonProxyHost(uri)) 
