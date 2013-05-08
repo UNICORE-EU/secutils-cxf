@@ -33,6 +33,7 @@
 
 package eu.unicore.security.wsutil.client;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -90,11 +91,23 @@ public class WSClientFactory {
 	
 	protected final List<Feature> features = new ArrayList<Feature>();
 
+	protected final RetryFeature retryFeature;
+	
 	/**
 	 *
-	 * @param securityCfg security configuration (SSL and HTTP authN)
+	 * @param securityCfg security configuration (e.g. SSL and HTTP authN)
 	 */
 	public WSClientFactory(IClientConfiguration securityCfg)
+	{
+		this(securityCfg, true);
+	}
+	
+	/**
+	 * 
+	 * @param securityCfg
+	 * @param enableRetries - whether to enable the {@link RetryFeature}
+	 */
+	public WSClientFactory(IClientConfiguration securityCfg, boolean enableRetries)
 	{
 		if (securityCfg == null)
 			throw new IllegalArgumentException("IAuthenticationConfiguration can not be null");
@@ -106,7 +119,15 @@ public class WSClientFactory {
 		this.securityProperties = securityCfg.clone();
 		this.settings=securityProperties.getHttpClientProperties();
 		initHandlers();
-		initFeatures();
+		retryFeature = enableRetries? new RetryFeature(this) : null;
+		if(retryFeature!=null){
+			retryFeature.getRecoverableExceptions().add(IOException.class);
+			features.add(retryFeature);
+		}
+	}
+
+	public RetryFeature getRetry(){
+		return retryFeature;
 	}
 
 	/**
@@ -125,11 +146,11 @@ public class WSClientFactory {
 	}
 	
 	/**
-	 * add {@link Feature} classes for client calls<br/>
-	 * the default implementation does nothing
+	 * Add {@link Feature} classes for client calls. 
+	 * Invoked only when the proxy is created.<br/>
+	 * The default implementation does nothing
 	 */
 	protected void initFeatures(){
-		System.out.println("INIT");
 	}
 
 	/**
@@ -160,7 +181,6 @@ public class WSClientFactory {
 		return proxy;
 	}
 	
-	//TODO can this be removed?
 	protected <T> void setupProxyInterface(Class<T> iFace, Client xfireClient)
 	{
 	}
@@ -209,6 +229,7 @@ public class WSClientFactory {
 	 * @param proxy
 	 */
 	protected void doAddFeatures(Object proxy){
+		initFeatures();
 		Client client = getWSClient(proxy);
 		for(Feature f: features){ 
 			f.initialize(client, null);	
@@ -234,7 +255,17 @@ public class WSClientFactory {
 	protected void setupWSClientProxy(Client client, String uri)
 	{
 		HTTPConduit http = (HTTPConduit) client.getConduit();
+		setupHTTPParams(http);
 		
+	}
+
+	/**
+	 * helper method to setup client-side HTTP settings (HTTP auth, TLS, timeouts, proxy, etc)
+	 * @param http
+	 */
+	public void setupHTTPParams(HTTPConduit http){
+		
+		// HTTP auth
 		if(securityProperties.doHttpAuthn()){
 			AuthorizationPolicy httpAuth=new AuthorizationPolicy();
 			httpAuth.setUserName(securityProperties.getHttpUser());
@@ -242,20 +273,18 @@ public class WSClientFactory {
 			http.setAuthorization(httpAuth);
 		}
 		
-		if (!isLocal(uri))
-		{
-			TLSClientParameters params = new TLSClientParameters();
-			params.setSSLSocketFactory(new MySSLSocketFactory(securityProperties));
-			params.setDisableCNCheck(true);
-			http.setTlsClientParameters(params);
-			configureHttpProxy(http, uri);
-		}
+		// TLS
+		TLSClientParameters params = new TLSClientParameters();
+		params.setSSLSocketFactory(new MySSLSocketFactory(securityProperties));
+		params.setDisableCNCheck(true);
+		http.setTlsClientParameters(params);
 		
-		//timeouts
+		// timeouts
 		http.getClient().setConnectionTimeout(settings.getIntValue(HttpClientProperties.CONNECT_TIMEOUT));
 		http.getClient().setReceiveTimeout(settings.getIntValue(HttpClientProperties.SO_TIMEOUT));
 		
-		//TODO gzip - how? Probably there is some interceptor for it?!
+
+		//TODO gzip? CXF has a GZIP Feature 
 		//boolean gzipEnabled = Boolean.parseBoolean(properties.getProperty(GZIP_ENABLE, "true"));
 		
 		if(settings.getBooleanValue(HttpClientProperties.CONNECTION_CLOSE)){
@@ -265,8 +294,12 @@ public class WSClientFactory {
 		boolean allowChunking=settings.getBooleanValue(HttpClientProperties.ALLOW_CHUNKING);
 		http.getClient().setAllowChunking(allowChunking);
 		
+		// http proxy
+		String uri=http.getAddress();
+		configureHttpProxy(http, uri);
+		
 	}
-
+	
 	private void configureHttpProxy(HTTPConduit http, String uri){
 		if (isNonProxyHost(uri)) 
 			return;

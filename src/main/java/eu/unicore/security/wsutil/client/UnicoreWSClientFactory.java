@@ -80,11 +80,15 @@ public class UnicoreWSClientFactory extends WSClientFactory
 	 * @param sec security and client settings
 	 */
 	public UnicoreWSClientFactory(IClientConfiguration sec){
-		super(sec);
+		this(sec, true);
+	}
+
+	public UnicoreWSClientFactory(IClientConfiguration sec, boolean enableRetry){
+		super(sec, enableRetry);
 		//be careful - do this way as we need a cloned instance.
 		this.security=(IClientConfiguration) securityProperties;
 	}
-
+	
 	@Override
 	protected void initHandlers(){
 		super.initHandlers();
