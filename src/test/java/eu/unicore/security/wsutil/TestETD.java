@@ -20,6 +20,7 @@ import eu.emi.security.authn.x509.proxy.ProxyGenerator;
 import eu.unicore.security.UnicoreSecurityFactory;
 import eu.unicore.security.etd.ETDApi;
 import eu.unicore.security.etd.TrustDelegation;
+import eu.unicore.security.wsutil.client.ClientDSigUtil;
 import eu.unicore.security.wsutil.client.ClientTrustDelegationUtil;
 
 public class TestETD extends AbstractTestBase
@@ -46,6 +47,27 @@ public class TestETD extends AbstractTestBase
 		}
 	}
 	
+	public void testETDWithSig()
+	{
+		try
+		{
+		
+			System.out.println("\nTest ETD via SECURE CLIENT\n");
+			MockSecurityConfig config = new MockSecurityConfig(false, true, true);
+			config.getETDSettings().initializeSimple(JettyServer.SERVER_IDENTITY,
+					config.getCredential());
+			SimpleSecurityService s = makeSecuredProxy(config);
+			ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, null);
+			
+			boolean valid = Boolean.parseBoolean(s.TestETDValid());
+			assertTrue("No valid ETD when using DSIG", valid);
+			
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail();
+		}
+	}
 
 	public void testUser()
 	{

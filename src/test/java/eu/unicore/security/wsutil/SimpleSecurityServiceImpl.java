@@ -36,6 +36,8 @@ import eu.unicore.security.wsutil.client.ConditionalGetUtil;
 public class SimpleSecurityServiceImpl implements SimpleSecurityService
 {
 
+	public static SecurityTokens lastCallTokens;
+	
 	@Resource
 	private WebServiceContext context;
 
@@ -43,6 +45,7 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 	{
 		MessageContext ctx = context.getMessageContext();
 		SecurityTokens tokens = (SecurityTokens)ctx.get(SecurityTokens.KEY);
+		lastCallTokens=tokens;
 		return tokens;
 	}
 
@@ -54,6 +57,7 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 
 	public String TestSignature2() throws RemoteException
 	{
+		getTokens();
 		MessageContext ctx = context.getMessageContext();
 		if (ctx.get("tola") != null)
 			return "OK";
@@ -68,6 +72,13 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 			return null;
 		return cc.getSubjectX500Principal().getName();
 	}
+	
+	public String TestETDValid() throws RemoteException
+	{
+		SecurityTokens tokens = getTokens();
+		return ""+(tokens.isConsignorTrusted()&&tokens.getTrustDelegationTokens().size()>0);
+	}
+
 
 	public String TestETDIssuer() throws RemoteException
 	{

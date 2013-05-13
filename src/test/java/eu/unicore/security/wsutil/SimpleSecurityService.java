@@ -39,7 +39,8 @@ public interface SimpleSecurityService
 	public String TestHTTPCreds() throws RemoteException;
 	@WebMethod()
 	public String TestPreference() throws RemoteException;
-	
+	@WebMethod()
+	public String TestETDValid() throws RemoteException;
 	@RequiresSignature
 	@WebMethod(action="TestSignatureAction")
 	public String TestSignature() throws RemoteException;

@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
+import org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor;
 import org.apache.cxf.headers.Header;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.message.MessageUtils;
@@ -23,22 +24,17 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.security.user.UserAssertion;
 import eu.unicore.security.wsutil.WSSecHeader;
 import eu.unicore.util.Log;
-import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 
 /**
  * Trust delegation handler for outgoing messages. It merely inserts configured 
  * TD chain into SOAP header along with User assertion if needed.
- * <p>
- * From the version 1.3.4 system property eu.unicore.security.xfireutil.wssecCompilant can be used
- * to control where the ETD and User assertions are placed. If the property value is 'true' then
- * are inserted under wssec:Security element. If the property is false or undefined then assertions
- * are placed directly under the soap header. Note that it is planned to change the default behavior in 
- * the future versions.
- *   
+ * The assertions are inserted under the wssec:Security element.
+ * 
  * @author K. Benedyczak
  * @author schuller
  */
@@ -51,8 +47,9 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 
 	private List<Element> assertionListDOM=null;
 	private Element userAssertionDOM;
-	private boolean useWssecElem;
 
+	private static final String phase=Phase.PRE_PROTOCOL;
+	
 	/**
 	 * Add specified TD tokens into a header.
 	 * User assertion won't be inserted. 
@@ -60,7 +57,7 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 	 */
 	public TDOutHandler(List<TrustDelegation> tdChain)
 	{
-		super(Phase.PRE_PROTOCOL_ENDING);
+		super(phase);
 		init(tdChain, null, null, null);		
 	}
 
@@ -72,7 +69,7 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 	 */
 	public TDOutHandler(List<TrustDelegation> tdChain, UserAssertion userAssertion)
 	{
-		super(Phase.PRE_PROTOCOL_ENDING);
+		super(phase);
 		init(tdChain,userAssertion);
 	}
 	
@@ -86,7 +83,7 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 	public TDOutHandler(List<TrustDelegation> tdChain, 
 			String userDN, String callerDN)
 	{
-		super(Phase.PRE_PROTOCOL_ENDING);
+		super(phase);
 		init(tdChain, null, userDN, callerDN);	
 	}
 
@@ -100,29 +97,20 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 	public TDOutHandler(List<TrustDelegation> tdChain, 
 			X509Certificate userCert, String callerDN)
 	{
-		super(Phase.PRE_PROTOCOL_ENDING);
+		super(phase);
 		init(tdChain, userCert, null, callerDN);
 	}
 
 	protected TDOutHandler()
 	{
-		super(Phase.PRE_PROTOCOL_ENDING);
+		super(phase);
 		initHandler();
 	}
 	
 	protected void initHandler()
 	{
 		getBefore().add(DSigOutHandler.class.getName());
-		useWssecElem = Boolean.getBoolean(WSSEC_COMPILANT_PROPERTY);
-		if (useWssecElem )
-		{
-			logger.debug("ETD and User assertions will be placed under the " +
-			"wssec:Security element");
-		} else
-		{
-			logger.debug("ETD and User assertions will be placed directly " +
-			"under the SOAP header for backwards compatibility.");
-		}		
+		getBefore().add(SAAJOutInterceptor.class.getName());
 	}
 	
 	protected void init(List<TrustDelegation> tdChain, UserAssertion userAssertion)
@@ -221,35 +209,21 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 		List<Header> h = message.getHeaders();
 		Element insertionPoint = null;
 
-		if (useWssecElem)
-		{
-			WSSecHeader sec = new WSSecHeader(true);
-			insertionPoint = sec.getOrInsertWSSecElement(h);
-		}
+		WSSecHeader sec = new WSSecHeader(true);
+		insertionPoint = sec.getOrInsertWSSecElement(h);
 		
 		if (assertionListDOM != null)
 		{
 			for (Element e: assertionListDOM){
-				if(useWssecElem){
-					Document parent=insertionPoint.getOwnerDocument();
-					insertionPoint.appendChild(parent.importNode(e,true));
-				}
-				else{
-					Header header=new Header(AssertionDocument.type.getDocumentElementName(),e);
-					h.add(header);
-				}
+				Document parent=insertionPoint.getOwnerDocument();
+				insertionPoint.appendChild(parent.importNode(e,true));
 			}
 		}
 		if (userAssertionDOM != null)
 		{
-			if(useWssecElem){
-				Document parent=insertionPoint.getOwnerDocument();
-				insertionPoint.appendChild(parent.importNode(userAssertionDOM,true));
-			}
-			else{
-				Header header=new Header(AssertionDocument.type.getDocumentElementName(),userAssertionDOM);
-				h.add(header);
-			}
+			Document parent=insertionPoint.getOwnerDocument();
+			insertionPoint.appendChild(parent.importNode(userAssertionDOM,true));
+			
 			if (logger.isTraceEnabled()){
 				try
 				{
@@ -264,5 +238,3 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 		}
 	}
 }
-
-
