@@ -49,8 +49,8 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 
 	private List<TrustDelegation> assertionList=null;
 
-	private List<Element> assertionListAsJDOM=null;
-	private Element userAssertionAsJDOM;
+	private List<Element> assertionListDOM=null;
+	private Element userAssertionDOM;
 	private boolean useWssecElem;
 
 	/**
@@ -60,7 +60,7 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 	 */
 	public TDOutHandler(List<TrustDelegation> tdChain)
 	{
-		super(Phase.PRE_PROTOCOL);
+		super(Phase.PRE_PROTOCOL_ENDING);
 		init(tdChain, null, null, null);		
 	}
 
@@ -72,7 +72,7 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 	 */
 	public TDOutHandler(List<TrustDelegation> tdChain, UserAssertion userAssertion)
 	{
-		super(Phase.PRE_PROTOCOL);
+		super(Phase.PRE_PROTOCOL_ENDING);
 		init(tdChain,userAssertion);
 	}
 	
@@ -86,7 +86,7 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 	public TDOutHandler(List<TrustDelegation> tdChain, 
 			String userDN, String callerDN)
 	{
-		super(Phase.PRE_PROTOCOL);
+		super(Phase.PRE_PROTOCOL_ENDING);
 		init(tdChain, null, userDN, callerDN);	
 	}
 
@@ -100,28 +100,26 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 	public TDOutHandler(List<TrustDelegation> tdChain, 
 			X509Certificate userCert, String callerDN)
 	{
-		super(Phase.PRE_PROTOCOL);
+		super(Phase.PRE_PROTOCOL_ENDING);
 		init(tdChain, userCert, null, callerDN);
 	}
 
 	protected TDOutHandler()
 	{
-		super(Phase.PRE_PROTOCOL);
+		super(Phase.PRE_PROTOCOL_ENDING);
 		initHandler();
 	}
 	
 	protected void initHandler()
 	{
 		getBefore().add(DSigOutHandler.class.getName());
-		String prop = System.getProperty(WSSEC_COMPILANT_PROPERTY);
-		if (prop != null && prop.equals("true"))
+		useWssecElem = Boolean.getBoolean(WSSEC_COMPILANT_PROPERTY);
+		if (useWssecElem )
 		{
-			useWssecElem = true;
 			logger.debug("ETD and User assertions will be placed under the " +
 			"wssec:Security element");
 		} else
 		{
-			useWssecElem = false;
 			logger.debug("ETD and User assertions will be placed directly " +
 			"under the SOAP header for backwards compatibility.");
 		}		
@@ -163,34 +161,34 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 	
 	
 	protected void initJDOM(List<TrustDelegation>tdChain,UserAssertion userA){
-		assertionListAsJDOM = null;
+		assertionListDOM = null;
 		assertionList = (tdChain != null) ?
 				tdChain : new ArrayList<TrustDelegation>();
 		if (assertionList.size() != 0)
 		{
-			assertionListAsJDOM = new ArrayList<Element>();
+			assertionListDOM = new ArrayList<Element>();
 			try
 			{
 				for (TrustDelegation td: assertionList){
 						Element el=DOMUtils.readXml(td.getXMLBeanDoc().newInputStream()).getDocumentElement();
-						assertionListAsJDOM.add(el);
+						assertionListDOM.add(el);
 				}
 				logger.debug("Initialised TD Outhandler with " +
 						"TD chain of length = " + assertionList.size());
 			} catch(Exception e)
 			{
 				logger.warn("Can't create JDOM representation of TD assertion.",e);
-				assertionListAsJDOM = null;
+				assertionListDOM = null;
 			}
 		}
 		
-		userAssertionAsJDOM = null;
+		userAssertionDOM = null;
 		if (userA != null)
 		{
 			try
 			{
 				AssertionDocument user = userA.getXMLBeanDoc();
-				userAssertionAsJDOM=DOMUtils.readXml(user.newInputStream()).getDocumentElement();
+				userAssertionDOM=DOMUtils.readXml(user.newInputStream()).getDocumentElement();
 			} catch(Exception e)
 			{
 				logger.fatal("Can't create USER assertion: ", e);
@@ -206,13 +204,13 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 		if(!MessageUtils.isOutbound(message))
 			return;
 
-		if (assertionListAsJDOM == null && userAssertionAsJDOM == null)
+		if (assertionListDOM == null && userAssertionDOM == null)
 		{
 			logger.debug("Neither TD nor User assertion available.");
 			return;
 		}
 		
-		if(assertionListAsJDOM != null && logger.isTraceEnabled())
+		if(assertionListDOM != null && logger.isTraceEnabled())
 		{
 			logger.trace("TD DUMP begin");
 			for(TrustDelegation td: assertionList)
@@ -229,9 +227,9 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 			insertionPoint = sec.getOrInsertWSSecElement(h);
 		}
 		
-		if (assertionListAsJDOM != null)
+		if (assertionListDOM != null)
 		{
-			for (Element e: assertionListAsJDOM){
+			for (Element e: assertionListDOM){
 				if(useWssecElem){
 					Document parent=insertionPoint.getOwnerDocument();
 					insertionPoint.appendChild(parent.importNode(e,true));
@@ -242,21 +240,21 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 				}
 			}
 		}
-		if (userAssertionAsJDOM != null)
+		if (userAssertionDOM != null)
 		{
 			if(useWssecElem){
 				Document parent=insertionPoint.getOwnerDocument();
-				insertionPoint.appendChild(parent.importNode(userAssertionAsJDOM,true));
+				insertionPoint.appendChild(parent.importNode(userAssertionDOM,true));
 			}
 			else{
-				Header header=new Header(AssertionDocument.type.getDocumentElementName(),userAssertionAsJDOM);
+				Header header=new Header(AssertionDocument.type.getDocumentElementName(),userAssertionDOM);
 				h.add(header);
 			}
 			if (logger.isTraceEnabled()){
 				try
 				{
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
-					DOMUtils.writeXml(userAssertionAsJDOM, bos);
+					DOMUtils.writeXml(userAssertionDOM, bos);
 					logger.trace("User assertion:\n" + bos.toString());
 				} catch(Exception e)
 				{

@@ -476,7 +476,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 						+ subject);
 				return null;
 			}
-			logger.debug("Successfuly verified consignor assertion.");
+			logger.debug("Successfully verified consignor assertion.");
 		}
 
 		if (cert == null)
