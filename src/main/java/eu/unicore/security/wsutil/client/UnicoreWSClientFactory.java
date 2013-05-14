@@ -81,7 +81,6 @@ public class UnicoreWSClientFactory extends WSClientFactory
 	 */
 	public UnicoreWSClientFactory(IClientConfiguration sec){
 		super(sec);
-		//be careful - do this way as we need a cloned instance.
 		this.security=(IClientConfiguration) securityProperties;
 	}
 	

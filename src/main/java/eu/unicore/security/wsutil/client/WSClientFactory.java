@@ -63,6 +63,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import eu.unicore.security.wsutil.XmlBeansNsHackOutHandler;
 import eu.unicore.security.wsutil.XmlBinding;
 import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.HttpClientProperties;
@@ -120,6 +121,7 @@ public class WSClientFactory {
 		outHandlers.add(new CheckUnderstoodHeadersHandler());
 		inHandlers.add(new ConditionalGetInHandler());
 		outHandlers.add(new ConditionalGetOutHandler());
+		outHandlers.add(new XmlBeansNsHackOutHandler());
 	}
 	
 	/**
