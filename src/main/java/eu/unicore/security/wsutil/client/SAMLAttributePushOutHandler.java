@@ -61,7 +61,7 @@ public class SAMLAttributePushOutHandler extends AbstractSoapInterceptor impleme
 	 */
 	public SAMLAttributePushOutHandler() 
 	{
-		super(Phase.POST_INVOKE);
+		super(Phase.PRE_PROTOCOL_ENDING);
 		toBeInserted = new ArrayList<Element>();
 		getBefore().add(DSigOutHandler.class.getName());
 	}
