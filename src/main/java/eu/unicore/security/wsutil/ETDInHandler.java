@@ -278,6 +278,9 @@ public class ETDInHandler extends AbstractSoapInterceptor
 						ProxyUtils.getEndUserCertificate(etdInitialIssuerCC)});
 			}
 		}
+		if (logger.isDebugEnabled())
+			logger.debug("Final SecurityTokens after ETD processing:\n" + 
+					securityTokens.toString());
 	}
 
 	/**
