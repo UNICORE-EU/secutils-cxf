@@ -512,7 +512,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 
 	protected X500Principal extractDN(UserAssertion userA) throws IOException
 	{
-		String userDN = userA.getSubjectDN();
+		String userDN = userA.getSubjectName();
 		return X500NameUtils.getX500Principal(userDN);
 	}
 	

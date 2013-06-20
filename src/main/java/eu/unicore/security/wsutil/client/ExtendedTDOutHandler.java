@@ -189,7 +189,7 @@ public class ExtendedTDOutHandler extends TDOutHandler
 	{
 		//check for duplicate receiver
 		int l=tdList.size();
-		String lastReceiver=tdList.get(l-1).getSubjectDN();
+		String lastReceiver=tdList.get(l-1).getSubjectName();
 		if(receiver.equals(lastReceiver)){
 			logger.debug("TD chain already includes receiver <"+receiver+">");
 			return tdList;

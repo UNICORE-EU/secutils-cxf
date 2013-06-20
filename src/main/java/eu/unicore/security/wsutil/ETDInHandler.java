@@ -332,7 +332,7 @@ public class ETDInHandler extends AbstractSoapInterceptor
 	{
 		if (td.size() == 0)
 			return false;
-		String delegationTarget = td.get(td.size()-1).getSubjectDN();
+		String delegationTarget = td.get(td.size()-1).getSubjectName();
 		if(logger.isDebugEnabled())
 		{
 			logger.debug("Got TD of <"+user+"> to <"+delegationTarget+">, " +
@@ -340,8 +340,8 @@ public class ETDInHandler extends AbstractSoapInterceptor
 			int i = 0;
 			for(TrustDelegation t: td)
 			{
-				logger.debug("(Entry " + i++ + ") issuer: " + t.getIssuerDN()
-						+ " receiver: " + t.getSubjectDN() +
+				logger.debug("(Entry " + i++ + ") issuer: " + t.getIssuerName()
+						+ " receiver: " + t.getSubjectName() +
 						" custodian: " + t.getCustodianDN());
 			}
 		}
@@ -415,7 +415,7 @@ public class ETDInHandler extends AbstractSoapInterceptor
 			return null;
 		try
 		{
-			return tdTokens.get(0).getIssuerDN();
+			return tdTokens.get(0).getIssuerName();
 		} catch (Exception e)
 		{
 			logger.warn("Can't parse ETD assertion issuer name: " + e.toString());

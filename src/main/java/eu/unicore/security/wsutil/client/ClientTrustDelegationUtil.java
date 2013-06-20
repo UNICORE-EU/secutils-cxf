@@ -74,7 +74,7 @@ public class ClientTrustDelegationUtil
 		TrustDelegation td1 = tdChain.get(0);
 		TrustDelegation tdLast = tdChain.get(tdChain.size() - 1);
 		addTrustDelegation(xfireClient, tdChain, 
-				td1.getIssuerFromSignature()[0], tdLast.getSubjectDN());
+				td1.getIssuerFromSignature()[0], tdLast.getSubjectName());
 	}
 	
 	

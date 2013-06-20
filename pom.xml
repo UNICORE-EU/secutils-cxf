@@ -15,12 +15,12 @@
 
   <properties>
     <cxf.version>2.7.4</cxf.version>
-    <jetty.version>8.1.4.v20120524</jetty.version>
+    <jetty.version>8.1.11.v20130520</jetty.version>
   </properties>
 
   <scm>
-    <connection>scm:svn:https://unicore.svn.sourceforge.net/svnroot/unicore/securityFramework/secutils-cxf/trunk</connection>
-    <developerConnection>scm:svn:https://unicore.svn.sourceforge.net/svnroot/unicore/securityFramework/secutils-cxf/trunk</developerConnection>
+    <connection>scm:svn:https://svn.code.sf.net/p/unicore/svn/securityFramework/secutils-cxf/trunk</connection>
+    <developerConnection>scm:svn:https://svn.code.sf.net/p/unicore/svn/securityFramework/secutils-cxf/trunk</developerConnection>
   </scm>
 
   <developers>
