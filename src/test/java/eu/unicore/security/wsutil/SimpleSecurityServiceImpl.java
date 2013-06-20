@@ -84,14 +84,14 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 	{
 		SecurityTokens tokens = getTokens();
 		List<TrustDelegation> tds = tokens.getTrustDelegationTokens();
-		return tds.get(0).getIssuerDN();
+		return tds.get(0).getIssuerName();
 	}
 
 	public String TestETDLastSubject() throws RemoteException
 	{
 		SecurityTokens tokens = getTokens();
 		List<TrustDelegation> tds = tokens.getTrustDelegationTokens();
-		return tds.get(tds.size() - 1).getSubjectDN();
+		return tds.get(tds.size() - 1).getSubjectName();
 	}
 
 	public String TestHTTPCreds() throws RemoteException
