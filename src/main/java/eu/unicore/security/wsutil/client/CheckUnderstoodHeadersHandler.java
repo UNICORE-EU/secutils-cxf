@@ -47,9 +47,8 @@ import org.apache.cxf.phase.Phase;
 import org.apache.cxf.ws.addressing.Names;
 
 /**
- * A hack to let wsrflite accept various handlers. XFire doesn't 
- * seem to search for understood headers in service's handlers, 
- * only in global ones.
+ * A hack to let USE accept various SOAP headers.
+ *
  * This class is thread safe, i.e. one can dynamically add or remove QNames at runtime.
  * 
  * @author schuller
@@ -61,7 +60,7 @@ public class CheckUnderstoodHeadersHandler extends AbstractSoapInterceptor {
 	private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
 	
 	//default headers that the stack understands. This can be
-	//important what talking to clients/servers that are not XFire,
+	//important what talking to clients/servers that are not our own,
 	//and which set the SOAP mustUnderstand flag on these headers
 	public static final QName[] defaultHeaders =new QName[]{
 		Names.WSA_ACTION_QNAME,

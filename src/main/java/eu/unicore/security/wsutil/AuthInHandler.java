@@ -51,7 +51,7 @@ import eu.unicore.security.user.UserAssertion;
 import eu.unicore.util.Log;
 
 /**
- * Security in-handler for Unicore6. Extracts consignor and user information
+ * Security in-handler for UNICORE. Extracts consignor and user information
  * from the SOAP header.<br>
  * Processes
  * <ul>
@@ -143,7 +143,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	{
 		super(Phase.PRE_INVOKE);
 		qnameSet.add(new QName(WSSecHeader.WSSE_NS_URI,WSSecHeader.WSSE_LN));
-		//getAfter().add(AddressingInHandler.class.getName());
 
 		this.useGatewayAssertions = useGatewayAssertions;
 		this.useHTTPBasic = extractHTTPData;

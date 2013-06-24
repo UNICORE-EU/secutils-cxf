@@ -17,6 +17,7 @@ import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.emi.security.authn.x509.proxy.ProxyCertificate;
 import eu.emi.security.authn.x509.proxy.ProxyCertificateOptions;
 import eu.emi.security.authn.x509.proxy.ProxyGenerator;
+import eu.unicore.security.SignatureStatus;
 import eu.unicore.security.UnicoreSecurityFactory;
 import eu.unicore.security.etd.ETDApi;
 import eu.unicore.security.etd.TrustDelegation;
@@ -29,13 +30,13 @@ public class TestETD extends AbstractTestBase
 	{
 		try
 		{
-		
+
 			System.out.println("\nTest ETD via SECURE CLIENT\n");
 			MockSecurityConfig config = new MockSecurityConfig(false, true, true);
 			config.getETDSettings().initializeSimple(JettyServer.SERVER_IDENTITY,
 					config.getCredential());
 			SimpleSecurityService s = makeSecuredProxy(config);
-			
+
 			String userRet = s.TestUser();
 			assertNotNull(userRet);
 			assertTrue("Got: " + userRet, X500NameUtils.equal(
@@ -46,27 +47,29 @@ public class TestETD extends AbstractTestBase
 			fail();
 		}
 	}
-	
-	public void testETDWithSig()
+
+	public void testETDWithSig() throws Exception
 	{
-		try
-		{
+		System.out.println("\nTest ETD via SECURE CLIENT\n");
 		
-			System.out.println("\nTest ETD via SECURE CLIENT\n");
+		for(int i=0; i<200; i++){
 			MockSecurityConfig config = new MockSecurityConfig(false, true, true);
 			config.getETDSettings().initializeSimple(JettyServer.SERVER_IDENTITY,
 					config.getCredential());
 			SimpleSecurityService s = makeSecuredProxy(config);
 			ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, null);
-			
+
+			// check ETD
 			boolean valid = Boolean.parseBoolean(s.TestETDValid());
 			assertTrue("No valid ETD when using DSIG", valid);
-			
-		} catch (Exception e)
-		{
-			e.printStackTrace();
-			fail();
+
+			// check signature
+			SignatureStatus signed=SimpleSecurityServiceImpl.lastCallTokens.getMessageSignatureStatus();
+			assertNotNull(signed);
+			assertTrue("No valid signature when using DSIG and ETD, got "+signed, signed.equals(SignatureStatus.OK));
+			System.out.print(".");
 		}
+		System.out.println();
 	}
 
 	public void testUser()
@@ -76,10 +79,10 @@ public class TestETD extends AbstractTestBase
 			System.out.println("\nTest USER\n");
 			MockSecurityConfig config = new MockSecurityConfig(false, false, false); 
 			SimpleSecurityService s = makeProxy(config);
-			
+
 			List<TrustDelegation> tds = createTD(true);
 			ClientTrustDelegationUtil.addTrustDelegation(s, tds);
-			
+
 			String userRet = s.TestUser();
 			String user = config.getCertDN();
 			assertTrue(user.equals(userRet));
@@ -97,10 +100,10 @@ public class TestETD extends AbstractTestBase
 			System.out.println("\nTest USER using proxy\n");
 			MockSecurityConfig config = new MockSecurityConfig(false, true, true); 
 			SimpleSecurityService s = makeSecuredProxy(config);
-			
+
 			List<TrustDelegation> tds = createTDWithProxy();
 			ClientTrustDelegationUtil.addTrustDelegation(s, tds);
-			
+
 			MockSecurityConfig configWrong = new MockSecurityConfig(false, true, false); 
 			String userRet = s.TestUser();
 			String user = configWrong.getCertDN();
@@ -123,18 +126,18 @@ public class TestETD extends AbstractTestBase
 					config.getCredential());
 			config.getETDSettings().getRequestedUserAttributes2().put("preference", new String [] {"user"});
 			SimpleSecurityService s = makeSecuredProxy(config);
-			
+
 			String prefRet = s.TestPreference();
 			assertEquals("preference|user", prefRet);
-			
-			
+
+
 			System.out.println("\nTest USER preferences without ETD\n");
 
 			MockSecurityConfig config2 = new MockSecurityConfig(false, true, true);
 			config2.getETDSettings().setIssuerCertificateChain(config2.getCredential().getCertificateChain());
 			config2.getETDSettings().getRequestedUserAttributes2().put("preference", new String [] {"user"});
 			SimpleSecurityService s2 = makeSecuredProxy(config2);
-			
+
 			String prefRet2 = s2.TestPreference();
 			assertEquals("preference|user", prefRet2);
 
@@ -154,13 +157,13 @@ public class TestETD extends AbstractTestBase
 			MockSecurityConfig config = new MockSecurityConfig(false, false, false);
 			MockSecurityConfig configCorrect = new MockSecurityConfig(false, false, true);
 			SimpleSecurityService s = makeProxy(config);
-			
+
 			List<TrustDelegation> tds = createTD(true);
 			String user = config.getCertDN();
-			
+
 			ClientTrustDelegationUtil.addTrustDelegation(s, tds, user, 
-				configCorrect.getCertDN());
-			
+					configCorrect.getCertDN());
+
 			String userRet = s.TestUser();
 			assertTrue(user.equals(userRet));
 		} catch (Throwable e)
@@ -169,7 +172,7 @@ public class TestETD extends AbstractTestBase
 			fail();
 		}
 	}
-	
+
 	public void testTDExtraction()
 	{
 		try
@@ -178,13 +181,13 @@ public class TestETD extends AbstractTestBase
 			MockSecurityConfig config = new MockSecurityConfig(false, false, false); 
 			MockSecurityConfig configCorrect = new MockSecurityConfig(false, false, true); 
 			SimpleSecurityService s = makeProxy(config);
-			
+
 			List<TrustDelegation> tds = createTD(true);
 			ClientTrustDelegationUtil.addTrustDelegation(s, tds);
-			
+
 			String issuerRet = s.TestETDIssuer();
 			String receiverRet = s.TestETDLastSubject();
-			
+
 			String receiver = configCorrect.getCertDN();
 			String issuer = config.getCertDN();
 			assertTrue(issuer.equals(issuerRet));
@@ -204,16 +207,16 @@ public class TestETD extends AbstractTestBase
 			MockSecurityConfig config = new MockSecurityConfig(false, true, true); 
 			MockSecurityConfig configWrong = new MockSecurityConfig(false, true, false); 
 			SimpleSecurityService s = makeProxy(config);
-			
+
 			List<TrustDelegation> tds = createTD(true);
 			ClientTrustDelegationUtil.addTrustDelegation(s, tds);
-			
+
 			String effUserRet = s.TestEffectiveUser();
 			String consignorRet = s.TestConsignor();
-			
+
 			String receiver = config.getCertDN();
 			String issuer = configWrong.getCertDN();
-			
+
 			assertTrue("Got " + effUserRet + " should get " + issuer, 
 					issuer.equals(effUserRet));
 			assertTrue(receiver.equals(consignorRet));
@@ -232,16 +235,16 @@ public class TestETD extends AbstractTestBase
 			MockSecurityConfig config = new MockSecurityConfig(false, true, true); 
 			MockSecurityConfig configWrong = new MockSecurityConfig(false, true, false); 
 			SimpleSecurityService s = makeProxy(config);
-			
+
 			List<TrustDelegation> tds = createTD(false);
 			X509Certificate usercert = configWrong.getCredential().getCertificate();
 			ClientTrustDelegationUtil.addTrustDelegation(s, tds, usercert, "cn=test");
-			
+
 			String effUserRet = s.TestEffectiveUser();
 			String consignorRet = s.TestConsignor();
-			
+
 			String receiver = config.getCertDN();
-			
+
 			assertTrue(receiver.equals(effUserRet));
 			assertTrue(receiver.equals(consignorRet));
 		} catch (Throwable e)
@@ -259,16 +262,16 @@ public class TestETD extends AbstractTestBase
 			MockSecurityConfig config = new MockSecurityConfig(false, true, true); 
 			MockSecurityConfig configWrong = new MockSecurityConfig(false, true, false); 
 			SimpleSecurityService s = makeProxy(config);
-			
+
 			List<TrustDelegation> tds = createTD(true);
 			ClientTrustDelegationUtil.addTrustDelegation(s, tds);
-			
+
 			String effUserRet = s.TestEffectiveUser();
 			String consignorRet = s.TestConsignor();
-			
+
 			String receiver = config.getCertDN();
 			String issuer = configWrong.getCertDN();
-			
+
 			assertTrue(issuer.equals(effUserRet));
 			assertTrue(receiver.equals(consignorRet));
 
@@ -278,7 +281,7 @@ public class TestETD extends AbstractTestBase
 			ClientTrustDelegationUtil.addTrustDelegation(s, tds, usercert, "cn=test");
 			effUserRet = s.TestEffectiveUser();
 			consignorRet = s.TestConsignor();
-			
+
 			assertTrue(receiver.equals(effUserRet));
 			assertTrue(receiver.equals(consignorRet));
 		} catch (Throwable e)
@@ -287,57 +290,57 @@ public class TestETD extends AbstractTestBase
 			fail();
 		}
 	}
-	
-	
+
+
 	private List<TrustDelegation> createTD(boolean mode) 
-		throws Exception
-	{
+			throws Exception
+			{
 		MockSecurityConfig configCorrect = new MockSecurityConfig(false, true, true); 
 		MockSecurityConfig configWrong = new MockSecurityConfig(false, true, false); 
 
 		List<TrustDelegation> tds = new ArrayList<TrustDelegation>();
-		
+
 		ETDApi etdEngine = UnicoreSecurityFactory.getETDEngine();
 
 		String receiverDN = mode ? configCorrect.getCertDN() : configWrong.getCertDN();
 
 		PrivateKey pk = mode ? configWrong.getCredential().getKey() : 
-				configCorrect.getCredential().getKey();
+			configCorrect.getCredential().getKey();
 		X509Certificate issuerCert = mode ? configWrong.getCredential().getCertificate() : 
-				configCorrect.getCredential().getCertificate();
-		
+			configCorrect.getCredential().getCertificate();
+
 		TrustDelegation td = etdEngine.generateTD(
 				issuerCert.getSubjectX500Principal().getName(), 
 				new X509Certificate[] {issuerCert}, 
 				pk, receiverDN, null);
 		tds.add(td);
 		return tds;
-	}
-	
+			}
+
 	private List<TrustDelegation> createTDWithProxy() throws Exception
-		{
-			MockSecurityConfig configCorrect = new MockSecurityConfig(false, true, true); 
-			MockSecurityConfig configWrong = new MockSecurityConfig(false, true, false); 
+	{
+		MockSecurityConfig configCorrect = new MockSecurityConfig(false, true, true); 
+		MockSecurityConfig configWrong = new MockSecurityConfig(false, true, false); 
 
-			ProxyCertificateOptions proxyOpts = new ProxyCertificateOptions(
-					configWrong.getCredential().getCertificateChain());
-			ProxyCertificate proxyC = ProxyGenerator.generate(proxyOpts, 
-					configWrong.getCredential().getKey());
+		ProxyCertificateOptions proxyOpts = new ProxyCertificateOptions(
+				configWrong.getCredential().getCertificateChain());
+		ProxyCertificate proxyC = ProxyGenerator.generate(proxyOpts, 
+				configWrong.getCredential().getKey());
 
-			List<TrustDelegation> tds = new ArrayList<TrustDelegation>();
-			ETDApi etdEngine = UnicoreSecurityFactory.getETDEngine();
+		List<TrustDelegation> tds = new ArrayList<TrustDelegation>();
+		ETDApi etdEngine = UnicoreSecurityFactory.getETDEngine();
 
-			String receiverDN = configCorrect.getCertDN();
+		String receiverDN = configCorrect.getCertDN();
 
-			PrivateKey pk = proxyC.getPrivateKey();
-			X509Certificate[] issuerCert = proxyC.getCertificateChain();
-			
-			TrustDelegation td = etdEngine.generateTD(
-					issuerCert[0].getSubjectX500Principal().getName(), 
-					issuerCert, 
-					pk, receiverDN, null);
-			tds.add(td);
-			return tds;
-		}
+		PrivateKey pk = proxyC.getPrivateKey();
+		X509Certificate[] issuerCert = proxyC.getCertificateChain();
+
+		TrustDelegation td = etdEngine.generateTD(
+				issuerCert[0].getSubjectX500Principal().getName(), 
+				issuerCert, 
+				pk, receiverDN, null);
+		tds.add(td);
+		return tds;
+	}
 
 }

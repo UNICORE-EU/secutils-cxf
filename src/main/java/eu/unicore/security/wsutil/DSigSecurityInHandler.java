@@ -42,7 +42,7 @@ import eu.unicore.util.Log;
  * 
  * <p>
  * This handler must be AFTER {@link AuthInHandler} handler that sets consignor 
- * into security context and AFTER {@link DSigParseInHandler} (which in PARSE phase).
+ * into security context and AFTER {@link DSigParseInHandler}
  * <p>
  * The signature is searched only if the DOM of the message was build by the 
  * {@link DSigParseInHandler}.
@@ -117,8 +117,8 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 		}
 
 		Element secHeader = (Element)wssHeader.getObject();
-
-		if (secHeader.getElementsByTagNameNS(XML_DS_STRING,"Signature").getLength()==0)
+		
+		if (getChildElements(secHeader,XML_DS_STRING,"Signature").size()==0)
 		{
 			logger.debug("No Signature was found in header, " +
 					"skipping signature verification.");

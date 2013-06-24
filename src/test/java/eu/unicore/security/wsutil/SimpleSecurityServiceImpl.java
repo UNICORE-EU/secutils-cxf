@@ -145,6 +145,7 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 
 	@Override
 	public String TestConditionalGet() throws RemoteException {
+		getTokens();
 		if(ConditionalGetUtil.Server.mustSendData(lastMod, computeEtag())){
 			return currentRepresentation;	
 		}

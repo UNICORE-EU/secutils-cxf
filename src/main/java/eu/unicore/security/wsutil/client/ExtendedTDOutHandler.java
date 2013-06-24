@@ -51,7 +51,7 @@ public class ExtendedTDOutHandler extends TDOutHandler
 
 	private List<TrustDelegation> assertionList=null;
 	private UserAssertion userAssertion=null;
-	
+
 	/**
 	 * Initialise the handler. The supplied security properties 
 	 * may contain an existing list of trust delegations. <br/>
@@ -71,60 +71,32 @@ public class ExtendedTDOutHandler extends TDOutHandler
 			return;
 		}
 		String issuerDN = issuer[0].getSubjectX500Principal().getName();
-		assertionList=sec.getTrustDelegationTokens()!=null?
-				sec.getTrustDelegationTokens():
-				new ArrayList<TrustDelegation>();
+		assertionList=sec.getTrustDelegationTokens() != null ? 
+			sec.getTrustDelegationTokens() : new ArrayList<TrustDelegation>();
 		if(sec.isExtendTrustDelegation()){
 			try
 			{
-				PrivateKey pk = config.getCredential().getKey();
-				X500Principal receiver=sec.getReceiver();
-				if(receiver==null){
-					logger.debug("No receiver set, not creating TD assertion.");
-				}
-				else{
-					String receiverName = receiver.getName();
-					DelegationRestrictions restrictions = sec.getDelegationRestrictions();
-					if (sec.getRelativeDelegationValidityDays() != null)
-					{
-						Calendar start = Calendar.getInstance();
-						start.add(Calendar.HOUR, -1);
-						Calendar end = Calendar.getInstance();
-						end.add(Calendar.DAY_OF_YEAR, sec.getRelativeDelegationValidityDays());
-						restrictions.setNotBefore(start.getTime());
-						restrictions.setNotOnOrAfter(end.getTime());
-					}
-					if(assertionList.size()==0){
-						assertionList.add(createAssertion(issuer,pk,receiverName,restrictions));
-					}
-					else{
-						assertionList=extendAssertion(assertionList, issuer, pk, receiverName, restrictions);
-					}
-
-					if(logger.isDebugEnabled()){
-						logger.debug("Initialised trust delegation to receiver <" +
-								X500NameUtils.getReadableForm(receiverName)+">");
-					}
-				}
+				setupExtendedAssertionList(config);
 			}
-			catch(Exception je){
-				logger.fatal("Can't create TD assertion.",je);
+			catch(Exception dse)
+			{
+				throw new RuntimeException("Error setting up (extended) TD chain", dse);
 			}
 		}
 		logger.debug("Initialised TD Outhandler, TD chain length = "+assertionList.size());
-		
+
 		String requestedUser = sec.getRequestedUser();
 		if (requestedUser == null)
 		{
 			//first try to get one from the ETD chain:
 			if (assertionList.size() > 0)
 				requestedUser = assertionList.get(0).getIssuerFromSignature()
-					[0].getSubjectX500Principal().getName();
+				[0].getSubjectX500Principal().getName();
 			//if no ETD chain, then use our local identity
 			else
 				requestedUser = issuerDN;
 		}
-		
+
 		if (needCustomUserAssertion(sec))
 		{
 			userAssertion=super.createUserAssertion(null, requestedUser, issuerDN);
@@ -146,10 +118,48 @@ public class ExtendedTDOutHandler extends TDOutHandler
 			super.init(assertionList, userCert, null, issuerDN);
 		}
 	}
-	
+
+	private void setupExtendedAssertionList(IClientConfiguration config)
+			throws DSigException, InconsistentTDChainException
+			{
+		ETDClientSettings sec = config.getETDSettings();
+		X509Certificate[] issuer = sec.getIssuerCertificateChain();
+
+		PrivateKey pk = config.getCredential().getKey();
+		X500Principal receiver=sec.getReceiver();
+		if(receiver==null){
+			logger.debug("No receiver set, not creating TD assertion.");
+		}
+		else{
+			String receiverName = receiver.getName();
+			DelegationRestrictions restrictions = sec.getDelegationRestrictions();
+			if (sec.getRelativeDelegationValidityDays() != null)
+			{
+				Calendar start = Calendar.getInstance();
+				start.add(Calendar.HOUR, -1);
+				Calendar end = Calendar.getInstance();
+				end.add(Calendar.DAY_OF_YEAR, sec.getRelativeDelegationValidityDays());
+				restrictions.setNotBefore(start.getTime());
+				restrictions.setNotOnOrAfter(end.getTime());
+			}
+			if(assertionList.size()==0){
+				assertionList.add(createAssertion(issuer,pk,receiverName,restrictions));
+			}
+			else{
+				assertionList=extendAssertion(assertionList, issuer, pk, receiverName, restrictions);
+			}
+
+			if(logger.isDebugEnabled()){
+				logger.debug("Initialised trust delegation to receiver <" +
+						X500NameUtils.getReadableForm(receiverName)+">");
+			}
+		}
+			}
+
 	private boolean needCustomUserAssertion(ETDClientSettings sec){
 		return sec!=null && (sec.getRequestedUserAttributes2().size() > 0);
 	}
+
 	/**
 	 * create a new TD assertion
 	 * 
@@ -159,22 +169,15 @@ public class ExtendedTDOutHandler extends TDOutHandler
 	 * @param restrictions - any restrictions on the assertion (e.g. max length of delegation chain)
 	 */
 	protected synchronized TrustDelegation createAssertion(X509Certificate[] issuer, PrivateKey pk, 
-			String receiver, DelegationRestrictions restrictions)
-	{
+			String receiver, DelegationRestrictions restrictions) throws DSigException
+			{
 		ETDApi engine = UnicoreSecurityFactory.getETDEngine();
-		try
-		{
-			return engine.generateTD(issuer[0].getSubjectX500Principal().getName(), 
-					issuer, pk, 
-					receiver, 
-					restrictions);
-		} catch (DSigException e)
-		{
-			logger.fatal("Can't sign TD assertion.", e);
-			return null;
-		} 
-	}
-	
+		return engine.generateTD(issuer[0].getSubjectX500Principal().getName(), 
+				issuer, pk, 
+				receiver, 
+				restrictions);
+			}
+
 	/**
 	 * extend an existing the TD assertion
 	 * 
@@ -186,7 +189,8 @@ public class ExtendedTDOutHandler extends TDOutHandler
 	 */
 	protected synchronized List<TrustDelegation> extendAssertion(List<TrustDelegation> tdList, X509Certificate[] issuer, PrivateKey pk, 
 			String receiver, DelegationRestrictions restrictions)
-	{
+					throws DSigException, InconsistentTDChainException
+					{
 		//check for duplicate receiver
 		int l=tdList.size();
 		String lastReceiver=tdList.get(l-1).getSubjectName();
@@ -194,28 +198,16 @@ public class ExtendedTDOutHandler extends TDOutHandler
 			logger.debug("TD chain already includes receiver <"+receiver+">");
 			return tdList;
 		}
-		
+
 		logger.debug("Extending TD chain to receiver <"+receiver+">");
 		ETDApi engine = UnicoreSecurityFactory.getETDEngine();
-		try
-		{
-			return engine.issueChainedTD(tdList,
-					issuer, 
-					pk, 
-					receiver, 
-					restrictions);
-			
-		} catch (DSigException e)
-		{
-			logger.fatal("Can't sign TD assertion.", e);
-			return null;
-		} 
-		catch(InconsistentTDChainException tde){
-			logger.fatal("TD chain is inconsistent", tde);
-			return null;
-		}
-	}
-		
+		return engine.issueChainedTD(tdList,
+				issuer, 
+				pk, 
+				receiver, 
+				restrictions);
+					}
+
 	public List<TrustDelegation>getAssertionList(){
 		return assertionList;
 	}
