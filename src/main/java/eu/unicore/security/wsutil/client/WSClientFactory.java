@@ -117,11 +117,17 @@ public class WSClientFactory {
 			inHandlers.add(new LogInMessageHandler());	
 			outHandlers.add(new LogOutMessageHandler());
 		}
+		
 		inHandlers.add(new CheckUnderstoodHeadersHandler());
 		outHandlers.add(new CheckUnderstoodHeadersHandler());
+		
 		inHandlers.add(new ConditionalGetInHandler());
 		outHandlers.add(new ConditionalGetOutHandler());
+		
 		outHandlers.add(new XmlBeansNsHackOutHandler());
+		
+		inHandlers.add(new SessionSessionIDInHandler());
+		outHandlers.add(new SecuritySessionIDOutHandler());
 	}
 	
 	/**

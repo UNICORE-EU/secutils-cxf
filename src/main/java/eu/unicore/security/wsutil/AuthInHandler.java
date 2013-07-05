@@ -10,11 +10,14 @@ package eu.unicore.security.wsutil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.security.auth.x500.X500Principal;
 import javax.servlet.http.HttpServletRequest;
@@ -48,6 +51,7 @@ import eu.unicore.security.UserAttributeHandler;
 import eu.unicore.security.consignor.ConsignorAPI;
 import eu.unicore.security.consignor.ConsignorAssertion;
 import eu.unicore.security.user.UserAssertion;
+import eu.unicore.security.wsutil.client.SecuritySessionIDOutHandler;
 import eu.unicore.util.Log;
 
 /**
@@ -106,6 +110,12 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	private List<UserAttributeHandler> userAttributeHandlers = new ArrayList<UserAttributeHandler>();
 	
 	private final Set<QName>qnameSet=new HashSet<QName>();
+	
+	/**
+	 * store security tokens keyed by security session ID
+	 */
+	private static final ConcurrentHashMap<String, WeakReference<SecurityTokens>>tokenRef=
+			new ConcurrentHashMap<String, WeakReference<SecurityTokens>>();
 	
 	/**
 	 * Constructs instance of the handler. It will accept assertions in the header element
@@ -169,7 +179,8 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	@Override
 	public void handleMessage(SoapMessage ctx)
 	{
-		SecurityTokens mainToken = new SecurityTokens();
+
+		SecurityTokens mainToken = getOrCreateTokens(ctx);
 		if (useHTTPBasic)
 		{
 			HTTPAuthNTokens fromHttp = getHTTPCredentials(ctx);
@@ -211,6 +222,37 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		ctx.put(SecurityTokens.KEY, mainToken);
 	}
 
+	protected SecurityTokens getOrCreateTokens(SoapMessage message){
+		String sessionID=getSecuritySessionID(message);
+		SecurityTokens tokens=null;
+		if(sessionID!=null){
+			//check if we have a session
+			WeakReference<SecurityTokens>ref=tokenRef.get(sessionID);
+			if(ref==null || ref.get()==null){
+				// got a session ID from the client, but no tokens: fault
+				Fault f = new Fault((Throwable)null); // null is OK
+				f.setStatusCode(543); // TODO which one to use?
+				f.setMessage("No (valid) security session found, please (re-)send full security data!");
+				throw f;
+			}
+			tokens=ref.get();
+		}
+		else{
+			tokens=new SecurityTokens();
+			sessionID=UUID.randomUUID().toString();
+			tokens.getContext().put(SecuritySessionIDOutHandler.SESSION_ID_KEY, sessionID);
+			tokenRef.put(sessionID, new WeakReference<SecurityTokens>(tokens));
+			
+		}
+		// make sure session ID goes to the client
+		SecuritySessionIDOutHandler.setSessionID(sessionID);
+		return tokens;
+	}
+	
+	protected void storeSecuritySession(){
+		
+	}
+	
 	protected List<Element> extractSAMLAssertions(SoapMessage message)
 	{
 		List<Header> headers=message.getHeaders();
@@ -523,5 +565,17 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			logger.debug("Setting SOAP action to '" + action + "'");
 		}
 		return action;
+	}
+	
+	protected String getSecuritySessionID(SoapMessage message)
+	{
+		String sessionID=null;
+		Header header=message.getHeader(SecuritySessionIDOutHandler.headerQName);
+		if(header!=null){
+			Element hdr = (Element) header.getObject();		
+			if(hdr!=null)
+				sessionID = hdr.getTextContent(); 
+		}
+		return sessionID;
 	}
 }

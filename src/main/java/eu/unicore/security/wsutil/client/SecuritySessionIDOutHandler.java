@@ -33,7 +33,6 @@
 package eu.unicore.security.wsutil.client;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 import javax.xml.namespace.QName;
@@ -44,71 +43,70 @@ import org.apache.cxf.headers.Header;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
-import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 
-import eu.unicore.util.Log;
-
 /**
- * A WS client handler that allows to perform a "conditional get", i.e. 
- * clients use this to ask the the server to *not* send resource property data 
- * if they have not changed. This mimics the corresponding HTTP mechanism 
- * (ETag and last-modified)
- * 
- * The Etag and last-modified values must be put into thread-local storage before making the WS call
+ * A client handler that sets the security session cookie header.
+ * The cookie must be put into thread-local storage before making the call.
  * 
  * @author schuller
+ * @author K. Benedyczak
  */
-public class ConditionalGetOutHandler extends AbstractSoapInterceptor {
+public class SecuritySessionIDOutHandler extends AbstractSoapInterceptor {
 
-	private static final Logger logger = Log.getLogger(Log.CLIENT,ConditionalGetOutHandler.class);
+	private static final ThreadLocal<String>sessionIDs=new ThreadLocal<String>();
 
-	private static final ThreadLocal<String>etags=new ThreadLocal<String>();
-	private static final ThreadLocal<String>lastModified=new ThreadLocal<String>();
+	public static final String SESSION_ID_KEY="unicore-security-session-id";
 
 	//header namespace
 	public static final String CG_HEADER_NS="http://www.unicore.eu/unicore/ws";
 
 	//header element name
-	public static final String CG_HEADER="ConditionalGet";
+	public static final String CG_HEADER="SecuritySessionID";
 
-	private final static QName headerQName=new QName(CG_HEADER_NS,CG_HEADER);
+	public final static QName headerQName=new QName(CG_HEADER_NS,CG_HEADER);
 
-	public ConditionalGetOutHandler() {
+	public SecuritySessionIDOutHandler() {
 		super(Phase.PRE_PROTOCOL);
-		getBefore().add(DSigOutHandler.class.getName());
+		getBefore().add(TDOutHandler.class.getName());
+		getBefore().add(ExtendedTDOutHandler.class.getName());
 	}
 
+	public synchronized void handleMessage(SoapMessage message) {
+		try{
+			String sessionID=getSessionID();
+			if(sessionID==null)
+				return;
 
+			if(!MessageUtils.isOutbound(message))
+				return;
+			
+			Element header=buildHeader();
+			if(header == null)return;
+
+			List<Header> h = message.getHeaders();
+			h.add(new Header(headerQName,header));
+		}
+		finally{
+			clear();
+		}
+	}
+	
 	public Element buildHeader() {
 		Element header=null;
 		try{
-			String etag=etags.get();
-			String modifiedTime=lastModified.get();
-			if(etag == null && modifiedTime == null) return null;
+			String id=sessionIDs.get();
+			if(id == null) return null;
 
 			StringBuilder sb=new StringBuilder();
-			sb.append("<cget:"+CG_HEADER+" xmlns:cget=\""+CG_HEADER_NS+"\">");
-			if(etag!=null)sb.append("<cget:IfNoneMatch>"+etag+"</cget:IfNoneMatch>");
-			if(modifiedTime!=null)sb.append("<cget:IfModifiedSince>"+modifiedTime+"</cget:IfModifiedSince>");
-
-			sb.append("</cget:"+CG_HEADER+">");
+			sb.append("<sid:"+CG_HEADER+" xmlns:sid=\""+CG_HEADER_NS+"\">");
+			sb.append(id);
+			sb.append("</sid:"+CG_HEADER+">");
 			try{
 				header= DOMUtils.readXml(
 						new ByteArrayInputStream(sb.toString().getBytes())).getDocumentElement();
 			}catch(Exception e){
 				throw new RuntimeException(e);
-			}
-
-			if(logger.isDebugEnabled()){
-				logger.debug("(Re-)initialised outhandler");
-				try{
-					ByteArrayOutputStream bos = new ByteArrayOutputStream();
-					DOMUtils.writeXml(header, bos);
-					logger.debug(bos.toString());
-				}catch(Exception e){
-					logger.warn("",e);
-				}
 			}
 		}catch(Exception e){
 
@@ -117,31 +115,18 @@ public class ConditionalGetOutHandler extends AbstractSoapInterceptor {
 		return header;
 	}
 
-	public synchronized void handleMessage(SoapMessage message) {
-		try{
-			if(!MessageUtils.isOutbound(message))
-				return;
-
-			Element header=buildHeader();
-			if(header == null)return;
-
-			List<Header> h = message.getHeaders();
-			h.add(new Header(headerQName,header));
-		}
-		finally{
-			etags.remove();
-			lastModified.remove();
-		}
+	public static void setSessionID(String sessionID){
+		sessionIDs.set(sessionID);
 	}
 
-	public static void setEtag(String etag){
-		etags.set(etag);
+	public static String getSessionID(){
+		return sessionIDs.get();
 	}
-
-	public static void setLastModified(String time){
-		lastModified.set(time);
+	
+	public static void clear(){
+		sessionIDs.remove();
 	}
-
+	
 }
 
 

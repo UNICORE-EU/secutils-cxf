@@ -41,7 +41,6 @@ import eu.unicore.util.Log;
 public class TDOutHandler extends AbstractSoapInterceptor {
 
 	private static final Logger logger = Log.getLogger(Log.SECURITY, TDOutHandler.class);
-	public static final String WSSEC_COMPILANT_PROPERTY = "eu.unicore.security.xfireutil.wssecComilant";
 
 	private List<TrustDelegation> assertionList=null;
 

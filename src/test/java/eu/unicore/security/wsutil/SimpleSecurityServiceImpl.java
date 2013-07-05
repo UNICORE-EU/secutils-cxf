@@ -27,6 +27,7 @@ import eu.unicore.security.SecurityTokens;
 import eu.unicore.security.UserAttributeHandler;
 import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.security.wsutil.client.ConditionalGetUtil;
+import eu.unicore.security.wsutil.client.SecuritySessionIDOutHandler;
 
 
 /**
@@ -140,6 +141,15 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 		return tokens.getClientIP();
 	}
 
+	@Override
+	public String TestSessionID(){
+		SecurityTokens tokens = getTokens();
+		
+		String sessionID=(String)tokens.getContext().get(SecuritySessionIDOutHandler.SESSION_ID_KEY);
+		
+		return sessionID;
+	}
+	
 	public static String currentRepresentation="test123";
 	public static Calendar lastMod=Calendar.getInstance();
 

@@ -23,6 +23,8 @@ import eu.unicore.security.etd.ETDApi;
 import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.security.wsutil.client.ClientDSigUtil;
 import eu.unicore.security.wsutil.client.ClientTrustDelegationUtil;
+import eu.unicore.security.wsutil.client.SessionSessionIDInHandler;
+import eu.unicore.security.wsutil.client.SecuritySessionIDOutHandler;
 
 public class TestETD extends AbstractTestBase
 {
@@ -292,6 +294,34 @@ public class TestETD extends AbstractTestBase
 	}
 
 
+	public void testSendSessionID()
+	{
+		try
+		{
+			MockSecurityConfig sec = new MockSecurityConfig(false, true, true); 
+			SimpleSecurityService s = makeProxy(sec);
+			
+			String msg = s.TestSessionID();
+			System.out.println("reply from service = "+msg);
+			String id=SessionSessionIDInHandler.getSessionID();
+			System.out.println("ID = "+id);
+			assertEquals(msg, id);
+			
+			SecuritySessionIDOutHandler.setSessionID(id);
+			String msg2 = s.TestSessionID();
+			System.out.println("2nd reply from service = "+msg2);
+			String id2=SessionSessionIDInHandler.getSessionID();
+			
+			// it's still the same session
+			assertEquals(id2, id);
+			
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
 	private List<TrustDelegation> createTD(boolean mode) 
 			throws Exception
 			{

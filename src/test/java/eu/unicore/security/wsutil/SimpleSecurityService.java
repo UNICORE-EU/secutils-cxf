@@ -54,4 +54,8 @@ public interface SimpleSecurityService
 	
 	@WebMethod()
 	public String TestConditionalGet() throws RemoteException;
+	
+
+	@WebMethod()
+	public String TestSessionID() throws RemoteException;
 }
