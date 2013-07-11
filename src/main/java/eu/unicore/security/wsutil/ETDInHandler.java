@@ -61,6 +61,7 @@ import eu.unicore.security.UnicoreSecurityFactory;
 import eu.unicore.security.ValidationResult;
 import eu.unicore.security.etd.ETDApi;
 import eu.unicore.security.etd.TrustDelegation;
+import eu.unicore.security.wsutil.client.SessionIDOutHandler;
 import eu.unicore.util.Log;
 
 /**
@@ -140,6 +141,11 @@ public class ETDInHandler extends AbstractSoapInterceptor
 			" must be configure before this ETD handler.");
 			return;
 		}
+		
+		if(Boolean.TRUE.equals(securityTokens.getContext().get(SessionIDOutHandler.REUSED_MARKER_KEY))){
+			return;
+		}
+		
 		try{
 			doCheck(securityTokens);
 		}catch(Exception ex){

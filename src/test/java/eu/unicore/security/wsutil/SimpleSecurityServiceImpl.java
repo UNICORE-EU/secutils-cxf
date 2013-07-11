@@ -27,7 +27,7 @@ import eu.unicore.security.SecurityTokens;
 import eu.unicore.security.UserAttributeHandler;
 import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.security.wsutil.client.ConditionalGetUtil;
-import eu.unicore.security.wsutil.client.SecuritySessionIDOutHandler;
+import eu.unicore.security.wsutil.client.SessionIDOutHandler;
 
 
 /**
@@ -145,7 +145,7 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 	public String TestSessionID(){
 		SecurityTokens tokens = getTokens();
 		
-		String sessionID=(String)tokens.getContext().get(SecuritySessionIDOutHandler.SESSION_ID_KEY);
+		String sessionID=(String)tokens.getContext().get(SessionIDOutHandler.SESSION_ID_KEY);
 		
 		return sessionID;
 	}

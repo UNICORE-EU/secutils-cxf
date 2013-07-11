@@ -120,14 +120,9 @@ public class WSClientFactory {
 		
 		inHandlers.add(new CheckUnderstoodHeadersHandler());
 		outHandlers.add(new CheckUnderstoodHeadersHandler());
-		
-		inHandlers.add(new ConditionalGetInHandler());
-		outHandlers.add(new ConditionalGetOutHandler());
-		
+
 		outHandlers.add(new XmlBeansNsHackOutHandler());
 		
-		inHandlers.add(new SessionSessionIDInHandler());
-		outHandlers.add(new SecuritySessionIDOutHandler());
 	}
 	
 	/**
@@ -166,7 +161,7 @@ public class WSClientFactory {
 		return proxy;
 	}
 	
-	protected <T> void setupProxyInterface(Class<T> iFace, Client xfireClient)
+	protected <T> void setupProxyInterface(Class<T> iFace, Client wsClient)
 	{
 	}
 
@@ -191,6 +186,7 @@ public class WSClientFactory {
 	
 	/**
 	 * add any handlers directly to the proxy object
+	 * 
 	 * @param proxy
 	 */
 	protected void doAddHandlers(Object proxy){
@@ -210,7 +206,8 @@ public class WSClientFactory {
 	}
 
 	/**
-	 * add any handlers directly to the proxy object
+	 * setup features on the proxy object
+	 * 
 	 * @param proxy
 	 */
 	protected void doAddFeatures(Object proxy){
@@ -356,7 +353,7 @@ public class WSClientFactory {
 	}
 
 	/**
-	 * Configure the XFire proxy: sets up security (SSL/HTTP authn),
+	 * Configure the WS proxy: sets up security (SSL/HTTP authn),
 	 * Gzip compression, HTTP proxy. 
 	 *  
 	 * @param proxy Proxy to be configured.

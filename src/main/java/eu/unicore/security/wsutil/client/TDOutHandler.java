@@ -191,6 +191,10 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 		if(!MessageUtils.isOutbound(message))
 			return;
 
+		// if we have a security session, do not do anything
+		if(SessionIDOutHandler.haveSessionID(message))
+			return;
+		
 		if (assertionListDOM == null && userAssertionDOM == null)
 		{
 			logger.debug("Neither TD nor User assertion available.");

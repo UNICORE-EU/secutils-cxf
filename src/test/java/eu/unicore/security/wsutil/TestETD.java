@@ -13,6 +13,8 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.cxf.endpoint.Client;
+
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.emi.security.authn.x509.proxy.ProxyCertificate;
 import eu.emi.security.authn.x509.proxy.ProxyCertificateOptions;
@@ -23,8 +25,11 @@ import eu.unicore.security.etd.ETDApi;
 import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.security.wsutil.client.ClientDSigUtil;
 import eu.unicore.security.wsutil.client.ClientTrustDelegationUtil;
-import eu.unicore.security.wsutil.client.SessionSessionIDInHandler;
-import eu.unicore.security.wsutil.client.SecuritySessionIDOutHandler;
+import eu.unicore.security.wsutil.client.SessionIDProviderImpl;
+import eu.unicore.security.wsutil.client.SessionIDInHandler;
+import eu.unicore.security.wsutil.client.SessionIDOutHandler;
+import eu.unicore.security.wsutil.client.SessionIDProvider;
+import eu.unicore.security.wsutil.client.WSClientFactory;
 
 public class TestETD extends AbstractTestBase
 {
@@ -303,14 +308,14 @@ public class TestETD extends AbstractTestBase
 			
 			String msg = s.TestSessionID();
 			System.out.println("reply from service = "+msg);
-			String id=SessionSessionIDInHandler.getSessionID();
+			String id=SessionIDInHandler.getSessionID();
 			System.out.println("ID = "+id);
 			assertEquals(msg, id);
 			
-			SecuritySessionIDOutHandler.setSessionID(id);
+			SessionIDOutHandler.setSessionID(id);
 			String msg2 = s.TestSessionID();
 			System.out.println("2nd reply from service = "+msg2);
-			String id2=SessionSessionIDInHandler.getSessionID();
+			String id2=SessionIDInHandler.getSessionID();
 			
 			// it's still the same session
 			assertEquals(id2, id);
@@ -322,6 +327,40 @@ public class TestETD extends AbstractTestBase
 		}
 	}
 	
+	public void testSessionIDProvider()
+	{
+		try
+		{
+			MockSecurityConfig sec = new MockSecurityConfig(false, true, true);
+			sec.setUseSecuritySessions(true);
+			SimpleSecurityService s = makeProxy(sec);
+			Client wsClient=WSClientFactory.getWSClient(s);
+			String uri=jetty.getUrls()[0]+"/services/foo";
+			wsClient.getRequestContext().put(SessionIDProvider.KEY, new SessionIDProviderImpl(uri));
+			
+			String msg = s.TestSessionID();
+			System.out.println("reply from service = "+msg);
+			SessionIDProvider p = SessionIDProviderImpl.getSessionIDProvider(s);
+			assertNotNull(p);
+			String id=p.getSessionID();
+			System.out.println("ID = "+id);
+			assertEquals(msg, id);
+			
+			p.setSessionID(id);
+			String msg2 = s.TestSessionID();
+			System.out.println("2nd reply from service = "+msg2);
+			String id2=p.getSessionID();
+			
+			// it's still the same session
+			assertEquals(id2, id);
+			
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			fail();
+		}
+	}
+
 	private List<TrustDelegation> createTD(boolean mode) 
 			throws Exception
 			{

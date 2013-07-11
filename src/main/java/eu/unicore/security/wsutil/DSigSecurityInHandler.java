@@ -28,6 +28,7 @@ import eu.unicore.security.SignatureStatus;
 import eu.unicore.security.dsig.DSigException;
 import eu.unicore.security.dsig.DigSignatureUtil;
 import eu.unicore.security.dsig.IdAttribute;
+import eu.unicore.security.wsutil.client.SessionIDOutHandler;
 import eu.unicore.security.wsutil.client.ToBeSignedDecider;
 import eu.unicore.util.Log;
 
@@ -96,7 +97,12 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 					AuthInHandler.class.getName() + " handler.");
 			return;
 		}
-
+		
+		if(Boolean.TRUE.equals(securityTokens.getContext().get(SessionIDOutHandler.REUSED_MARKER_KEY))){
+			return;
+		}
+		
+		
 		securityTokens.setMessageSignatureStatus(SignatureStatus.UNCHECKED);
 		Document doc = (Document) message.get(DSigParseInHandler.DOCUMENT_DOM_KEY);
 		if (doc == null)

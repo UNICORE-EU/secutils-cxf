@@ -15,8 +15,8 @@ import org.apache.cxf.transport.servlet.CXFNonSpringServlet;
 import eu.emi.security.authn.x509.impl.KeystoreCertChainValidator;
 import eu.unicore.security.wsutil.client.LogInMessageHandler;
 import eu.unicore.security.wsutil.client.LogOutMessageHandler;
-import eu.unicore.security.wsutil.client.SessionSessionIDInHandler;
-import eu.unicore.security.wsutil.client.SecuritySessionIDOutHandler;
+import eu.unicore.security.wsutil.client.SessionIDInHandler;
+import eu.unicore.security.wsutil.client.SessionIDOutHandler;
 import eu.unicore.security.wsutil.client.UnicoreWSClientFactory;
 import eu.unicore.security.wsutil.client.WSClientFactory;
 import eu.unicore.util.httpclient.IClientConfiguration;
@@ -27,7 +27,6 @@ import eu.unicore.util.httpclient.IClientConfiguration;
  */
 public abstract class AbstractTestBase extends TestCase
 {
-	public static final String BASE_URL = "https://localhost:64345";
 
 	protected JettyServer jetty; 
 
@@ -50,7 +49,7 @@ public abstract class AbstractTestBase extends TestCase
 		List<Interceptor<? extends Message>> s = factory.getInInterceptors();
 		addHandlers(s);
 		factory.getOutInterceptors().add(new ConditionalGetServerOutHandler());
-		factory.getOutInterceptors().add(new SecuritySessionIDOutHandler());
+		factory.getOutInterceptors().add(new SessionIDOutHandler());
 		factory.getOutInterceptors().add(new LogOutMessageHandler());
 		factory.create();
 	}
@@ -73,7 +72,7 @@ public abstract class AbstractTestBase extends TestCase
 		s.add(etdHandler);
 		s.add(new LogInMessageHandler());
 		s.add(new ConditionalGetServerInHandler());
-		s.add(new SessionSessionIDInHandler());
+		s.add(new SessionIDInHandler());
 	}
 	
 	

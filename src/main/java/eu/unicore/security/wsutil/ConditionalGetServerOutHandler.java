@@ -84,7 +84,7 @@ public class ConditionalGetServerOutHandler extends AbstractSoapInterceptor {
 			String etag=etags.get();
 			String modifiedTime=lastModified.get();
 			Boolean noMod=notModified.get();
-			if(noMod==null && etag == null && lastModified ==null) return null;
+			if(noMod==null && etag == null && modifiedTime ==null) return null;
 
 			StringBuilder sb=new StringBuilder();
 			sb.append("<cget:"+CG_HEADER+" xmlns:cget=\""+CG_HEADER_NS+"\">");
@@ -93,7 +93,7 @@ public class ConditionalGetServerOutHandler extends AbstractSoapInterceptor {
 			}
 			else{
 				if(etag!=null)sb.append("<cget:Etag>"+etag+"</cget:Etag>");
-				if(lastModified!=null)sb.append("<cget:LastModified>"+modifiedTime+"</cget:LastModified>");
+				if(modifiedTime!=null)sb.append("<cget:LastModified>"+modifiedTime+"</cget:LastModified>");
 			}
 
 			sb.append("</cget:"+CG_HEADER+">");

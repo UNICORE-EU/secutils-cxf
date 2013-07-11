@@ -101,6 +101,14 @@ public class UnicoreWSClientFactory extends WSClientFactory
 			outHandlers.add(new ExtendedTDOutHandler(security));
 
 		addHandlers(inHandlers, security.getInHandlerClassNames());
+		
+		inHandlers.add(new ConditionalGetInHandler());
+		outHandlers.add(new ConditionalGetOutHandler());
+		
+		if(security.useSecuritySessions()){
+			inHandlers.add(new SessionIDInHandler());
+			outHandlers.add(new SessionIDOutHandler());
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -136,11 +144,20 @@ public class UnicoreWSClientFactory extends WSClientFactory
 		}
 	}
 
-	@Override
-	protected <T> void setupProxyInterface(Class<T> iFace, Client xfireClient)
+	protected void setupProxy(Object proxy, String uri)
 	{
-		super.setupProxyInterface(iFace, xfireClient);
-		xfireClient.getRequestContext().put(ContextDSigDecider.SIGNED_OPERATIONS, 
+		super.setupProxy(proxy, uri);
+		Client wsClient=getWSClient(proxy);
+		if(security.useSecuritySessions()){
+			wsClient.getRequestContext().put(SessionIDProvider.KEY, new SessionIDProviderImpl(uri));
+		}
+	}
+	
+	@Override
+	protected <T> void setupProxyInterface(Class<T> iFace, Client wsClient)
+	{
+		super.setupProxyInterface(iFace, wsClient);
+		wsClient.getRequestContext().put(ContextDSigDecider.SIGNED_OPERATIONS, 
 				getOperationsToSign(iFace));
 	}
 

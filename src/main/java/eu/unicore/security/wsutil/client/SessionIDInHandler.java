@@ -32,101 +32,45 @@
 
 package eu.unicore.security.wsutil.client;
 
-import java.io.ByteArrayInputStream;
-import java.util.List;
-
-import javax.xml.namespace.QName;
-
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
-import org.apache.cxf.helpers.DOMUtils;
-import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
 import org.w3c.dom.Element;
 
 /**
- * A client handler that sets the security session cookie header.
- * The cookie must be put into thread-local storage before making the call.
+ * A client handler that reads the security session ID header which is set by the
+ * server.
  * 
  * @author schuller
  * @author K. Benedyczak
  */
-public class SecuritySessionIDOutHandler extends AbstractSoapInterceptor {
+public class SessionIDInHandler extends AbstractSoapInterceptor {
 
 	private static final ThreadLocal<String>sessionIDs=new ThreadLocal<String>();
 
-	public static final String SESSION_ID_KEY="unicore-security-session-id";
-
-	//header namespace
-	public static final String CG_HEADER_NS="http://www.unicore.eu/unicore/ws";
-
-	//header element name
-	public static final String CG_HEADER="SecuritySessionID";
-
-	public final static QName headerQName=new QName(CG_HEADER_NS,CG_HEADER);
-
-	public SecuritySessionIDOutHandler() {
-		super(Phase.PRE_PROTOCOL);
-		getBefore().add(TDOutHandler.class.getName());
-		getBefore().add(ExtendedTDOutHandler.class.getName());
+	public SessionIDInHandler() {
+		super(Phase.INVOKE);
 	}
 
 	public synchronized void handleMessage(SoapMessage message) {
-		try{
-			String sessionID=getSessionID();
-			if(sessionID==null)
-				return;
-
-			if(!MessageUtils.isOutbound(message))
-				return;
-			
-			Element header=buildHeader();
-			if(header == null)return;
-
-			List<Header> h = message.getHeaders();
-			h.add(new Header(headerQName,header));
-		}
-		finally{
-			clear();
-		}
-	}
-	
-	public Element buildHeader() {
-		Element header=null;
-		try{
-			String id=sessionIDs.get();
-			if(id == null) return null;
-
-			StringBuilder sb=new StringBuilder();
-			sb.append("<sid:"+CG_HEADER+" xmlns:sid=\""+CG_HEADER_NS+"\">");
-			sb.append(id);
-			sb.append("</sid:"+CG_HEADER+">");
-			try{
-				header= DOMUtils.readXml(
-						new ByteArrayInputStream(sb.toString().getBytes())).getDocumentElement();
-			}catch(Exception e){
-				throw new RuntimeException(e);
+		sessionIDs.remove();
+		Header header=message.getHeader(SessionIDOutHandler.headerQName);
+		if(header==null)return;
+		Element hdr = (Element) header.getObject();		
+		String sessionID= hdr!=null? hdr.getTextContent() : null; 
+		if(sessionID!=null){
+			SessionIDProvider idProvider=SessionIDOutHandler.getSessionIDProvider(message);
+			if(idProvider!=null){
+				idProvider.setSessionID(sessionID);
 			}
-		}catch(Exception e){
-
+			sessionIDs.set(sessionID);
 		}
-
-		return header;
-	}
-
-	public static void setSessionID(String sessionID){
-		sessionIDs.set(sessionID);
 	}
 
 	public static String getSessionID(){
 		return sessionIDs.get();
 	}
-	
-	public static void clear(){
-		sessionIDs.remove();
-	}
-	
 }
 
 
