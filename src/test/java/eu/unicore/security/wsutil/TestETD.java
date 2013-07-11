@@ -13,8 +13,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.cxf.endpoint.Client;
-
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.emi.security.authn.x509.proxy.ProxyCertificate;
 import eu.emi.security.authn.x509.proxy.ProxyCertificateOptions;
@@ -25,11 +23,8 @@ import eu.unicore.security.etd.ETDApi;
 import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.security.wsutil.client.ClientDSigUtil;
 import eu.unicore.security.wsutil.client.ClientTrustDelegationUtil;
-import eu.unicore.security.wsutil.client.SessionIDProviderImpl;
-import eu.unicore.security.wsutil.client.SessionIDInHandler;
-import eu.unicore.security.wsutil.client.SessionIDOutHandler;
 import eu.unicore.security.wsutil.client.SessionIDProvider;
-import eu.unicore.security.wsutil.client.WSClientFactory;
+import eu.unicore.security.wsutil.client.SessionIDProviderImpl;
 
 public class TestETD extends AbstractTestBase
 {
@@ -297,35 +292,6 @@ public class TestETD extends AbstractTestBase
 			fail();
 		}
 	}
-
-
-	public void testSendSessionID()
-	{
-		try
-		{
-			MockSecurityConfig sec = new MockSecurityConfig(false, true, true); 
-			SimpleSecurityService s = makeProxy(sec);
-			
-			String msg = s.TestSessionID();
-			System.out.println("reply from service = "+msg);
-			String id=SessionIDInHandler.getSessionID();
-			System.out.println("ID = "+id);
-			assertEquals(msg, id);
-			
-			SessionIDOutHandler.setSessionID(id);
-			String msg2 = s.TestSessionID();
-			System.out.println("2nd reply from service = "+msg2);
-			String id2=SessionIDInHandler.getSessionID();
-			
-			// it's still the same session
-			assertEquals(id2, id);
-			
-		} catch (Exception e)
-		{
-			e.printStackTrace();
-			fail();
-		}
-	}
 	
 	public void testSessionIDProvider()
 	{
@@ -333,10 +299,7 @@ public class TestETD extends AbstractTestBase
 		{
 			MockSecurityConfig sec = new MockSecurityConfig(false, true, true);
 			sec.setUseSecuritySessions(true);
-			SimpleSecurityService s = makeProxy(sec);
-			Client wsClient=WSClientFactory.getWSClient(s);
-			String uri=jetty.getUrls()[0]+"/services/foo";
-			wsClient.getRequestContext().put(SessionIDProvider.KEY, new SessionIDProviderImpl(uri));
+			SimpleSecurityService s = makeSecuredProxy(sec);
 			
 			String msg = s.TestSessionID();
 			System.out.println("reply from service = "+msg);

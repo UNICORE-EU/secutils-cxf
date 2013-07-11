@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.security.auth.x500.X500Principal;
 import javax.servlet.http.HttpServletRequest;
@@ -106,6 +107,11 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	private boolean verifyConsignor;
 	private String actor;
 
+	private boolean sessionsEnabled=true;
+	
+	// session time to expiry in millis
+	private long sessionLifetime = 60*60*1000;
+	
 	private List<UserAttributeHandler> userAttributeHandlers = new ArrayList<UserAttributeHandler>();
 	
 	private final Set<QName>qnameSet=new HashSet<QName>();
@@ -113,12 +119,20 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	/**
 	 * store security tokens keyed by security session ID
 	 * 
-	 * TODO setup expiry thread and store last access times
-	 * TODO could we use the consignor to identify sessions?
+	 * TODO setup expiry thread
 	 */
-	private static final ConcurrentHashMap<String, SecurityTokens>tokenRef=
-			new ConcurrentHashMap<String, SecurityTokens>();
+	private static final ConcurrentHashMap<String, SecuritySession>sessions=
+			new ConcurrentHashMap<String, SecuritySession>();
 	
+	/**
+	 * stores number of sessions per user (identified as effective DN + Client IP)
+	 * If this exceeds a threshold, the least-recently-used sessiop is removed
+	 */
+	private static final ConcurrentHashMap<String, AtomicInteger>sessionsPerUser=
+			new ConcurrentHashMap<String, AtomicInteger>();
+	
+	private int maxSessionsPerUser=100;
+
 	/**
 	 * Constructs instance of the handler. It will accept assertions in the header element
 	 * without the actor set. Note that by default out handlers do not set the actor so
@@ -168,6 +182,24 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		this.actor = actor;
 	}
 
+	
+	public boolean isSessionsEnabled() {
+		return sessionsEnabled;
+	}
+
+	public void setSessionsEnabled(boolean sessionsEnabled) {
+		this.sessionsEnabled = sessionsEnabled;
+	}
+
+	/**
+	 * set the session lifetime in millis
+	 * 
+	 * @param lifetime
+	 */
+	public void setSessionLifetime(long lifetime) {
+		this.sessionLifetime=lifetime;
+	}
+
 	public void addUserAttributeHandler(UserAttributeHandler uh){
 		userAttributeHandlers.add(uh);
 	}
@@ -182,56 +214,63 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	public void handleMessage(SoapMessage ctx)
 	{
 		String sessionID=getSecuritySessionID(ctx);
-		boolean newSessionRequested = SessionIDOutHandler.SESSION_ID_REQUEST.equals(sessionID);
-		SecurityTokens mainToken = getOrCreateTokens(ctx, sessionID, newSessionRequested);
-		
-		if(sessionID==null || newSessionRequested)
+		SecuritySession session = getOrCreateSession(ctx, sessionID);
+		SecurityTokens mainToken = session.getTokens();
+		if(sessionID==null)
 		{
 			process(ctx, mainToken);
 		}
 		ctx.put(SecurityTokens.KEY, mainToken);
+		
+		// in case it's a new session, increment the session counter
+		if(!Boolean.TRUE.equals(mainToken.getContext().get(SessionIDOutHandler.REUSED_MARKER_KEY))){
+			String userKey=getUserKey(mainToken);
+			AtomicInteger i = getOrCreateSessionCounter(userKey);
+			int l=i.incrementAndGet();
+			// if the max count is exceeded, expel the least recently used session
+			if(l>maxSessionsPerUser){
+				i.decrementAndGet();
+				expelLRUSession(userKey);
+			}
+		}
 	}
 
 	/**
-	 * get security tokens from the stored session, or create new ones if required
+	 * get the stored session, or create a new one if required
 	 *  
 	 * @param message
 	 * @param sessionID
-	 * @param newSessionRequested - if the client has explicitely asked for a new session
 	 * @return
 	 */
-	protected SecurityTokens getOrCreateTokens(SoapMessage message, String sessionID, boolean newSessionRequested){
-		
+	protected SecuritySession getOrCreateSession(SoapMessage message, String sessionID){
+		SecuritySession session = null;
 		SecurityTokens tokens=null;
 		
-		boolean tryReuseSesson = sessionID!=null && !newSessionRequested;
-		
-		if(tryReuseSesson){
-			tokens=tokenRef.get(sessionID);
-			if(tokens==null){
-				// got a session ID from the client, but no tokens: fault
+		if(sessionID!=null){
+			session=sessions.get(sessionID);
+			if(session==null){
+				// got a session ID from the client, but no session: fault
 				sessionID=null;
 				Fault f = new Fault((Throwable)null); // null is OK
 				f.setStatusCode(432); // unassigned according to IANA ;)
 				f.setMessage("No (valid) security session found, please (re-)send full security data!");
 				throw f;
 			}
+			tokens=session.getTokens();
 			tokens.getContext().put(SessionIDOutHandler.REUSED_MARKER_KEY, Boolean.TRUE);
 		}
 		else{
 			tokens=new SecurityTokens();
-			if(newSessionRequested){
-				sessionID=UUID.randomUUID().toString();
-				tokens.getContext().put(SessionIDOutHandler.SESSION_ID_KEY, sessionID);
-				tokenRef.put(sessionID, tokens);
-			}
-			
+			sessionID=UUID.randomUUID().toString();
+			tokens.getContext().put(SessionIDOutHandler.SESSION_ID_KEY, sessionID);
+			session = new SecuritySession(sessionID, tokens, sessionLifetime);
+			sessions.put(sessionID, session);
 		}
 		if(sessionID!=null){
-			// make sure session ID goes to the client
-			SessionIDServerOutHandler.setSessionID(sessionID);
+			// make sure session info goes to the client
+			SessionIDServerOutHandler.setSession(session);
 		}
-		return tokens;
+		return session;
 	}
 	
 	/**
@@ -604,5 +643,32 @@ public class AuthInHandler extends AbstractSoapInterceptor
 				sessionID = hdr.getTextContent(); 
 		}
 		return sessionID;
+	}
+	
+
+	protected String getUserKey(SecurityTokens tokens){
+		return tokens.getConsignorName()+"@"+tokens.getClientIP();
+	}
+	
+	protected synchronized AtomicInteger getOrCreateSessionCounter(String userKey){
+		AtomicInteger i=sessionsPerUser.get(userKey);
+		if(i==null){
+			i=new AtomicInteger();
+			sessionsPerUser.put(userKey, i);
+		}
+		return i;
+	}
+	
+	protected void expelLRUSession(String key){
+		SecuritySession lru=null;
+		for(SecuritySession session: sessions.values()){
+			if(!key.equals(session.getUserKey()))continue;
+			if(lru==null || lru.getLastAccessed()>session.getLastAccessed()){
+				lru=session;
+			}
+		}
+		if(lru!=null){
+			sessions.remove(lru.getSessionID());
+		}
 	}
 }

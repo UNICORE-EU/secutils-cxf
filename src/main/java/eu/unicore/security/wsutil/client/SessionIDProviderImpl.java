@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * default implementation for dealing with session IDs
+ * on the client side
  *
  * @author schuller
  */
@@ -15,6 +16,10 @@ public class SessionIDProviderImpl implements SessionIDProvider {
 
 	private final String serverID;
 
+	private String scope;
+	
+	private long lifetime;
+	
 	/**
 	 * @param uri - the service URI
 	 */
@@ -55,6 +60,22 @@ public class SessionIDProviderImpl implements SessionIDProvider {
 
 	public String getServerID(){
 		return serverID;
+	}
+	
+	public void setScope(String scope){
+		this.scope=scope;
+	}
+	
+	public String getScope(){
+		return scope;
+	}
+
+	public long getLifetime() {
+		return lifetime;
+	}
+
+	public void setLifetime(long lifetime) {
+		this.lifetime = lifetime;
 	}
 
 	// static map for server IDs and session IDs 

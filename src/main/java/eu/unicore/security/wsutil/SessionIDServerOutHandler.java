@@ -53,7 +53,7 @@ import eu.unicore.security.wsutil.client.SessionIDOutHandler;
  */
 public class SessionIDServerOutHandler extends AbstractSoapInterceptor {
 
-	private static final ThreadLocal<String>sessionIDs=new ThreadLocal<String>();
+	private static final ThreadLocal<SecuritySession>sessions=new ThreadLocal<SecuritySession>();
 
 	public SessionIDServerOutHandler() {
 		super(Phase.PRE_PROTOCOL);
@@ -64,13 +64,15 @@ public class SessionIDServerOutHandler extends AbstractSoapInterceptor {
 			if(!MessageUtils.isOutbound(message))
 				return;
 			
-			String sessionID=getSessionID();
-			
-			if(sessionID==null){
+			SecuritySession session=sessions.get();
+
+			if(session==null){
 				return;
 			}
+			String sessionID=session.getSessionID();
+			long lifetime=session.getLifetime();
 			
-			Element header=SessionIDOutHandler.buildHeader(sessionID);
+			Element header=SessionIDOutHandler.buildHeader(sessionID, lifetime);
 			if(header == null)return;
 
 			List<Header> h = message.getHeaders();
@@ -81,16 +83,12 @@ public class SessionIDServerOutHandler extends AbstractSoapInterceptor {
 		}
 	}
 
-	public static void setSessionID(String sessionID){
-		sessionIDs.set(sessionID);
+	public static void setSession(SecuritySession session){
+		sessions.set(session);
 	}
 
-	public static String getSessionID(){
-		return sessionIDs.get();
-	}
-	
 	public static void clear(){
-		sessionIDs.remove();
+		sessions.remove();
 	}
 
 }

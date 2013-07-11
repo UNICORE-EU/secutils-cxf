@@ -120,7 +120,6 @@ public class ConditionalGetInHandler extends AbstractSoapInterceptor
 		}
 		etag.set(inm);
 		lastModified.set(ims);
-
 	}
 
 	public static String getEtag(){
@@ -132,7 +131,7 @@ public class ConditionalGetInHandler extends AbstractSoapInterceptor
 	}
 	
 	public static boolean isNotModified(){
-		return notModified.get();
+		return Boolean.TRUE.equals(notModified.get());
 	}
 }
 

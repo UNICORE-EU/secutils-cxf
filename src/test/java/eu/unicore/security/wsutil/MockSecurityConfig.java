@@ -80,6 +80,7 @@ public class MockSecurityConfig extends DefaultClientConfiguration
 			ret.setHttpClientProperties(getHttpClientProperties());
 			ret.setInHandlerClassNames(getInHandlerClassNames());
 			ret.setOutHandlerClassNames(getOutHandlerClassNames());
+			ret.setUseSecuritySessions(useSecuritySessions());
 			return ret;
 		} catch (Exception e)
 		{

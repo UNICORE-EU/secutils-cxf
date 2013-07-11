@@ -35,6 +35,7 @@ package eu.unicore.security.wsutil.client;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
+import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.phase.Phase;
 import org.w3c.dom.Element;
 
@@ -58,7 +59,9 @@ public class SessionIDInHandler extends AbstractSoapInterceptor {
 		Header header=message.getHeader(SessionIDOutHandler.headerQName);
 		if(header==null)return;
 		Element hdr = (Element) header.getObject();		
-		String sessionID= hdr!=null? hdr.getTextContent() : null; 
+		
+		Element id=DOMUtils.getFirstChildWithName(hdr,SessionIDOutHandler.idQName);
+		String sessionID= id!=null? id.getTextContent() : null; 
 		if(sessionID!=null){
 			SessionIDProvider idProvider=SessionIDOutHandler.getSessionIDProvider(message);
 			if(idProvider!=null){
@@ -66,11 +69,22 @@ public class SessionIDInHandler extends AbstractSoapInterceptor {
 			}
 			sessionIDs.set(sessionID);
 		}
+		
+		Element lt=DOMUtils.getFirstChildWithName(hdr,SessionIDOutHandler.ltQName);
+		String lifetime= lt!=null? lt.getTextContent() : null; 
+		if(lifetime!=null){
+			SessionIDProvider idProvider=SessionIDOutHandler.getSessionIDProvider(message);
+			if(idProvider!=null){
+				idProvider.setLifetime(Long.valueOf(lifetime));
+			}
+		}
+		
 	}
 
 	public static String getSessionID(){
 		return sessionIDs.get();
 	}
+
 }
 
 

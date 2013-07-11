@@ -11,4 +11,11 @@ public interface SessionIDProvider {
 	
 	public void setSessionID(String sessionID);
 
+	public void setLifetime(long lifetime);
+	
+	public long getLifetime();
+
+	public void setScope(String scope);
+
+	public String getScope();
 }

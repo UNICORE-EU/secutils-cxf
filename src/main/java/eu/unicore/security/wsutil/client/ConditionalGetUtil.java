@@ -51,7 +51,7 @@ public class ConditionalGetUtil {
 		 * @return <code>true</code> iff the server-side data was not modified 
 		 */
 		public static boolean isNotModified(){
-			return ConditionalGetInHandler.isNotModified();
+			return Boolean.TRUE.equals(ConditionalGetInHandler.isNotModified());
 		}
 
 

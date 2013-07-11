@@ -148,9 +148,7 @@ public class UnicoreWSClientFactory extends WSClientFactory
 	{
 		super.setupProxy(proxy, uri);
 		Client wsClient=getWSClient(proxy);
-		if(security.useSecuritySessions()){
-			wsClient.getRequestContext().put(SessionIDProvider.KEY, new SessionIDProviderImpl(uri));
-		}
+		wsClient.getRequestContext().put(SessionIDProvider.KEY, new SessionIDProviderImpl(uri));
 	}
 	
 	@Override

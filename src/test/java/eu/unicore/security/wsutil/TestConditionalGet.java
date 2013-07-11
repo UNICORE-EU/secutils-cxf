@@ -21,7 +21,7 @@ public class TestConditionalGet extends AbstractTestBase
 		try
 		{
 			MockSecurityConfig sec = new MockSecurityConfig(false, false, false); 
-			SimpleSecurityService s = makeProxy(sec);
+			SimpleSecurityService s = makeSecuredProxy(sec);
 			
 			// data was last changed a while ago
 			SimpleSecurityServiceImpl.lastMod.add(Calendar.MONTH, -2);

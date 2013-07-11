@@ -69,21 +69,17 @@ public class SessionIDOutHandler extends AbstractSoapInterceptor {
 	 */
 	public static final String REUSED_MARKER_KEY="reused-unicore-security-session";
 
-	/*
-	 * this is placed into the message to indicate that the client understands
-	 * session IDs. In this way, the server will not create new sessions all the time for
-	 * "old" clients that do not know about sessions
-	 */
-	public static final String SESSION_ID_REQUEST="request-new-unicore-security-session";
-
 	//header namespace
-	public static final String CG_HEADER_NS="http://www.unicore.eu/unicore/ws";
+	public static final String SESSION_HDR_NS="http://www.unicore.eu/unicore/ws";
 
 	//header element name
-	public static final String CG_HEADER="SecuritySessionID";
+	public static final String SESSION_HEADER="SecuritySession";
 
-	public final static QName headerQName=new QName(CG_HEADER_NS,CG_HEADER);
+	public final static QName headerQName=new QName(SESSION_HDR_NS,SESSION_HEADER);
 
+	public final static QName idQName=new QName(SESSION_HDR_NS,"ID");
+	public final static QName ltQName=new QName(SESSION_HDR_NS,"Lifetime");
+	
 	public SessionIDOutHandler() {
 		super(Phase.PRE_PROTOCOL);
 		getBefore().add(TDOutHandler.class.getName());
@@ -94,6 +90,7 @@ public class SessionIDOutHandler extends AbstractSoapInterceptor {
 		try{
 			if(!MessageUtils.isOutbound(message))
 				return;
+			
 			String sessionID=null;
 			
 			SessionIDProvider idProvider=getSessionIDProvider(message);
@@ -105,13 +102,10 @@ public class SessionIDOutHandler extends AbstractSoapInterceptor {
 				// try thread local
 				sessionID=getSessionID();
 			}
+			if(sessionID==null)
+				return;
 			
-			if(sessionID==null){
-				// request one
-				sessionID=SESSION_ID_REQUEST;
-			}
-			
-			Element header=buildHeader(sessionID);
+			Element header=buildHeader(sessionID,-1);
 			if(header == null)return;
 
 			List<Header> h = message.getHeaders();
@@ -122,15 +116,22 @@ public class SessionIDOutHandler extends AbstractSoapInterceptor {
 		}
 	}
 	
-	public static Element buildHeader(String sessionID) {
+	/**
+	 * 
+	 * @param sessionID
+	 * @param lifetime - if larger than -1, the lifetime info will be added to the element
+	 * @return
+	 */
+	public static Element buildHeader(String sessionID, long lifetime) {
 		Element header=null;
 		try{
 			if(sessionID==null) return null;
 
 			StringBuilder sb=new StringBuilder();
-			sb.append("<sid:"+CG_HEADER+" xmlns:sid=\""+CG_HEADER_NS+"\">");
-			sb.append(sessionID);
-			sb.append("</sid:"+CG_HEADER+">");
+			sb.append("<sid:"+SESSION_HEADER+" xmlns:sid=\""+SESSION_HDR_NS+"\">");
+			sb.append("<sid:ID>"+sessionID+"</sid:ID>");
+			if(lifetime>-1)sb.append("<sid:Lifetime>"+lifetime+"</sid:Lifetime>");
+			sb.append("</sid:"+SESSION_HEADER+">");
 			try{
 				header= DOMUtils.readXml(
 						new ByteArrayInputStream(sb.toString().getBytes())).getDocumentElement();
