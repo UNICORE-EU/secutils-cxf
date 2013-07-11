@@ -32,18 +32,16 @@
 
 package eu.unicore.security.wsutil;
 
-import java.io.ByteArrayInputStream;
 import java.util.List;
-
-import javax.xml.namespace.QName;
 
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
-import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
 import org.w3c.dom.Element;
+
+import eu.unicore.security.wsutil.client.SessionIDOutHandler;
 
 /**
  * A server-side handler that writes the security session header.
@@ -56,31 +54,6 @@ import org.w3c.dom.Element;
 public class SessionIDServerOutHandler extends AbstractSoapInterceptor {
 
 	private static final ThreadLocal<String>sessionIDs=new ThreadLocal<String>();
-
-	/**
-	 * used to store the session ID in the security tokens
-	 */
-	public static final String SESSION_ID_KEY="unicore-security-session-id";
-
-	/**
-	 * used to mark that the security tokens were taken from an existing session
-	 */
-	public static final String REUSED_MARKER_KEY="reused-unicore-security-session";
-
-	/*
-	 * this is placed into the message to indicate that the client understands
-	 * session IDs. In this way, the server will not create new sessions all the time for
-	 * "old" clients that do not know about sessions
-	 */
-	public static final String SESSION_ID_REQUEST="request-new-unicore-security-session";
-
-	//header namespace
-	public static final String CG_HEADER_NS="http://www.unicore.eu/unicore/ws";
-
-	//header element name
-	public static final String CG_HEADER="SecuritySessionID";
-
-	public final static QName headerQName=new QName(CG_HEADER_NS,CG_HEADER);
 
 	public SessionIDServerOutHandler() {
 		super(Phase.PRE_PROTOCOL);
@@ -97,37 +70,15 @@ public class SessionIDServerOutHandler extends AbstractSoapInterceptor {
 				return;
 			}
 			
-			Element header=buildHeader(sessionID);
+			Element header=SessionIDOutHandler.buildHeader(sessionID);
 			if(header == null)return;
 
 			List<Header> h = message.getHeaders();
-			h.add(new Header(headerQName,header));
+			h.add(new Header(SessionIDOutHandler.headerQName,header));
 		}
 		finally{
 			clear();
 		}
-	}
-	
-	public Element buildHeader(String sessionID) {
-		Element header=null;
-		try{
-			if(sessionID==null) return null;
-
-			StringBuilder sb=new StringBuilder();
-			sb.append("<sid:"+CG_HEADER+" xmlns:sid=\""+CG_HEADER_NS+"\">");
-			sb.append(sessionID);
-			sb.append("</sid:"+CG_HEADER+">");
-			try{
-				header= DOMUtils.readXml(
-						new ByteArrayInputStream(sb.toString().getBytes())).getDocumentElement();
-			}catch(Exception e){
-				throw new RuntimeException(e);
-			}
-		}catch(Exception e){
-
-		}
-
-		return header;
 	}
 
 	public static void setSessionID(String sessionID){

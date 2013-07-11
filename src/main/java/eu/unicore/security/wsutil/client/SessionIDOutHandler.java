@@ -122,7 +122,7 @@ public class SessionIDOutHandler extends AbstractSoapInterceptor {
 		}
 	}
 	
-	public Element buildHeader(String sessionID) {
+	public static Element buildHeader(String sessionID) {
 		Element header=null;
 		try{
 			if(sessionID==null) return null;
