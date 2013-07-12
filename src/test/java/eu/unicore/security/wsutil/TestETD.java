@@ -58,6 +58,7 @@ public class TestETD extends AbstractTestBase
 			MockSecurityConfig config = new MockSecurityConfig(false, true, true);
 			config.getETDSettings().initializeSimple(JettyServer.SERVER_IDENTITY,
 					config.getCredential());
+			SessionIDProviderImpl.clearAll();
 			SimpleSecurityService s = makeSecuredProxy(config);
 			ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, null);
 
@@ -101,6 +102,7 @@ public class TestETD extends AbstractTestBase
 		{
 			System.out.println("\nTest USER using proxy\n");
 			MockSecurityConfig config = new MockSecurityConfig(false, true, true); 
+			SessionIDProviderImpl.clearAll();
 			SimpleSecurityService s = makeSecuredProxy(config);
 
 			List<TrustDelegation> tds = createTDWithProxy();
@@ -127,6 +129,7 @@ public class TestETD extends AbstractTestBase
 			config.getETDSettings().initializeSimple(JettyServer.SERVER_IDENTITY,
 					config.getCredential());
 			config.getETDSettings().getRequestedUserAttributes2().put("preference", new String [] {"user"});
+			SessionIDProviderImpl.clearAll();
 			SimpleSecurityService s = makeSecuredProxy(config);
 
 			String prefRet = s.TestPreference();
