@@ -317,6 +317,12 @@ public class TestETD extends AbstractTestBase
 			// it's still the same session
 			assertEquals(id2, id);
 			
+			// check that the SessionIDProviderImpl tracks everything
+			System.out.println("Stored sessionIDs: "+SessionIDProviderImpl.getAll());
+			assertEquals(1, SessionIDProviderImpl.getAll().size());
+			assertEquals(id2, SessionIDProviderImpl.getAll().values().iterator().next());
+			
+			
 		} catch (Exception e)
 		{
 			e.printStackTrace();

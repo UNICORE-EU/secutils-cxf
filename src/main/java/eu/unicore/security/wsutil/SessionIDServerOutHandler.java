@@ -69,6 +69,7 @@ public class SessionIDServerOutHandler extends AbstractSoapInterceptor {
 			if(session==null){
 				return;
 			}
+			
 			String sessionID=session.getSessionID();
 			long lifetime=session.getLifetime();
 			

@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 
+import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.clustering.FailoverFeature;
 import org.apache.cxf.clustering.FailoverTargetSelector;
 import org.apache.cxf.clustering.RetryStrategy;
@@ -11,6 +12,7 @@ import org.apache.cxf.message.Exchange;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.transport.Conduit;
 import org.apache.cxf.transport.http.HTTPConduit;
+import org.apache.cxf.transport.http.HTTPException;
 
 /**
  * Handle retries of failed WS calls
@@ -22,6 +24,8 @@ public class RetryFeature extends FailoverFeature{
 	private final WSClientFactory factory;
 	
 	private boolean enabled=true;
+	
+	private boolean retryImmediately = false; 
 	
 	private final Set<Class<? extends Throwable>>exceptionClasses = new HashSet<Class<? extends Throwable>>();
 	
@@ -56,7 +60,18 @@ public class RetryFeature extends FailoverFeature{
 	}
 
 	public long getDelayBetweenRetries(){
-		return getStrategy().getDelayBetweenRetries();
+		long res=0;
+		if(retryImmediately){
+			retryImmediately=false;
+		}
+		else{
+			res=getStrategy().getDelayBetweenRetries();
+		}
+		return res;
+	}
+	
+	public void setRetryImmediately(){
+		retryImmediately=true;
 	}
 	
 	public RetryStrategy getStrategy()  {
@@ -100,12 +115,18 @@ public class RetryFeature extends FailoverFeature{
 	}
 
 	public static class MyTargetSelector extends FailoverTargetSelector{
+		
 		RetryFeature feature;
 
 		public MyTargetSelector(RetryFeature feature){
 			this.feature=feature;
 		}
 		
+		@Override
+		protected long getDelayBetweenRetries() {
+			return feature.getDelayBetweenRetries();
+		}
+
 		@Override
 		public Conduit selectConduit(Message message) {
 			Conduit c=super.selectConduit(message);
@@ -117,17 +138,26 @@ public class RetryFeature extends FailoverFeature{
 			return c;
 		}
 		
-		// mostly opy&paste the original code to add a hook for our own exception
+		// mostly copy&paste the original code to add a hook for our own exception
 		// exception checks -> TODO add a CXF change request?
 		@Override
 		protected boolean requiresFailover(Exchange exchange) {
 			Exception ex = getException(exchange);
+			
 			getLogger().log(Level.FINE,
 					"CHECK_LAST_INVOKE_FAILED",
 					new Object[] {ex != null});
 			Throwable curr = ex;
 			boolean failover = false;
 			while (curr != null) {
+				if(curr instanceof HTTPException){
+					int s=((HTTPException)curr).getResponseCode();
+					if(s == 432){
+						clearSessionID(exchange);
+						feature.setRetryImmediately();
+						return true;
+					}
+				}
 				failover = feature.requiresFailover(curr);
 				curr = curr.getCause();
 			}
@@ -146,11 +176,26 @@ public class RetryFeature extends FailoverFeature{
 				return exchange.getOutFaultMessage().getContent(Exception.class);
 			} else if (exchange.getInMessage() != null) {
 				return exchange.getInMessage().getContent(Exception.class);
+			} else if (exchange.getOutMessage() != null) {
+				return exchange.getOutMessage().getContent(Exception.class);
 			}
 			return null;
 		}
+
+		protected void clearSessionID(Exchange exchange){
+			try{
+				SoapMessage soapMessage = (SoapMessage)exchange.getOutMessage();
+				SessionIDProvider p=SessionIDOutHandler.getSessionIDProvider(soapMessage);
+				if(p!=null){
+					p.setSessionID(null);
+				}
+			}catch(Exception ex){
+				ex.printStackTrace();
+			}
+		}
 	}
 	
+
 	
 	public static interface ExceptionChecker {
 		

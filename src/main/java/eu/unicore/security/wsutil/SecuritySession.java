@@ -8,17 +8,16 @@ public class SecuritySession {
 	
 	private final SecurityTokens tokens;
 	
+	private final long expires;
+	
 	private long lastAccessed;
 	
 	private String userKey;
-	
-	// milliseconds of inactivity before session is invalidated
-	private long lifetime = 0;
 			
 	public SecuritySession(String sessionID, SecurityTokens tokens, long lifetime){
 		this.sessionID=sessionID;
 		this.tokens=tokens;
-		this.lifetime=lifetime;
+		this.expires=System.currentTimeMillis()+lifetime;
 		this.lastAccessed=System.currentTimeMillis();
 	}
 	
@@ -29,7 +28,7 @@ public class SecuritySession {
 	}
 	
 	public boolean isExpired(){
-		return lifetime>0 && lastAccessed+lifetime<System.currentTimeMillis();
+		return expires<System.currentTimeMillis();
 	}
 	
 	public String getSessionID() {
@@ -47,9 +46,13 @@ public class SecuritySession {
 	public long getLastAccessed(){
 		return lastAccessed;
 	}
-	
+
+	/**
+	 * return the remaining lifetime in milliseconds
+	 * @return
+	 */
 	public long getLifetime(){
-		return lifetime;
+		long lt = expires-System.currentTimeMillis();
+		return lt>0 ? lt : 0;
 	}
-	
 }

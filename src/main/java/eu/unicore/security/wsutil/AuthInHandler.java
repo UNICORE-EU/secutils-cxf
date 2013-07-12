@@ -248,7 +248,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		
 		if(sessionID!=null){
 			session=sessions.get(sessionID);
-			if(session==null){
+			if(session==null || session.isExpired()){
 				// got a session ID from the client, but no session: fault
 				sessionID=null;
 				Fault f = new Fault((Throwable)null); // null is OK
