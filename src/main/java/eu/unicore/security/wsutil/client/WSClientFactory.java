@@ -76,7 +76,7 @@ import eu.unicore.util.httpclient.IClientConfiguration;
  * setting SSL, SSL authN, HTTP authN, extra HTTP settings etc. as configured.
  * 
  * @author schuller
- * @see HttpUtils
+ * @author golbi
  */
 public class WSClientFactory {
 
@@ -123,6 +123,10 @@ public class WSClientFactory {
 
 		outHandlers.add(new XmlBeansNsHackOutHandler());
 		
+		if(securityProperties.useSecuritySessions()){
+			inHandlers.add(new SessionIDInHandler());
+			outHandlers.add(new SessionIDOutHandler());
+		}
 	}
 	
 	/**

@@ -104,11 +104,6 @@ public class UnicoreWSClientFactory extends WSClientFactory
 		
 		inHandlers.add(new ConditionalGetInHandler());
 		outHandlers.add(new ConditionalGetOutHandler());
-		
-		if(security.useSecuritySessions()){
-			inHandlers.add(new SessionIDInHandler());
-			outHandlers.add(new SessionIDOutHandler());
-		}
 	}
 	
 	@SuppressWarnings("unchecked")

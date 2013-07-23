@@ -126,7 +126,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	
 	/**
 	 * stores number of sessions per user (identified as effective DN + Client IP)
-	 * If this exceeds a threshold, the least-recently-used sessiop is removed
+	 * If this exceeds a threshold, the least-recently-used session is removed
 	 */
 	private static final ConcurrentHashMap<String, AtomicInteger>sessionsPerUser=
 			new ConcurrentHashMap<String, AtomicInteger>();
@@ -200,6 +200,15 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		this.sessionLifetime=lifetime;
 	}
 
+	/**
+	 * set the maximum number of sessions per user (i.e. DN+client IP)
+	 * 
+	 * @param max
+	 */
+	public void setMaxSessionsPerUser(int max) {
+		this.maxSessionsPerUser=max;
+	}
+
 	public void addUserAttributeHandler(UserAttributeHandler uh){
 		userAttributeHandlers.add(uh);
 	}
@@ -219,20 +228,30 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		if(sessionID==null)
 		{
 			process(ctx, mainToken);
-		}
-		ctx.put(SecurityTokens.KEY, mainToken);
-		
-		// in case it's a new session, increment the session counter
-		if(!Boolean.TRUE.equals(mainToken.getContext().get(SessionIDOutHandler.REUSED_MARKER_KEY))){
+			
+			// new session, increment the session counter
 			String userKey=getUserKey(mainToken);
+			sessionID=session.getSessionID();
 			AtomicInteger i = getOrCreateSessionCounter(userKey);
 			int l=i.incrementAndGet();
+			if(logger.isDebugEnabled()){
+				logger.debug("Created new security session <"+sessionID+" for <"+userKey+"> this is session <"+l+">");
+			}
 			// if the max count is exceeded, expel the least recently used session
 			if(l>maxSessionsPerUser){
 				i.decrementAndGet();
 				expelLRUSession(userKey);
 			}
 		}
+		else{
+			// re-using session
+			mainToken = session.getTokenCopy();
+			if(logger.isDebugEnabled()){
+				String userKey=getUserKey(mainToken);
+				logger.debug("Re-using session "+sessionID+" for <"+userKey+">");
+			}
+		}
+		ctx.put(SecurityTokens.KEY, mainToken);
 	}
 
 	/**
@@ -266,10 +285,10 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			session = new SecuritySession(sessionID, tokens, sessionLifetime);
 			sessions.put(sessionID, session);
 		}
-		if(sessionID!=null){
-			// make sure session info goes to the client
-			SessionIDServerOutHandler.setSession(session);
-		}
+		
+		// make sure session info goes to the client
+		SessionIDServerOutHandler.setSession(session);
+		
 		return session;
 	}
 	
@@ -661,11 +680,19 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	
 	protected void expelLRUSession(String key){
 		SecuritySession lru=null;
+		List<String> expired=new ArrayList<String>();
 		for(SecuritySession session: sessions.values()){
+			if(session.isExpired()){
+				expired.add(session.getSessionID());
+				continue;
+			}
 			if(!key.equals(session.getUserKey()))continue;
 			if(lru==null || lru.getLastAccessed()>session.getLastAccessed()){
 				lru=session;
 			}
+		}
+		for(String exp: expired){
+			sessions.remove(exp);
 		}
 		if(lru!=null){
 			sessions.remove(lru.getSessionID());
