@@ -50,7 +50,7 @@ public class MockSecurityConfig extends DefaultClientConfiguration
 				KS_PASSWD.toCharArray(), 
 				"JKS", 
 				-1));
-		
+		setUseSecuritySessions(false);
 	}
 	
 	public static X509Credential getGatewayCredential() throws Exception
