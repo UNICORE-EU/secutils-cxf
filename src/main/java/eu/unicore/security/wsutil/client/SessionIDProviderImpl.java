@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import eu.unicore.util.httpclient.SessionIDProvider;
+import eu.unicore.util.httpclient.SessionIDProviderFactory;
 
 /**
  * default implementation for dealing with session IDs
@@ -115,6 +116,25 @@ public class SessionIDProviderImpl implements SessionIDProvider {
 	 */
 	public static void clearAll(){
 		sessionIDs.clear();
+	}
+	
+	private static final Factory factory = new Factory();
+	
+	/**
+	 * returns a {@link SessionIDProviderFactory} that will 
+	 * create {@link SessionIDProviderImpl} instances
+	 */
+	public static SessionIDProviderFactory Factory(){
+		return factory;
+	}
+	
+	public static class Factory implements SessionIDProviderFactory {
+
+		@Override
+		public SessionIDProvider get(String uri) {
+			return new SessionIDProviderImpl(uri);
+		}
+		
 	}
 	
 }
