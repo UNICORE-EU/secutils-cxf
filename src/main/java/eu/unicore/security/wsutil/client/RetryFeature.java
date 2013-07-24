@@ -14,6 +14,8 @@ import org.apache.cxf.transport.Conduit;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transport.http.HTTPException;
 
+import eu.unicore.util.httpclient.SessionIDProvider;
+
 /**
  * Handle retries of failed WS calls
  * 

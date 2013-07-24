@@ -4,9 +4,14 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import eu.unicore.util.httpclient.SessionIDProvider;
+
 /**
  * default implementation for dealing with session IDs
- * on the client side
+ * on the client side.<br/> 
+ * 
+ * NOTE: this only deals with a single Grid identity.<br/>
+ * DO NOT USE this class if multiple Grid identities are used
  *
  * @author schuller
  */
@@ -110,25 +115,6 @@ public class SessionIDProviderImpl implements SessionIDProvider {
 	 */
 	public static void clearAll(){
 		sessionIDs.clear();
-	}
-	
-	/**
-	 * helper to retrieve the {@link SessionIDProvider} from a given proxy object
-	 * @param proxy
-	 * @return
-	 */
-	public static SessionIDProvider getSessionIDProvider(Object proxy){
-		return (SessionIDProvider)WSClientFactory.getWSClient(proxy).getRequestContext().get(SessionIDProvider.KEY);
-	}
-	
-	/**
-	 * helper to set the {@link SessionIDProvider} for a given proxy object
-	 * @param provider
-	 * @param proxy
-	 * @return
-	 */
-	public static void setSessionIDProvider(SessionIDProvider provider, Object proxy){
-		WSClientFactory.getWSClient(proxy).getRequestContext().put(SessionIDProvider.KEY, provider);
 	}
 	
 }

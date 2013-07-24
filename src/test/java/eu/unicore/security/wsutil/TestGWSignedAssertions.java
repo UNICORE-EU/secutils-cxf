@@ -24,8 +24,6 @@ import eu.unicore.samly2.SAMLConstants.AuthNClasses;
 import eu.unicore.security.UnicoreSecurityFactory;
 import eu.unicore.security.consignor.ConsignorAPI;
 import eu.unicore.security.consignor.ConsignorAssertion;
-import eu.unicore.security.wsutil.AuthInHandler;
-import eu.unicore.security.wsutil.ETDInHandler;
 
 public class TestGWSignedAssertions extends AbstractTestBase
 {

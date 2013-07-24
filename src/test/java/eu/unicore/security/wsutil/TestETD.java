@@ -23,8 +23,9 @@ import eu.unicore.security.etd.ETDApi;
 import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.security.wsutil.client.ClientDSigUtil;
 import eu.unicore.security.wsutil.client.ClientTrustDelegationUtil;
-import eu.unicore.security.wsutil.client.SessionIDProvider;
 import eu.unicore.security.wsutil.client.SessionIDProviderImpl;
+import eu.unicore.security.wsutil.client.WSClientFactory;
+import eu.unicore.util.httpclient.SessionIDProvider;
 
 public class TestETD extends AbstractTestBase
 {
@@ -306,7 +307,7 @@ public class TestETD extends AbstractTestBase
 			
 			String msg = s.TestSessionID();
 			System.out.println("reply from service = "+msg);
-			SessionIDProvider p = SessionIDProviderImpl.getSessionIDProvider(s);
+			SessionIDProvider p = WSClientFactory.getSessionIDProvider(s);
 			assertNotNull(p);
 			String id=p.getSessionID();
 			System.out.println("ID = "+id);

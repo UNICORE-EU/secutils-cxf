@@ -20,7 +20,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import eu.unicore.samly2.assertion.Assertion;
-import eu.unicore.security.wsutil.WSSecHeader;
 import eu.unicore.security.wsutil.client.DSigOutHandler;
 
 /**

@@ -69,6 +69,8 @@ import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.HttpClientProperties;
 import eu.unicore.util.httpclient.HttpUtils;
 import eu.unicore.util.httpclient.IClientConfiguration;
+import eu.unicore.util.httpclient.SessionIDProvider;
+import eu.unicore.util.httpclient.SessionIDProviderFactory;
 
 /**
  * Helper to create web service clients using CXF. This class will configure 
@@ -365,7 +367,18 @@ public class WSClientFactory {
 	 */
 	protected void setupProxy(Object proxy, String uri)
 	{
-		setupWSClientProxy(getWSClient(proxy), uri);
+		Client wsClient=getWSClient(proxy);
+		setupWSClientProxy(wsClient, uri);
+		if(securityProperties.useSecuritySessions()){
+			SessionIDProviderFactory fact=securityProperties.getSessionIDProviderFactory();
+			if(fact!=null){
+				wsClient.getRequestContext().put(SessionIDProvider.KEY, fact.get(uri));
+			}
+			else{
+				// use the default provider
+				wsClient.getRequestContext().put(SessionIDProvider.KEY, new SessionIDProviderImpl(uri));
+			}
+		}
 	}
 	
 	/**
@@ -406,4 +419,22 @@ public class WSClientFactory {
 		throw new IllegalArgumentException("Unknown databinding: "+annot.name());
 	}
 	
+	/**
+	 * helper to retrieve the {@link SessionIDProvider} from a given proxy object
+	 * @param proxy
+	 * @return
+	 */
+	public static SessionIDProvider getSessionIDProvider(Object proxy){
+		return (SessionIDProvider)WSClientFactory.getWSClient(proxy).getRequestContext().get(SessionIDProvider.KEY);
+	}
+	
+	/**
+	 * helper to set the {@link SessionIDProvider} for a given proxy object
+	 * @param provider
+	 * @param proxy
+	 * @return
+	 */
+	public static void setSessionIDProvider(SessionIDProvider provider, Object proxy){
+		WSClientFactory.getWSClient(proxy).getRequestContext().put(SessionIDProvider.KEY, provider);
+	}
 }

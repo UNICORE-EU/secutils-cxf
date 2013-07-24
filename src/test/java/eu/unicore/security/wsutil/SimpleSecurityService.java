@@ -13,9 +13,6 @@ import java.rmi.RemoteException;
 import javax.jws.WebMethod;
 import javax.jws.WebService;
 
-import eu.unicore.security.wsutil.OperationsRequiringSignature;
-import eu.unicore.security.wsutil.RequiresSignature;
-
 /**
  * @author K. Benedyczak
  */

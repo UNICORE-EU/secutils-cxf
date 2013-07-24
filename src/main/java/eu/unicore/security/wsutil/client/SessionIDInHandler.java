@@ -39,6 +39,8 @@ import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.phase.Phase;
 import org.w3c.dom.Element;
 
+import eu.unicore.util.httpclient.SessionIDProvider;
+
 /**
  * A client handler that reads the security session ID header which is set by the
  * server.

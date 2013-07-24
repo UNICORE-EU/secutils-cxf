@@ -139,13 +139,6 @@ public class UnicoreWSClientFactory extends WSClientFactory
 		}
 	}
 
-	protected void setupProxy(Object proxy, String uri)
-	{
-		super.setupProxy(proxy, uri);
-		Client wsClient=getWSClient(proxy);
-		wsClient.getRequestContext().put(SessionIDProvider.KEY, new SessionIDProviderImpl(uri));
-	}
-	
 	@Override
 	protected <T> void setupProxyInterface(Class<T> iFace, Client wsClient)
 	{

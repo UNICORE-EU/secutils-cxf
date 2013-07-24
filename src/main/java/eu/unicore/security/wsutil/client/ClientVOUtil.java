@@ -15,7 +15,6 @@ import java.util.List;
 import org.apache.cxf.endpoint.Client;
 
 import eu.unicore.samly2.assertion.Assertion;
-import eu.unicore.security.wsutil.client.WSClientFactory;
 
 
 

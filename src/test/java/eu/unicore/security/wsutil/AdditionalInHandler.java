@@ -7,8 +7,6 @@ import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.phase.Phase;
 import org.w3c.dom.Element;
 
-import eu.unicore.security.wsutil.WSSecHeader;
-
 
 /**
  * Checks if additional test element is present in WSS Security element. 

@@ -45,6 +45,8 @@ import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
 import org.w3c.dom.Element;
 
+import eu.unicore.util.httpclient.SessionIDProvider;
+
 /**
  * A client handler that sets the security session header.
  * 
