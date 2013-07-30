@@ -81,6 +81,7 @@ public class MockSecurityConfig extends DefaultClientConfiguration
 			ret.setInHandlerClassNames(getInHandlerClassNames());
 			ret.setOutHandlerClassNames(getOutHandlerClassNames());
 			ret.setUseSecuritySessions(useSecuritySessions());
+			ret.setSessionIDProviderFactory(getSessionIDProviderFactory());
 			return ret;
 		} catch (Exception e)
 		{

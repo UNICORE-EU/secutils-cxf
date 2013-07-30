@@ -303,6 +303,7 @@ public class TestETD extends AbstractTestBase
 		{
 			MockSecurityConfig sec = new MockSecurityConfig(false, true, true);
 			sec.setUseSecuritySessions(true);
+			sec.setSessionIDProviderFactory(SessionIDProviderImpl.Factory());
 			SimpleSecurityService s = makeSecuredProxy(sec);
 			
 			String msg = s.TestSessionID();
