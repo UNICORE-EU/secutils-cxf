@@ -374,10 +374,6 @@ public class WSClientFactory {
 			if(fact!=null){
 				wsClient.getRequestContext().put(SessionIDProvider.KEY, fact.get(uri));
 			}
-			else{
-				// use the default provider
-				wsClient.getRequestContext().put(SessionIDProvider.KEY, new SessionIDProviderImpl(uri));
-			}
 		}
 	}
 	

@@ -26,7 +26,6 @@ import org.w3c.dom.Element;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import eu.unicore.samly2.assertion.Assertion;
-import eu.unicore.security.util.client.IClientProperties;
 import eu.unicore.security.wsutil.WSSecHeader;
 import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.IClientConfiguration;
