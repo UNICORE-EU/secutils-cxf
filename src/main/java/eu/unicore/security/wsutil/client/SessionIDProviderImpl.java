@@ -20,8 +20,6 @@ public class SessionIDProviderImpl implements SessionIDProvider {
 
 	private String sessionID;
 
-	private final String serverID;
-
 	private String scope;
 	
 	private long lifetime;
@@ -30,7 +28,7 @@ public class SessionIDProviderImpl implements SessionIDProvider {
 	 * @param uri - the service URI
 	 */
 	public SessionIDProviderImpl(String uri){
-		this.serverID=extractServerID(uri);
+		this.scope=extractServerID(uri);
 	}
 
 	/*
@@ -48,7 +46,7 @@ public class SessionIDProviderImpl implements SessionIDProvider {
 	@Override
 	public String getSessionID() {
 		if(sessionID==null){
-			sessionID=sessionIDs.get(serverID);
+			sessionID=sessionIDs.get(scope);
 		}
 		return sessionID;
 	}
@@ -57,17 +55,13 @@ public class SessionIDProviderImpl implements SessionIDProvider {
 	public void setSessionID(String sessionID) {
 		this.sessionID=sessionID;
 		if(sessionID!=null){
-			sessionIDs.put(serverID, sessionID);
+			sessionIDs.put(scope, sessionID);
 		}
 		else{
-			sessionIDs.remove(serverID);
+			sessionIDs.remove(scope);
 		}
 	}
 
-	public String getServerID(){
-		return serverID;
-	}
-	
 	public void setScope(String scope){
 		this.scope=scope;
 	}

@@ -7,6 +7,11 @@ import java.io.ObjectOutputStream;
 
 import eu.unicore.security.SecurityTokens;
 
+/**
+ * security session information
+ * 
+ * @author schuller
+ */
 public class SecuritySession {
 
 	private final String sessionID;
@@ -19,6 +24,12 @@ public class SecuritySession {
 
 	private String userKey;
 
+	/**
+	 * create a new security session
+	 * @param sessionID - the session ID
+	 * @param tokens - the security tokens used to create the session
+	 * @param lifetime - the lifetime in millis
+	 */
 	public SecuritySession(String sessionID, SecurityTokens tokens, long lifetime){
 		this.sessionID=sessionID;
 		this.tokens=tokens;
@@ -69,10 +80,18 @@ public class SecuritySession {
 		return sessionID;
 	}
 
+	/**
+	 * get the identifier of the user who "owns" the session
+	 * @return
+	 */
 	public String getUserKey() {
 		return userKey;
 	}
 
+	/**
+	 * set the user identifier (e.g. effective client DN + IP)
+	 * @param userKey
+	 */
 	public void setUserKey(String userKey) {
 		this.userKey = userKey;
 	}
