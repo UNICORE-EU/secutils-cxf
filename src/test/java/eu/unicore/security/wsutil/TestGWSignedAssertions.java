@@ -37,7 +37,8 @@ public class TestGWSignedAssertions extends AbstractTestBase
 		gwCert = credential.getCertificate();
 		gwKey = credential.getKey();
 
-		AuthInHandler authHandler = new AuthInHandler(true, true, true, gwCert);
+		SecuritySessionStore sesStore = new SecuritySessionStore();
+		AuthInHandler authHandler = new AuthInHandler(true, true, true, gwCert, sesStore);
 		ETDInHandler etdHandler = new ETDInHandler(null, new BinaryCertChainValidator(true));
 		s.add(authHandler);
 		s.add(etdHandler);

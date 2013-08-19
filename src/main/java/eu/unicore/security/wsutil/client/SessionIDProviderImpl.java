@@ -18,6 +18,12 @@ import eu.unicore.util.httpclient.SessionIDProviderFactory;
  */
 public class SessionIDProviderImpl implements SessionIDProvider {
 
+	private static final Factory factory = new Factory();
+	
+	// static map for server IDs and session IDs 
+	private static final ConcurrentHashMap<String,String>sessionIDs = 
+			new ConcurrentHashMap<String, String>();
+	
 	private String sessionID;
 
 	private String scope;
@@ -78,10 +84,6 @@ public class SessionIDProviderImpl implements SessionIDProvider {
 		this.lifetime = lifetime;
 	}
 
-	// static map for server IDs and session IDs 
-	private static final ConcurrentHashMap<String,String>sessionIDs = 
-			new ConcurrentHashMap<String, String>();
-
 	public static void store(String server, String sessionID){
 		sessionIDs.put(server, sessionID);
 	}
@@ -112,13 +114,11 @@ public class SessionIDProviderImpl implements SessionIDProvider {
 		sessionIDs.clear();
 	}
 	
-	private static final Factory factory = new Factory();
-	
 	/**
 	 * returns a {@link SessionIDProviderFactory} that will 
 	 * create {@link SessionIDProviderImpl} instances
 	 */
-	public static SessionIDProviderFactory Factory(){
+	public static SessionIDProviderFactory getFactory(){
 		return factory;
 	}
 	

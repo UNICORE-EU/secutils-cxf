@@ -53,7 +53,8 @@ public abstract class AbstractTestBase extends TestCase
 	}
 
 	protected void addHandlers(List<Interceptor<? extends Message>> s)throws Exception{
-		AuthInHandler authHandler = new AuthInHandler(true, true, true, null);
+		SecuritySessionStore sesStore = new SecuritySessionStore();
+		AuthInHandler authHandler = new AuthInHandler(true, true, true, null, sesStore);
 		authHandler.addUserAttributeHandler(new SimpleSecurityServiceImpl.SimpleUserAttributeHandler());
 		DSigParseInHandler parseHandler = new DSigParseInHandler(null);
 		DSigSecurityInHandler dsigHandler = new DSigSecurityInHandler(null);
@@ -62,12 +63,14 @@ public abstract class AbstractTestBase extends TestCase
 				MockSecurityConfig.KS,
 				MockSecurityConfig.KS_PASSWD.toCharArray(),
 				"JKS", -1));
+		SecuritySessionCreateInHandler sessionHandler = new SecuritySessionCreateInHandler(sesStore);
 		
 		s.add(authHandler);
 		s.add(parseHandler);
 		s.add(dsigHandler);
 		s.add(addHandler);
 		s.add(etdHandler);
+		s.add(sessionHandler);
 		s.add(new LogInMessageHandler());
 		s.add(new ConditionalGetServerInHandler());
 	}

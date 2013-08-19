@@ -13,10 +13,9 @@ import eu.unicore.security.SecurityTokens;
  * @author schuller
  */
 public class SecuritySession {
-
 	private final String sessionID;
 
-	private final SecurityTokens tokens;
+	private final byte[] securityTokensBin;
 
 	private final long expires;
 
@@ -32,29 +31,20 @@ public class SecuritySession {
 	 */
 	public SecuritySession(String sessionID, SecurityTokens tokens, long lifetime){
 		this.sessionID=sessionID;
-		this.tokens=tokens;
+		this.securityTokensBin = serialize(tokens);
 		this.expires=System.currentTimeMillis()+lifetime;
 		this.lastAccessed=System.currentTimeMillis();
 	}
 
-	public SecurityTokens getTokens(){
-		lastAccessed=System.currentTimeMillis();
-		return tokens;
-	}
-	
 	/**
 	 * get a COPY of the tokens stored for this session
-	 * 
-	 * TODO there is a potential race condition when
-	 * the first connection is still creating the new sec tokens,
-	 * but new connections are already accessing it
 	 */
-	public SecurityTokens getTokenCopy(){
+	public SecurityTokens getTokens() {
 		lastAccessed=System.currentTimeMillis();
-		return copy(tokens);
+		return deserialize(securityTokensBin);
 	}
 
-	private SecurityTokens copy(SecurityTokens tokens){
+	private byte[] serialize(SecurityTokens tokens) {
 		try{
 			ByteArrayOutputStream bos=new ByteArrayOutputStream();
 			ObjectOutputStream oos=new ObjectOutputStream(bos);
@@ -62,7 +52,15 @@ public class SecuritySession {
 				oos.writeObject(tokens);
 				oos.close();
 			}
-			ByteArrayInputStream is=new ByteArrayInputStream(bos.toByteArray());
+			return bos.toByteArray();
+		}catch(Exception ex){
+			throw new RuntimeException(ex);
+		}
+	}
+
+	private SecurityTokens deserialize(byte[] binary) {
+		try{
+			ByteArrayInputStream is=new ByteArrayInputStream(binary);
 			ObjectInputStream ois=new ObjectInputStream(is);
 			Object result = ois.readObject();
 			ois.close();
