@@ -34,6 +34,7 @@
 package eu.unicore.security.wsutil.client;
 
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -288,6 +289,18 @@ public class WSClientFactory {
 		
 	}
 	
+	/**
+	 * Create a new and ready-to-use {@link RetryFeature} instance. This object might be further customized by 
+	 * adding additional recoverable exceptions, besides {@link SocketTimeoutException} which is by defualt set.
+	 */
+	public RetryFeature getDefaultRetryFeature(){
+		RetryFeature r = new RetryFeature(this);
+		r.setMaxRetries(securityProperties.getMaxWSRetries());
+		r.setDelayBetweenRetries(securityProperties.getRetryDelay());
+		r.getRecoverableExceptions().add(SocketTimeoutException.class);
+		return r;
+	}
+
 
 	/**
 	 * @param proxy
@@ -413,24 +426,5 @@ public class WSClientFactory {
 		}
 		
 		throw new IllegalArgumentException("Unknown databinding: "+annot.name());
-	}
-	
-	/**
-	 * helper to retrieve the {@link SessionIDProvider} from a given proxy object
-	 * @param proxy
-	 * @return
-	 */
-	public static SessionIDProvider getSessionIDProvider(Object proxy){
-		return (SessionIDProvider)WSClientFactory.getWSClient(proxy).getRequestContext().get(SessionIDProvider.KEY);
-	}
-	
-	/**
-	 * helper to set the {@link SessionIDProvider} for a given proxy object
-	 * @param provider
-	 * @param proxy
-	 * @return
-	 */
-	public static void setSessionIDProvider(SessionIDProvider provider, Object proxy){
-		WSClientFactory.getWSClient(proxy).getRequestContext().put(SessionIDProvider.KEY, provider);
 	}
 }

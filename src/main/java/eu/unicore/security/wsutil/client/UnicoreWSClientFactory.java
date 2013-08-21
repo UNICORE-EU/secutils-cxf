@@ -49,6 +49,7 @@ import eu.unicore.security.wsutil.RequiresSignature;
 import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
 import eu.unicore.util.httpclient.IClientConfiguration;
+import eu.unicore.util.httpclient.SessionIDProvider;
 
 /**
  * Extends {@link eu.unicore.security.wsutil.client.WSClientFactory}. 
@@ -176,5 +177,25 @@ public class UnicoreWSClientFactory extends WSClientFactory
 			}
 		}
 		return opsToSign;
+	}
+	
+	
+	/**
+	 * helper to retrieve the {@link SessionIDProvider} from a given proxy object
+	 * @param proxy
+	 * @return
+	 */
+	public static SessionIDProvider getSessionIDProvider(Object proxy){
+		return (SessionIDProvider)WSClientFactory.getWSClient(proxy).getRequestContext().get(SessionIDProvider.KEY);
+	}
+	
+	/**
+	 * helper to set the {@link SessionIDProvider} for a given proxy object
+	 * @param provider
+	 * @param proxy
+	 * @return
+	 */
+	public static void setSessionIDProvider(SessionIDProvider provider, Object proxy){
+		WSClientFactory.getWSClient(proxy).getRequestContext().put(SessionIDProvider.KEY, provider);
 	}
 }

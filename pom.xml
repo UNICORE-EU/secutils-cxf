@@ -14,7 +14,7 @@
   </parent>
 
   <properties>
-    <cxf.version>2.7.4</cxf.version>
+    <cxf.version>2.7.6</cxf.version>
     <jetty.version>8.1.11.v20130520</jetty.version>
   </properties>
 
