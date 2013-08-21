@@ -37,8 +37,10 @@ import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.phase.Phase;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 
+import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.SessionIDProvider;
 
 /**
@@ -49,7 +51,7 @@ import eu.unicore.util.httpclient.SessionIDProvider;
  * @author K. Benedyczak
  */
 public class SessionIDInHandler extends AbstractSoapInterceptor {
-
+	private static final Logger log = Log.getLogger(Log.CLIENT, SessionIDInHandler.class);
 	private static final ThreadLocal<String>sessionIDs=new ThreadLocal<String>();
 
 	public SessionIDInHandler() {
@@ -57,6 +59,7 @@ public class SessionIDInHandler extends AbstractSoapInterceptor {
 	}
 
 	public synchronized void handleMessage(SoapMessage message) {
+		log.trace("SessionIDInHandler invoked");
 		sessionIDs.remove();
 		Header header=message.getHeader(SessionIDOutHandler.headerQName);
 		if(header==null)return;
@@ -65,8 +68,10 @@ public class SessionIDInHandler extends AbstractSoapInterceptor {
 		Element id=DOMUtils.getFirstChildWithName(hdr,SessionIDOutHandler.idQName);
 		String sessionID= id!=null? id.getTextContent() : null; 
 		if(sessionID!=null){
+			log.debug("Server returned security session id " + sessionID);
 			SessionIDProvider idProvider=SessionIDOutHandler.getSessionIDProvider(message);
 			if(idProvider!=null){
+				log.debug("Setting session ID for the sessionID provider");
 				idProvider.setSessionID(sessionID);
 			}
 			sessionIDs.set(sessionID);
@@ -75,6 +80,7 @@ public class SessionIDInHandler extends AbstractSoapInterceptor {
 		Element lt=DOMUtils.getFirstChildWithName(hdr,SessionIDOutHandler.ltQName);
 		String lifetime= lt!=null? lt.getTextContent() : null; 
 		if(lifetime!=null){
+			log.debug("Server returned security session lifetime: " + lifetime);
 			SessionIDProvider idProvider=SessionIDOutHandler.getSessionIDProvider(message);
 			if(idProvider!=null){
 				idProvider.setLifetime(Long.valueOf(lifetime));

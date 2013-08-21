@@ -43,8 +43,10 @@ import org.apache.cxf.headers.Header;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 
+import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.SessionIDProvider;
 
 /**
@@ -58,7 +60,7 @@ import eu.unicore.util.httpclient.SessionIDProvider;
  * @author K. Benedyczak
  */
 public class SessionIDOutHandler extends AbstractSoapInterceptor {
-
+	private static final Logger log = Log.getLogger(Log.CLIENT, SessionIDOutHandler.class);
 	private static final ThreadLocal<String>sessionIDs=new ThreadLocal<String>();
 
 	/**
@@ -98,15 +100,19 @@ public class SessionIDOutHandler extends AbstractSoapInterceptor {
 			SessionIDProvider idProvider=getSessionIDProvider(message);
 			if(idProvider!=null){
 				sessionID=idProvider.getSessionID();
+				if (sessionID != null)
+					log.debug("Provider-managed session id will be used for the request");
 			}
 			
 			if(sessionID==null){
 				// try thread local
 				sessionID=getSessionID();
+				if (sessionID != null)
+					log.debug("Thread-local session id will be used for the request");
 			}
 			if(sessionID==null)
 				return;
-			
+			log.debug("Found session id for the request, using it: " + sessionID);
 			Element header=buildHeader(sessionID,-1);
 			if(header == null)return;
 

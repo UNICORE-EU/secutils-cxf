@@ -185,6 +185,8 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			SecuritySession session = getSession(ctx, sessionID);
 			mainToken = session.getTokens();
 			mainToken.getContext().put(SessionIDOutHandler.REUSED_MARKER_KEY, Boolean.TRUE);
+			// make sure session info goes to the client
+			SessionIDServerOutHandler.setSession(session);
 			if(logger.isDebugEnabled()){
 				logger.debug("Re-using session "+sessionID+" for <"+session.getUserKey()+">");
 			}

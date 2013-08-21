@@ -63,13 +63,14 @@ public class SecuritySessionStore
 		session.setUserKey(userKey);
 		int i = getOrCreateSessionCounter(userKey);
 		if(log.isDebugEnabled()){
-			log.debug("Created new security session <"+session.getSessionID()+" for <"+userKey+">");
+			log.debug("Created new security session <"+session.getSessionID()+" for <"+userKey+
+					"> will expire in " + (session.getLifetime()/1000.0) + "s");
 		}
 
 		if (lastCleanup + CLEANUP_INTERVAL < System.currentTimeMillis())
 			expelExpiredSessions();
 
-		if (i > maxPerUser)
+		if (maxPerUser > 0 && i > maxPerUser)
 			expelLRUSession(userKey);
 	}
 	
