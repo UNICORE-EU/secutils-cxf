@@ -82,10 +82,16 @@ public class DSigParseInHandler extends AbstractSoapInterceptor
 		Document doc;
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setNamespaceAware(true);
-
+		XMLStreamReader xmlStreamReader = message.getContent(XMLStreamReader.class);
+		if (xmlStreamReader == null)
+		{
+			logger.warn("XML Stream reader content is not available for the message content. Can not build DOM");
+			return;
+		}
 		try
 		{
-			doc = StaxUtils.read(dbf.newDocumentBuilder(),message.getContent(XMLStreamReader.class), false);
+				
+			doc = StaxUtils.read(dbf.newDocumentBuilder(), xmlStreamReader, false);
 		} catch (XMLStreamException e1)
 		{
 			logger.warn("Can't parse XML stream as W3C DOM: " + e1.getMessage());
