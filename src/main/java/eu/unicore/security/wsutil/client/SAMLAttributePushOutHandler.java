@@ -37,7 +37,7 @@ import eu.unicore.util.httpclient.IClientConfiguration;
  * extraSecurityTokens map. One should put there assertions either as a list of parsed
  * object of type List&lt;Assertion> or as a list of raw XML elements of type 
  * List&lt;Element>. In the first case assertions should be stored under the key
- * SAMLAttributePushInHandler.PUSHED_ASSERTIONS, in the latter under the key 
+ * SAMLAttributePushOutHandler.PUSHED_ASSERTIONS, in the latter under the key 
  * SAMLAttributePushOutHandler.PUSHED_RAW_ASSERTIONS.
  * If both are found then the all assertions are sent.
  * 

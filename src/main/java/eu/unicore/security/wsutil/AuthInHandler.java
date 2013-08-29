@@ -16,7 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.security.auth.x500.X500Principal;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.namespace.QName;
 
@@ -30,6 +29,7 @@ import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.transport.http.AbstractHTTPDestination;
 import org.apache.log4j.Logger;
+import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.w3c.dom.Element;
 
@@ -37,10 +37,17 @@ import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.AttributeStatementType;
 import xmlbeans.org.oasis.saml2.assertion.AttributeType;
 import xmlbeans.org.oasis.saml2.assertion.AuthnStatementType;
+import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.assertion.SubjectLocalityType;
+import xmlbeans.org.oasis.saml2.assertion.SubjectType;
 import eu.emi.security.authn.x509.impl.CertificateUtils;
 import eu.emi.security.authn.x509.impl.FormatMode;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
+import eu.unicore.samly2.SAMLBindings;
+import eu.unicore.samly2.SAMLConstants;
+import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.trust.SamlTrustChecker;
+import eu.unicore.samly2.validators.SSOAuthnAssertionValidator;
 import eu.unicore.security.HTTPAuthNTokens;
 import eu.unicore.security.SecurityTokens;
 import eu.unicore.security.UnicoreSecurityFactory;
@@ -54,16 +61,22 @@ import eu.unicore.util.Log;
 /**
  * Security in-handler for UNICORE. Extracts consignor and user information
  * from the SOAP header.<br>
- * Processes
+ * Processes three authN data sources:
  * <ul>
- * <li>Consignor SAML assertions
- * <li>User SAML assertions
- * <li>WSA Action (not really authN part but it is handy to do it here) 
- * <li>As a fall back it can use certificates from the transport layer
- * <li>HTTP auth data is also extracted from the request.
+ *  <li>SAML Authentication assertions as an alternative way to authenticate the client
+ *  <li>Consignor SAML assertions (produced by GW). It is assumed that the gw's assertion (if present)
+ *  is the first assertion in the SOAP header.
+ *  <li>As a fall back it can use certificates from the transport layer
  * </ul>
- * Note that all above sources of authN data can be turned off. The first one  
- * should be coming from the gateway.
+ * Note that all above sources of authN data can be turned off.
+ * <p>
+ * Additionally the following extra data is processed here:
+ * <ul>
+ *  <li>User SAML assertions (inserted by the consignor)
+ *  <li>WSA Action (not really authN part but it is handy to do it here) 
+ *  <li>HTTP auth data is also extracted from the request.
+ *  <li> client's IP
+ * </ul>
  * <p>
  * The resulting data is feed into {@link SecurityTokens} class which is injected into 
  * request context. The raw tokens are populated along with user and consignor
@@ -102,6 +115,11 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	private boolean useSSLData;
 	private X509Certificate gatewayC;
 	private boolean verifyConsignor;
+	private SamlTrustChecker samlAuthnTrustChecker;
+	private String samlConsumerName;
+	private String samlConsumerEndpointUri;
+	private long samlGraceTime;
+	
 	private String actor;
 
 	private List<UserAttributeHandler> userAttributeHandlers = new ArrayList<UserAttributeHandler>();
@@ -161,6 +179,21 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		this.sessionStore = sessionStore;
 	}
 
+	public void enableSamlAuthentication(String consumerSamlName, String consumerEndpointUri, 
+			SamlTrustChecker samlTrustChecker, long samlValidityGraceTime)
+	{
+		this.samlAuthnTrustChecker = samlTrustChecker;
+		this.samlConsumerEndpointUri = consumerEndpointUri;
+		this.samlConsumerName = consumerSamlName;
+		this.samlGraceTime = samlValidityGraceTime;
+	}
+	
+	public void disableSamlAuthentication()
+	{
+		this.samlAuthnTrustChecker = null;
+	}
+	
+	
 	public void addUserAttributeHandler(UserAttributeHandler uh){
 		userAttributeHandlers.add(uh);
 	}
@@ -207,10 +240,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		if (session==null || session.isExpired()){
 			// got a session ID from the client, but no session: fault
 			sessionID=null;
-			Fault f = new Fault((Throwable)null); // null is OK
-			f.setStatusCode(432); // unassigned according to IANA ;)
-			f.setMessage("No (valid) security session found, please (re-)send full security data!");
-			throw f;
+			throwFault(432, "No (valid) security session found, please (re-)send full security data!");
 		}
 		return session;
 	}
@@ -234,6 +264,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 
 		ConsignorAssertion cAssertion = null;
 		Element uAssertion = null;
+		Element samlAuthnAssertion = null;
 		if (ctx.hasHeaders())
 		{
 			List<Element> assertions = extractSAMLAssertions(ctx);
@@ -241,10 +272,22 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			if (useGatewayAssertions)
 				cAssertion = getConsignorAssertion(assertions);
 			uAssertion = getUserAssertion(assertions);
+			samlAuthnAssertion = getSAMLAuthnAssertion(assertions);
 			mainToken.getContext().put(RAW_SAML_ASSERTIONS_KEY, assertions);
 		}
 
-		processConsignor(cAssertion, mainToken, ctx);
+		if (samlAuthnTrustChecker != null && samlAuthnAssertion != null)
+			processSAMLAuthentication(samlAuthnAssertion, cAssertion, mainToken, ctx);
+		else
+		{
+			if (samlAuthnAssertion != null)
+			{
+				throwFault(400, "Got request with SAML Authentication assertions, but " +
+						"this server does not allow for SAML authentication.");
+			}
+				
+			processConsignor(cAssertion, mainToken, ctx);
+		}
 
 		if (uAssertion != null)
 		{
@@ -313,11 +356,11 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		X509Certificate[] user = extractCertPath(userA);
 		if (user == null)
 		{
-			X500Principal userP = extractDN(userA);
-			mainToken.setUserName(userP);
+			String userName = userA.getSubjectName();
+			mainToken.setUserName(userName);
 			if (logger.isDebugEnabled())
 				logger.debug("Requested USER (retrived as a DN): " + 
-						X500NameUtils.getReadableForm(userP.getName()));
+						X500NameUtils.getReadableForm(userName));
 		} else
 		{
 			mainToken.setUser(user);
@@ -344,6 +387,61 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		}
 
 	}
+
+	protected void processSAMLAuthentication(Element samlAuthnAssertion, ConsignorAssertion cAssertion, 
+			SecurityTokens mainToken, SoapMessage message)
+	{
+		SSOAuthnAssertionValidator validator = new SSOAuthnAssertionValidator(samlConsumerName, 
+				samlConsumerEndpointUri, null, samlGraceTime, samlAuthnTrustChecker, null, 
+				SAMLBindings.OTHER);
+		AssertionDocument assertionDoc;
+		try
+		{
+			assertionDoc = AssertionDocument.Factory.parse(samlAuthnAssertion);
+		} catch (XmlException e1)
+		{
+			Log.logException("SAML authentication assertion received in request can " +
+					"not be parsed", e1, logger);
+			throwFault(400, "SAML authentication assertion received in request can " +
+					"not be parsed " + e1.toString());
+			return;//dummy
+		}
+		
+		try
+		{
+			validator.validate(assertionDoc);
+		} catch (SAMLValidationException e1)
+		{
+			logger.warn("SAML authentication assertion received in request is " +
+					"not trusted: " + e1.getMessage());
+			throwFault(400, "SAML authentication assertion received in request can " +
+					"not be parsed " + e1.getMessage());
+		}
+		
+		SubjectType subject = assertionDoc.getAssertion().getSubject();
+		NameIDType subjectName = subject.getNameID();
+		if (subjectName == null)
+			throwFault(400, "SAML authentication for UNICORE assertion must have nameID element");
+		if (!SAMLConstants.NFORMAT_DN.equals(subjectName.getFormat()))
+			throwFault(400, "SAML authentication assertion for UNICORE must have subject of " + 
+					SAMLConstants.NFORMAT_DN + " format, was: " + subjectName.getFormat());
+		String consignorDn = subjectName.getStringValue();
+		if (consignorDn == null || consignorDn.isEmpty())
+			throwFault(400, "SAML authenticated user must be non-empty");
+		String readableDn;
+		try
+		{
+			readableDn = X500NameUtils.getReadableForm(consignorDn);
+			logger.debug("Using consignor info from SAML authentication assertion: " + readableDn);
+		} catch (Exception e)
+		{
+			Log.logException("Invalid DN in SAML authn assertion", e, logger);
+			throwFault(400, "SAML authenticated user identity is not a valid X.500 name: " + e.toString());
+		}
+		mainToken.setConsignorName(consignorDn);
+		establishIP(cAssertion, mainToken, message);
+	}	
+
 	
 	protected void processConsignor(ConsignorAssertion cAssertion, SecurityTokens mainToken, SoapMessage message)
 	{
@@ -381,6 +479,28 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		mainToken.setClientIP(clientIP);
 	}	
 
+	/**
+	 * Sets a client IP in the security tokens. The IP is taken either from ConsignorAssertion
+	 * (if present, valid and we are configured to use them) or from the transport layer otherwise.
+	 * @param cAssertion
+	 * @param mainToken
+	 * @param message
+	 */
+	protected void establishIP(ConsignorAssertion cAssertion, SecurityTokens mainToken, SoapMessage message)
+	{
+		String clientIP = null;
+		if (cAssertion != null && useGatewayAssertions)
+		{
+			X509Certificate[] consignor = processConsignorAssertion(cAssertion);
+			if (consignor != null){
+				logger.debug("Using consignor info from Gateway.");
+				clientIP = extractIPFromConsignorAssertion(cAssertion);
+			}
+		} else
+			clientIP = getClientIP(message);
+		mainToken.setClientIP(clientIP);
+	}
+	
 	protected X509Certificate[] getSSLCertPath(SoapMessage message)
 	{
 		return CXFUtils.getSSLCerts(message);
@@ -468,6 +588,26 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		return null;
 	}
 
+	protected Element getSAMLAuthnAssertion(List<Element> assertions)
+	{
+		Element ret = null;
+		for (int i=assertions.size()-1; i>=0; i--)
+		{
+			Element a = (Element) assertions.get(i);
+			List<Element> ass=DOMUtils.getChildrenWithName(a, SAML2_NS, "AuthnStatement");
+			if(ass.size()==0)continue;
+			Element as = ass.get(0);
+			if (as == null) continue;
+			if (ret != null)
+				throwFault(400, "Multiple SAML authentication assertions received, " +
+						"what is not supported.");
+			ret = a;
+			assertions.remove(i);
+		}
+		return ret;
+	}
+
+	
 	/**
 	 * Returns parsed but not verified in any way consignor assertion. The
 	 * first assertion is tried and returned if looks like consignor i.e. has a proper
@@ -559,13 +699,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		return cert;
 	}
 
-	protected X500Principal extractDN(UserAssertion userA) throws IOException
-	{
-		String userDN = userA.getSubjectName();
-		return X500NameUtils.getX500Principal(userDN);
-	}
-	
-	
 	protected String getSOAPAction(SoapMessage message){
 		String action=CXFUtils.getAction(message);
 				
@@ -585,5 +718,13 @@ public class AuthInHandler extends AbstractSoapInterceptor
 				sessionID = hdr.getTextContent(); 
 		}
 		return sessionID;
+	}
+	
+	protected void throwFault(int httpErrorCode, String message)
+	{
+		Fault f = new Fault((Throwable)null); // null is OK
+		f.setStatusCode(httpErrorCode); // unassigned according to IANA ;)
+		f.setMessage(message);
+		throw f;
 	}
 }

@@ -8,6 +8,7 @@
 
 package eu.unicore.security.wsutil;
 
+import eu.emi.security.authn.x509.X509CertChainValidatorExt;
 import eu.emi.security.authn.x509.X509Credential;
 import eu.emi.security.authn.x509.impl.KeystoreCertChainValidator;
 import eu.emi.security.authn.x509.impl.KeystoreCredential;
@@ -19,20 +20,56 @@ import eu.unicore.util.httpclient.DefaultClientConfiguration;
  */
 public class MockSecurityConfig extends DefaultClientConfiguration
 {
+	public static KeystoreCredential IDP_CRED;
+	public static KeystoreCredential CLIENT1_CRED;
+	public static KeystoreCredential CLIENT2_CRED;
+	public static KeystoreCredential WRONGCLIENT_CRED;
+	public static KeystoreCredential SERVER_CRED;
+	public static KeystoreCredential GW_CRED;
+	
+	public static X509CertChainValidatorExt VALIDATOR;
+	
+	static 
+	{
+		try
+		{
+			IDP_CRED = new KeystoreCredential("src/test/resources/certs/idp.jks", 
+					"the!test".toCharArray(), 
+					"the!test".toCharArray(), null, "JKS");
+			CLIENT1_CRED = new KeystoreCredential("src/test/resources/certs/client1.jks", 
+					"the!test".toCharArray(), 
+					"the!test".toCharArray(), null, "JKS");
+			CLIENT2_CRED = new KeystoreCredential("src/test/resources/certs/client2.jks", 
+					"the!test".toCharArray(), 
+					"the!test".toCharArray(), null, "JKS");
+			WRONGCLIENT_CRED = new KeystoreCredential("src/test/resources/certs/clientWrong.jks", 
+					"the!client".toCharArray(), 
+					"the!client".toCharArray(), "mykey", "JKS");
+			SERVER_CRED = new KeystoreCredential("src/test/resources/certs/server.jks", 
+					"the!test".toCharArray(), 
+					"the!test".toCharArray(), null, "JKS");
+			GW_CRED = new KeystoreCredential("src/test/resources/certs/gateway.jks", 
+					"the!gateway".toCharArray(), 
+					"the!gateway".toCharArray(), null, "JKS");
+			VALIDATOR = new KeystoreCertChainValidator("src/test/resources/certs/dummycatruststore.jks",
+					"the!ca".toCharArray(), "JKS", -1);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
 	public static final String HTTP_PASSWD = "123";
 	public static final String HTTP_USER = "qwer";
 	
-	public static final String KS = "src/test/resources/client/client.jks";
-	public static final String KS_PASSWD = "the!client";
-
-	public static final String KS_ALIAS = "mykey";
-	public static final String KS_ALIAS_GW = "gw";
-	public static final String KS_ALIAS_WRONG = "mykey_wrong";
-	
-	private boolean correctSSLAuthN;
-	
 	public MockSecurityConfig(boolean doHTTPAuthN,
-			boolean doSSLAuthN, boolean correctSSLAuthN) throws Exception
+			boolean doSSLAuthN, boolean useUser1) throws Exception
+	{
+		this(doHTTPAuthN, doSSLAuthN, useUser1 ? CLIENT1_CRED : CLIENT2_CRED);
+	}
+
+	public MockSecurityConfig(boolean doHTTPAuthN,
+			boolean doSSLAuthN, X509Credential identity) throws Exception
 	{
 		setSslEnabled(true);
 		setDoSignMessage(true);
@@ -40,41 +77,18 @@ public class MockSecurityConfig extends DefaultClientConfiguration
 		setSslAuthn(doSSLAuthN);
 		setHttpPassword(HTTP_PASSWD);
 		setHttpUser(HTTP_USER);
-		this.correctSSLAuthN = correctSSLAuthN;
-		setCredential(new KeystoreCredential(KS, 
-				KS_PASSWD.toCharArray(), 
-				KS_PASSWD.toCharArray(), 
-				getKeystoreAlias(), 
-				"JKS"));
-		setValidator(new KeystoreCertChainValidator(KS, 
-				KS_PASSWD.toCharArray(), 
-				"JKS", 
-				-1));
+		setCredential(identity);
+		setValidator(VALIDATOR);
 		setUseSecuritySessions(false);
-	}
-	
-	public static X509Credential getGatewayCredential() throws Exception
-	{
-		return new KeystoreCredential(MockSecurityConfig.KS, 
-				MockSecurityConfig.KS_PASSWD.toCharArray(), 
-				MockSecurityConfig.KS_PASSWD.toCharArray(), 
-				MockSecurityConfig.KS_ALIAS_GW, 
-				"JKS");
-	}
-	
-	public String getKeystoreAlias()
-	{
-		if (correctSSLAuthN)
-			return KS_ALIAS;
-		return KS_ALIAS_WRONG;
 	}
 
 	public MockSecurityConfig clone()
 	{
 		try
 		{
-			MockSecurityConfig ret = new MockSecurityConfig(doHttpAuthn(), doSSLAuthn(), correctSSLAuthN);
+			MockSecurityConfig ret = new MockSecurityConfig(doHttpAuthn(), doSSLAuthn(), getCredential());
 			ret.setClassLoader(getClassLoader());
+			ret.setDoSignMessage(doSignMessage());
 			ret.setEtdSettings(getETDSettings().clone());
 			ret.setExtraSecurityTokens(getExtraSecurityTokens());
 			ret.setHttpClientProperties(getHttpClientProperties());

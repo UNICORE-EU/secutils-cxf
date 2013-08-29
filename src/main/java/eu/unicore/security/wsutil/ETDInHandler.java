@@ -37,11 +37,10 @@ import java.io.ByteArrayOutputStream;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
-import javax.security.auth.x500.X500Principal;
 
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
@@ -54,6 +53,7 @@ import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import eu.emi.security.authn.x509.X509CertChainValidator;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.emi.security.authn.x509.proxy.ProxyUtils;
+import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.security.SecurityTokens;
 import eu.unicore.security.SelfCallChecker;
 import eu.unicore.security.TrustDelegationException;
@@ -66,8 +66,6 @@ import eu.unicore.util.Log;
 
 /**
  * 
- * FIXME needs review for U7
- * 
  * Checks trust delegation<br/>
  *
  * Expects security context in the message context, so this depends
@@ -78,7 +76,7 @@ import eu.unicore.util.Log;
  *   <li>This handler checks for SAML trust delegation tokens in message header, and places 
  * the TD chain in the security context.</li>
  *   <li>If USER identity is present (as obtained by the {@link AuthInHandler},
- *   then TD chain is checked if its issuer is the same as this user. If not then 
+ *   then TD chain is checked if its custodian is the same as this user. If not then 
  *   trust delegation status in security message context is set to invalid. Otherwise
  *   TD is processed.
  *   <li>If USER identity is not present then TD is not processed 
@@ -105,30 +103,21 @@ public class ETDInHandler extends AbstractSoapInterceptor
 	private static final Logger logger = Log.getLogger(Log.SECURITY, ETDInHandler.class);
 
 	private final SelfCallChecker selfCallChecker;
-	private final boolean useTDIssuerAsUser;
 	private X509CertChainValidator validator;
+	private X509CertChainValidator trustedDelegationIssuers;
 
 	/**
 	 * Creates a new handler for checking trust delegation.
 	 * @param selfCallChecker checker used to accept self calls. May be null.
 	 */
-	public ETDInHandler(SelfCallChecker selfCallChecker, X509CertChainValidator validator)
-	{
-		this(selfCallChecker, false, validator);
-	}
-
-	/**
-	 * Creates a new handler for checking trust delegation.
-	 * @param selfCallChecker checker used to accept self calls. May be null.
-	 */
-	public ETDInHandler(SelfCallChecker selfCallChecker, boolean useTDIssuerAsUser, 
-			X509CertChainValidator validator)
+	public ETDInHandler(SelfCallChecker selfCallChecker, X509CertChainValidator validator,
+			X509CertChainValidator trustedDelegationIssuers)
 	{
 		super(Phase.PRE_INVOKE);
 		getAfter().add(AuthInHandler.class.getName());
 		this.selfCallChecker = selfCallChecker;
-		this.useTDIssuerAsUser = useTDIssuerAsUser;
 		this.validator = validator;
+		this.trustedDelegationIssuers = trustedDelegationIssuers;
 	}
 
 	public void handleMessage(SoapMessage ctx)
@@ -138,7 +127,7 @@ public class ETDInHandler extends AbstractSoapInterceptor
 		{
 			logger.error("No security info in headers. Wrong configuration: " +
 					AuthInHandler.class.getCanonicalName() + " handler" +
-			" must be configure before this ETD handler.");
+					" must be configure before this ETD handler.");
 			return;
 		}
 		
@@ -163,7 +152,7 @@ public class ETDInHandler extends AbstractSoapInterceptor
 		securityTokens.setTrustDelegationValidated(false);
 		securityTokens.setConsignorTrusted(false);
 
-		X509Certificate consignor = securityTokens.getConsignorCertificate();
+		String consignor = securityTokens.getConsignorName();
 		if (consignor == null)
 		{
 			logger.debug("No CONSIGNOR information present (it means that request wasn't " +
@@ -172,81 +161,69 @@ public class ETDInHandler extends AbstractSoapInterceptor
 		}
 		
 		String etdIssuerName = getIssuerName(tdTokens);
+		
 		if (etdIssuerName == null)
 		{
 			logger.debug("No ETD tokens are present.");
 			if (securityTokens.getUserName() == null || 
-					X500NameUtils.equal(securityTokens.getUserName(), 
-						consignor.getSubjectX500Principal().getName()))
+					X500NameUtils.equal(securityTokens.getUserName(), consignor))
 			{
 				logger.debug("Performing the request with the Consignor's identity.");
 				securityTokens.setConsignorTrusted(true);
-				
 			} else if (securityTokens.isConsignorUsingProxy() && 
 					X500NameUtils.equal(securityTokens.getUserName(),
-							securityTokens.getConsignorRealName().getName()))
+							securityTokens.getConsignorRealName()))
 			{
 				logger.debug("Performing the request with the Consignor's identity " +
 						"(handling proxy which is used by consignor).");
 				securityTokens.setConsignorTrusted(true);
-				securityTokens.setUserName(consignor.getSubjectX500Principal());
+				securityTokens.setUserName(consignor);
 			} else
 			{
-				logger.warn("Got request with User set to " + securityTokens.getUserName() + 
+				logger.warn("Got request with User set to " + 
+						X500NameUtils.getReadableForm(securityTokens.getUserName()) + 
 						" without a TD! Consignor is " + 
-						X500NameUtils.getReadableForm(consignor.getSubjectX500Principal()));
+						X500NameUtils.getReadableForm(consignor));
 			}
 			return;
 		}
 
-		X500Principal requestedUser = securityTokens.getUserName();
-		X509Certificate[] etdInitialIssuerCC = getIssuer(tdTokens);
+		boolean etdIssuerIsDn = isIssuerDN(tdTokens);
+		
+		String etdCustodianName = getCustodianName(tdTokens);
+		String requestedUser = securityTokens.getUserName();
 		if (requestedUser != null)
 		{
-			if (!X500NameUtils.equal(requestedUser, etdIssuerName))
+			if (!X500NameUtils.equal(requestedUser, etdCustodianName))
 			{
-				logger.warn("Trust delegation is present but its initial issuer " +
+				logger.warn("Trust delegation is present but its custodian " +
 						"differ from the requested user. Trust delegation tokens won't " +
-						"be verified and delegation status is set to invalid. TD Issuer: " + 
-						X500NameUtils.getReadableForm(etdIssuerName) + " Requested user: " + 
+						"be verified and delegation status is set to invalid. TD Custodian: " + 
+						X500NameUtils.getReadableForm(etdCustodianName) + " Requested user: " + 
 						X500NameUtils.getReadableForm(requestedUser));
 				return;
 			}
 		} else
 		{
-			if (useTDIssuerAsUser)
-			{
-				if(logger.isDebugEnabled()){
-					logger.debug("TD was found but there is no User assertion. " +
-							"Using (for UNICORE clients backwards compatibility) " +
-							"TD chain issuer as a User on whose behalf " +
-							"the request will be performed.");
-				}
-				if (etdInitialIssuerCC != null)
-				{
-					securityTokens.setUser(etdInitialIssuerCC);
-				} else
-				{
-					securityTokens.setUserName(X500NameUtils.getX500Principal(etdIssuerName));
-				}
-			} else
-			{
-				logger.debug("No user was requested so TD won't be checked. " +
-						"Performing the request with Consignor's identity.");
-				securityTokens.setConsignorTrusted(true);
-				return;
-			}
+			logger.debug("No user was requested so TD won't be checked. " +
+					"Performing the request with Consignor's identity.");
+			securityTokens.setConsignorTrusted(true);
+			return;
 		}
 
 		if (logger.isDebugEnabled())
 		{
-			logger.debug("ETD issuer: " + etdIssuerName + "\nConsignor: " + 
-					X500NameUtils.getReadableForm(consignor.getSubjectX500Principal()));
+			String readableIssuer = etdIssuerIsDn ? X500NameUtils.getReadableForm(etdIssuerName) : 
+				etdIssuerName;
+			logger.debug("ETD initial issuer: " + readableIssuer + 
+					"\nConsignor: " + 
+					X500NameUtils.getReadableForm(consignor) + "\nETD custodian: " +
+					X500NameUtils.getReadableForm(etdCustodianName));
 			
-			if (X500NameUtils.equal(consignor.getSubjectX500Principal(), etdIssuerName))
+			if (X500NameUtils.equal(consignor, etdCustodianName))
 			{
-				logger.debug("ETD issuer and consignor are equal");
-			} else if (securityTokens.isConsignorUsingProxy() && 
+				logger.debug("ETD custodian and consignor are equal");
+			} else if (etdIssuerIsDn && securityTokens.isConsignorUsingProxy() && 
 					X500NameUtils.equal(securityTokens.getConsignorRealName(), etdIssuerName))
 			{
 				logger.debug("ETD issuer and consignor are equal after handling a proxy");
@@ -262,11 +239,12 @@ public class ETDInHandler extends AbstractSoapInterceptor
 	protected void checkDelegation(SecurityTokens securityTokens, List<TrustDelegation> tdTokens)
 			throws TrustDelegationException
 	{
-		String userName=securityTokens.getUserName().getName();
+		String userName=securityTokens.getUserName();
 		if(logger.isDebugEnabled()){
-			logger.debug("Checking trust delegation issued by <"+userName+">");
+			logger.debug("Checking trust delegation, expected custodian is <"
+					+ X500NameUtils.getReadableForm(userName)+">");
 		}
-		X509Certificate consignor = securityTokens.getConsignorCertificate();
+		String consignor = securityTokens.getConsignorName();
 
 		//now really check the SAML stuff
 		boolean validTD = checkSuppliedTD(userName, tdTokens);
@@ -276,7 +254,7 @@ public class ETDInHandler extends AbstractSoapInterceptor
 		securityTokens.setConsignorTrusted(consignorTrusted);
 		if (validTD && consignorTrusted)
 		{
-			//Let's set a correct user. In case of proxy it can be different from what was requested
+			//Let's correct the user in case of proxies: it is different from what was requested
 			X509Certificate[] etdInitialIssuerCC = getIssuer(tdTokens);
 			if (securityTokens.isSupportingProxy() && ProxyUtils.isProxy(etdInitialIssuerCC))
 			{
@@ -300,10 +278,9 @@ public class ETDInHandler extends AbstractSoapInterceptor
 	 * @return
 	 */
 	protected boolean checkIfConsignorTrusted(boolean tdGenericValidity, boolean consignorIsProxy, 
-			List<TrustDelegation> tdTokens, X500Principal realConsignor, 
-			X509Certificate consignor, String user)
+			List<TrustDelegation> tdTokens, String realConsignor, 
+			String consignor, String user)
 	{
-		String effectiveConsignor = consignor.getSubjectX500Principal().getName();
 		if (X500NameUtils.equal(realConsignor, user))
 			return true;
 		if (selfCallChecker != null && selfCallChecker.isSelfCall(consignor))
@@ -318,10 +295,10 @@ public class ETDInHandler extends AbstractSoapInterceptor
 		
 		//here we have three cases: delegation was done to the proxy cert as the receiver
 		// or to the EEC as the receiver
-		if (etd.isSubjectInChain(tdTokens, realConsignor.getName()))
+		if (etd.isSubjectInChain(tdTokens, realConsignor))
 			return true;
 		// or delegation was done to the EEC but consignor is using proxy derived from this EEC.
-		if (consignorIsProxy && etd.isSubjectInChain(tdTokens, effectiveConsignor))
+		if (consignorIsProxy && etd.isSubjectInChain(tdTokens, consignor))
 			return true;
 		return false;
 	}
@@ -341,8 +318,7 @@ public class ETDInHandler extends AbstractSoapInterceptor
 		String delegationTarget = td.get(td.size()-1).getSubjectName();
 		if(logger.isDebugEnabled())
 		{
-			logger.debug("Got TD of <"+user+"> to <"+delegationTarget+">, " +
-				"dumping the TD chain");
+			logger.debug("Got TD to <"+delegationTarget+">, dumping the TD chain");
 			int i = 0;
 			for(TrustDelegation t: td)
 			{
@@ -352,9 +328,9 @@ public class ETDInHandler extends AbstractSoapInterceptor
 			}
 		}
 		ETDApi etd = UnicoreSecurityFactory.getETDEngine();
-		X509Certificate delegationIssuer = td.get(td.size()-1).getIssuerFromSignature()[0];
 		Collection<X509Certificate>trustedIssuers = new HashSet<X509Certificate>();
-		trustedIssuers.add(delegationIssuer);
+		if (trustedDelegationIssuers != null)
+			Collections.addAll(trustedIssuers, trustedDelegationIssuers.getTrustedIssuers());
 		ValidationResult res = etd.isTrustDelegated(td, delegationTarget, user, validator, trustedIssuers);
 		if(logger.isDebugEnabled()){
 			logger.debug("Validation of supplied TD result: " + res.isValid());
@@ -428,7 +404,35 @@ public class ETDInHandler extends AbstractSoapInterceptor
 			return null;
 		}
 	}
-
+	
+	protected boolean isIssuerDN(List<TrustDelegation> tdTokens)
+	{
+		if (tdTokens == null || tdTokens.size() == 0)
+			return false;
+		try
+		{
+			return SAMLConstants.NFORMAT_DN.equals(tdTokens.get(0).getIssuerNameFormat());
+		} catch (Exception e)
+		{
+			logger.warn("Can't parse ETD assertion issuer name format: " + e.toString());
+			return false;
+		}
+	}
+	
+	protected String getCustodianName(List<TrustDelegation> tdTokens)
+	{
+		if (tdTokens == null || tdTokens.size() == 0)
+			return null;
+		try
+		{
+			return tdTokens.get(0).getCustodianDN();
+		} catch (Exception e)
+		{
+			logger.warn("Can't parse ETD assertion custodian name: " + e.toString());
+			return null;
+		}
+	}
+	
 	/**
 	 * get the X509 certificate of the issuer
 	 * 

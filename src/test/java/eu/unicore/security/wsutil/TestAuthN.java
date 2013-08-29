@@ -15,7 +15,6 @@ import javax.net.ssl.SSLException;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
 
-import eu.emi.security.authn.x509.X509Credential;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.emi.security.authn.x509.proxy.ProxyCertificate;
 import eu.emi.security.authn.x509.proxy.ProxyCertificateOptions;
@@ -38,13 +37,12 @@ public class TestAuthN extends AbstractTestBase
 
 			MockSecurityConfig config = new MockSecurityConfig(false, true, true); 
 			MockSecurityConfig configWrong = new MockSecurityConfig(false, true, false); 
-			X509Credential gwCredential = MockSecurityConfig.getGatewayCredential();
 			SimpleSecurityService s = makeProxy(config);
 			
 			ConsignorAPI engine = UnicoreSecurityFactory.getConsignorAPI();
 			X509Certificate consignor = configWrong.getCredential().getCertificate();
 			ConsignorAssertion consignorA = engine.generateConsignorToken(
-					gwCredential.getCertificate().getSubjectX500Principal().getName(),
+					MockSecurityConfig.GW_CRED.getSubjectName(),
 					new X509Certificate[] {consignor},
 					AuthNClasses.TLS, "127.0.0.1");
 			Client xfireClient = ClientProxy.getClient(s);
@@ -75,7 +73,6 @@ public class TestAuthN extends AbstractTestBase
 
 			MockSecurityConfig config = new MockSecurityConfig(false, true, true); 
 			MockSecurityConfig configWrong = new MockSecurityConfig(false, true, false); 
-			X509Credential gwCredential = MockSecurityConfig.getGatewayCredential();
 			SimpleSecurityService s = makeProxy(config);
 			
 			ConsignorAPI engine = UnicoreSecurityFactory.getConsignorAPI();
@@ -87,7 +84,7 @@ public class TestAuthN extends AbstractTestBase
 			
 			
 			ConsignorAssertion consignorA = engine.generateConsignorToken(
-					gwCredential.getCertificate().getSubjectX500Principal().getName(),
+					MockSecurityConfig.GW_CRED.getSubjectName(),
 					proxyC.getCertificateChain(),
 					AuthNClasses.TLS, "127.0.0.1");
 			Client xfireClient = ClientProxy.getClient(s);
@@ -110,13 +107,12 @@ public class TestAuthN extends AbstractTestBase
 		{
 			System.out.println("\nTest GW anon assertion\n");
 			MockSecurityConfig config = new MockSecurityConfig(false, true, true); 
-			X509Credential gwCredential = MockSecurityConfig.getGatewayCredential();
 			
 			SimpleSecurityService s = makeProxy(config);
 			
 			ConsignorAPI engine = UnicoreSecurityFactory.getConsignorAPI();
 			ConsignorAssertion consignorA = engine.generateConsignorToken(
-					gwCredential.getCertificate().getSubjectX500Principal().getName());
+					MockSecurityConfig.GW_CRED.getSubjectName());
 			Client xfireClient = ClientProxy.getClient(s);
 			GwHandler gwH = new GwHandler();
 			gwH.reinit(consignorA);
@@ -170,7 +166,8 @@ public class TestAuthN extends AbstractTestBase
 		try
 		{
 			System.out.println("\nTest invalid SSL\n");
-			MockSecurityConfig config = new MockSecurityConfig(false, true, false); 
+			MockSecurityConfig config = new MockSecurityConfig(false, true, 
+					MockSecurityConfig.WRONGCLIENT_CRED); 
 			SimpleSecurityService s = makeProxy(config);
 			
 			s.TestConsignor();
@@ -209,7 +206,8 @@ public class TestAuthN extends AbstractTestBase
 			assertTrue(consignor.equals(consignorRet));
 			
 			//now let's change
-			config = new MockSecurityConfig(false, true, false); 
+			config = new MockSecurityConfig(false, true, 
+					MockSecurityConfig.WRONGCLIENT_CRED); 
 			s = makeProxy(config);
 			
 			consignorRet = s.TestConsignor();

@@ -91,6 +91,7 @@ public class TestDSig extends AbstractTestBase
 		System.out.println("\nTest lack of signature\n");
 		MockSecurityConfig config = new MockSecurityConfig(
 				false, true, true); 
+		config.setDoSignMessage(false);
 		SimpleSecurityService s = makeProxy(config);
 
 		String sigRet = s.TestSignature();

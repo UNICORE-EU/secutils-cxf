@@ -13,6 +13,7 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.transport.servlet.CXFNonSpringServlet;
 
 import eu.emi.security.authn.x509.impl.KeystoreCertChainValidator;
+import eu.unicore.samly2.trust.TruststoreBasedSamlTrustChecker;
 import eu.unicore.security.wsutil.client.LogInMessageHandler;
 import eu.unicore.security.wsutil.client.LogOutMessageHandler;
 import eu.unicore.security.wsutil.client.UnicoreWSClientFactory;
@@ -54,15 +55,19 @@ public abstract class AbstractTestBase extends TestCase
 
 	protected void addHandlers(List<Interceptor<? extends Message>> s)throws Exception{
 		SecuritySessionStore sesStore = new SecuritySessionStore();
+		KeystoreCertChainValidator trustedIssuersStore = new KeystoreCertChainValidator(
+				"src/test/resources/certs/idp.jks", 
+				"the!test".toCharArray(), "JKS", -1);
 		AuthInHandler authHandler = new AuthInHandler(true, true, true, null, sesStore);
 		authHandler.addUserAttributeHandler(new SimpleSecurityServiceImpl.SimpleUserAttributeHandler());
+		TruststoreBasedSamlTrustChecker samlTrustChecker = new TruststoreBasedSamlTrustChecker(trustedIssuersStore);
+		authHandler.enableSamlAuthentication(MockSecurityConfig.SERVER_CRED.getSubjectName(), 
+				jetty.getUrls()[0].toExternalForm(), 
+				samlTrustChecker, 0);
 		DSigParseInHandler parseHandler = new DSigParseInHandler(null);
 		DSigSecurityInHandler dsigHandler = new DSigSecurityInHandler(null);
 		AdditionalInHandler addHandler = new AdditionalInHandler();
-		ETDInHandler etdHandler=new ETDInHandler(null, new KeystoreCertChainValidator(
-				MockSecurityConfig.KS,
-				MockSecurityConfig.KS_PASSWD.toCharArray(),
-				"JKS", -1));
+		ETDInHandler etdHandler=new ETDInHandler(null, MockSecurityConfig.VALIDATOR, trustedIssuersStore);
 		SecuritySessionCreateInHandler sessionHandler = new SecuritySessionCreateInHandler(sesStore);
 		
 		s.add(authHandler);
@@ -112,6 +117,6 @@ public abstract class AbstractTestBase extends TestCase
 	}
 
 	protected WSClientFactory getWSClientFactory(IClientConfiguration sec){
-		return new WSClientFactory(sec);
+		return new UnicoreWSClientFactory(sec);
 	}
 }

@@ -337,7 +337,7 @@ public class TestETD extends AbstractTestBase
 
 	private List<TrustDelegation> createTD(boolean mode) 
 			throws Exception
-			{
+	{
 		MockSecurityConfig configCorrect = new MockSecurityConfig(false, true, true); 
 		MockSecurityConfig configWrong = new MockSecurityConfig(false, true, false); 
 
@@ -358,7 +358,7 @@ public class TestETD extends AbstractTestBase
 				pk, receiverDN, null);
 		tds.add(td);
 		return tds;
-			}
+	}
 
 	private List<TrustDelegation> createTDWithProxy() throws Exception
 	{

@@ -101,6 +101,10 @@ public class UnicoreWSClientFactory extends WSClientFactory
 		if (security.getETDSettings() != null)
 			outHandlers.add(new ExtendedTDOutHandler(security));
 
+		SAMLAttributePushOutHandler samlOutHandler = new SAMLAttributePushOutHandler();
+		samlOutHandler.configure(security);
+		outHandlers.add(samlOutHandler);
+		
 		addHandlers(inHandlers, security.getInHandlerClassNames());
 		
 		inHandlers.add(new ConditionalGetInHandler());

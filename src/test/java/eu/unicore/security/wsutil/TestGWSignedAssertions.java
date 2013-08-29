@@ -17,7 +17,6 @@ import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.message.Message;
 
-import eu.emi.security.authn.x509.X509Credential;
 import eu.emi.security.authn.x509.helpers.BinaryCertChainValidator;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLConstants.AuthNClasses;
@@ -33,13 +32,12 @@ public class TestGWSignedAssertions extends AbstractTestBase
 	@Override
 	protected void addHandlers(List<Interceptor<? extends Message>> s)throws Exception{
 
-		X509Credential credential = MockSecurityConfig.getGatewayCredential();
-		gwCert = credential.getCertificate();
-		gwKey = credential.getKey();
+		gwCert = MockSecurityConfig.GW_CRED.getCertificate();
+		gwKey = MockSecurityConfig.GW_CRED.getKey();
 
 		SecuritySessionStore sesStore = new SecuritySessionStore();
 		AuthInHandler authHandler = new AuthInHandler(true, true, true, gwCert, sesStore);
-		ETDInHandler etdHandler = new ETDInHandler(null, new BinaryCertChainValidator(true));
+		ETDInHandler etdHandler = new ETDInHandler(null, new BinaryCertChainValidator(true), null);
 		s.add(authHandler);
 		s.add(etdHandler);
 	}

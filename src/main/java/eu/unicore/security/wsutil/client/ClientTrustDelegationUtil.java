@@ -19,15 +19,15 @@ import eu.unicore.security.etd.TrustDelegation;
 
 /**
  * This class provides static methods to configure trust delegation handler 
- * ({@link TDOutHandler} for the XFire proxy. Note that is also adds User statements,
+ * ({@link TDOutHandler} for the CXF proxy. Note that is also adds User statements,
  * not only trust delegation statements. 
  * @author K. Benedyczak
  */
 public class ClientTrustDelegationUtil
 {
 	/**
-	 * Configures trust delegation for the Xfire proxy. It is assumed that standard
-	 * XFireProxy was used (so don't use this method clients obtained with WSRFLite
+	 * Configures trust delegation for the CXF proxy. It is assumed that standard
+	 * CXF was used (so don't use this method clients obtained with WSRFLite
 	 * or other higher level frameworks -- see other methods).  
 	 * <p>
 	 * The handler is either added or updated with the new configuration. 
@@ -38,19 +38,19 @@ public class ClientTrustDelegationUtil
 	 * in chain is a CONSIGNOR (so the guy who actually make the request, or to state
 	 * it in another way: you).
 	 * 
-	 * @param xfireProxy Object used to make WS calls via XFire.
+	 * @param cxfProxy Object used to make WS calls via CXF.
 	 * @param tdChain list of trust delegations.
 	 */
-	public static void addTrustDelegation(Object xfireProxy, 
+	public static void addTrustDelegation(Object cxfProxy, 
 			List<TrustDelegation> tdChain)
 	{
-		Client xfireClient = ClientProxy.getClient(xfireProxy);
-		addTrustDelegation(xfireClient, tdChain);
+		Client cxfClient = ClientProxy.getClient(cxfProxy);
+		addTrustDelegation(cxfClient, tdChain);
 	}
 	
 	/**
-	 * Configures trust delegation for the Xfire client. This method is for use 
-	 * with custom code with manipulates XFire default implementations of clients 
+	 * Configures trust delegation for the CXF client. This method is for use 
+	 * with custom code with manipulates CXF default implementations of clients 
 	 * and proxies.  
 	 * <p>
 	 * The handler is either added or updated with the new configuration. 
@@ -61,10 +61,10 @@ public class ClientTrustDelegationUtil
 	 * in chain is a CONSIGNOR (so the guy who actually make the request, or to state
 	 * it in another way: you).
 	 * 
-	 * @param xfireClient XFire client underlying XFire proxy.
+	 * @param cxfClient CXF client underlying CXF proxy.
 	 * @param tdChain list of trust delegations.
 	 */
-	public static void addTrustDelegation(Client xfireClient, 
+	public static void addTrustDelegation(Client cxfClient, 
 			List<TrustDelegation> tdChain)
 	{
 		if (tdChain == null || tdChain.size() == 0)
@@ -73,14 +73,14 @@ public class ClientTrustDelegationUtil
 		
 		TrustDelegation td1 = tdChain.get(0);
 		TrustDelegation tdLast = tdChain.get(tdChain.size() - 1);
-		addTrustDelegation(xfireClient, tdChain, 
+		addTrustDelegation(cxfClient, tdChain, 
 				td1.getIssuerFromSignature()[0], tdLast.getSubjectName());
 	}
 	
 	
 	/**
-	 * Configures trust delegation for the Xfire proxy. It is assumed that standard
-	 * XFireProxy was used (so don't use this method clients obtained with WSRFLite
+	 * Configures trust delegation for the CXF proxy. It is assumed that standard
+	 * CXFProxy was used (so don't use this method clients obtained with WSRFLite
 	 * or other higher level frameworks -- see other methods).  
 	 * <p>
 	 * The handler is either added or updated with the new configuration. 
@@ -88,22 +88,22 @@ public class ClientTrustDelegationUtil
 	 * This version allows for setting trust delegation and manually set the User 
 	 * (identified by certificate). 
 	 *  
-	 * @param xfireProxy Object used to make WS calls via XFire.
+	 * @param cxfProxy Object used to make WS calls via CXF.
 	 * @param tdChain list of trust delegations.
 	 * @param user certificate of USER or null if User assertion shouldn't be added.
 	 * @param callerDN DN of CONSIGNOR or null if User assertion shouldn't be added.
 	 */
-	public static void addTrustDelegation(Object xfireProxy, 
+	public static void addTrustDelegation(Object cxfProxy, 
 			List<TrustDelegation> tdChain, X509Certificate user,
 			String callerDN)
 	{
-		Client xfireClient = ClientProxy.getClient(xfireProxy);
-		addTrustDelegation(xfireClient, tdChain, user, callerDN);
+		Client CXFClient = ClientProxy.getClient(cxfProxy);
+		addTrustDelegation(CXFClient, tdChain, user, callerDN);
 	}
 
 	/**
-	 * Configures trust delegation for the Xfire client. This method is for use 
-	 * with custom code with manipulates XFire default implementations of clients 
+	 * Configures trust delegation for the CXF client. This method is for use 
+	 * with custom code with manipulates CXF default implementations of clients 
 	 * and proxies.  
 	 * <p>
 	 * The handler is either added or updated with the new configuration. 
@@ -111,21 +111,21 @@ public class ClientTrustDelegationUtil
 	 * This version allows for setting trust delegation and the User
 	 * (identified by a certificate). 
 	 *  
-	 * @param xfireClient XFire client underlying XFire proxy.
+	 * @param cxfClient CXF client underlying CXF proxy.
 	 * @param tdChain list of trust delegations.
 	 * @param user certificate of USER or null if User assertion shouldn't be added.
 	 * @param callerDN DN of CONSIGNOR or null if User assertion shouldn't be added.
 	 */
-	public static void addTrustDelegation(Client xfireClient, 
+	public static void addTrustDelegation(Client cxfClient, 
 			List<TrustDelegation> tdChain, X509Certificate userCert,
 			String callerDN)
 	{
-		addTrustDelegation(xfireClient, tdChain, userCert, null, callerDN);
+		addTrustDelegation(cxfClient, tdChain, userCert, null, callerDN);
 	}
 
 	/**
-	 * Configures trust delegation for the Xfire proxy. It is assumed that standard
-	 * XFireProxy was used (so don't use this method clients obtained with WSRFLite
+	 * Configures trust delegation for the CXF proxy. It is assumed that standard
+	 * CXFProxy was used (so don't use this method clients obtained with WSRFLite
 	 * or other higher level frameworks -- see other methods).  
 	 * <p>
 	 * The handler is either added or updated with the new configuration. 
@@ -133,22 +133,22 @@ public class ClientTrustDelegationUtil
 	 * This version allows for setting trust delegation and manually set the User 
 	 * (identified by a DN). 
 	 *  
-	 * @param xfireProxy Object used to make WS calls via XFire.
+	 * @param cxfProxy Object used to make WS calls via CXF.
 	 * @param tdChain list of trust delegations.
 	 * @param user certificate of USER or null if User assertion shouldn't be added.
 	 * @param callerDN DN of CONSIGNOR or null if User assertion shouldn't be added.
 	 */
-	public static void addTrustDelegation(Object xfireProxy, 
+	public static void addTrustDelegation(Object cxfProxy, 
 			List<TrustDelegation> tdChain, String userDN,
 			String callerDN)
 	{
-		Client xfireClient = ClientProxy.getClient(xfireProxy);
-		addTrustDelegation(xfireClient, tdChain, null, userDN, callerDN);
+		Client CXFClient = ClientProxy.getClient(cxfProxy);
+		addTrustDelegation(CXFClient, tdChain, null, userDN, callerDN);
 	}
 
 	/**
-	 * Configures trust delegation for the Xfire client. This method is for use 
-	 * with custom code with manipulates XFire default implementations of clients 
+	 * Configures trust delegation for the CXF client. This method is for use 
+	 * with custom code with manipulates CXF default implementations of clients 
 	 * and proxies.  
 	 * <p>
 	 * The handler is either added or updated with the new configuration. 
@@ -156,37 +156,37 @@ public class ClientTrustDelegationUtil
 	 * This version allows for setting trust delegation and manually set the User
 	 * (identified by a DN). 
 	 *  
-	 * @param xfireClient XFire client underlying XFire proxy.
+	 * @param cxfClient CXF client underlying CXF proxy.
 	 * @param tdChain list of trust delegations.
 	 * @param user certificate of USER or null if User assertion shouldn't be added.
 	 * @param callerDN DN of CONSIGNOR or null if User assertion shouldn't be added.
 	 */
-	public static void addTrustDelegation(Client xfireClient, 
+	public static void addTrustDelegation(Client cxfClient, 
 			List<TrustDelegation> tdChain, String userDN,
 			String callerDN)
 	{
-		addTrustDelegation(xfireClient, tdChain, null, userDN, callerDN);
+		addTrustDelegation(cxfClient, tdChain, null, userDN, callerDN);
 	}
 	
 	/**
-	 * Configures trust delegation for the Xfire client. This method is for use 
-	 * with custom code with manipulates XFire default implementations of clients 
+	 * Configures trust delegation for the CXF client. This method is for use 
+	 * with custom code with manipulates CXF default implementations of clients 
 	 * and proxies.  
 	 * <p>
 	 * The handler is either added or updated with the new configuration. 
 	 * <p>
 	 * This version allows for setting trust delegation and manually set the User. 
 	 *  
-	 * @param xfireClient XFire client underlying XFire proxy.
+	 * @param cxfClient CXF client underlying CXF proxy.
 	 * @param tdChain list of trust delegations.
 	 * @param user certificate of USER or null if User assertion shouldn't be added.
 	 * @param callerDN DN of CONSIGNOR or null if User assertion shouldn't be added.
 	 */
-	private static void addTrustDelegation(Client xfireClient, 
+	private static void addTrustDelegation(Client cxfClient, 
 			List<TrustDelegation> tdChain, X509Certificate user, String userDN,
 			String callerDN)
 	{
-		List<?> outHandlers = xfireClient.getOutInterceptors();
+		List<?> outHandlers = cxfClient.getOutInterceptors();
 		TDOutHandler tdHandler = null;
 		for (Object h: outHandlers)
 			if (h instanceof TDOutHandler)
@@ -200,31 +200,31 @@ public class ClientTrustDelegationUtil
 			tdHandler = new TDOutHandler(tdChain, user, callerDN);
 		else
 			tdHandler = new TDOutHandler(tdChain, userDN, callerDN);
-		xfireClient.getOutInterceptors().add(tdHandler);
+		cxfClient.getOutInterceptors().add(tdHandler);
 	}
 
 	/**
 	 * Removes all trust delegation handlers from the given proxy.
 	 * <p>
-	 * It is assumed that standard XFireProxy was used (so don't use this 
+	 * It is assumed that standard CXFProxy was used (so don't use this 
 	 * method clients obtained with WSRFLite or other higher level frameworks
 	 *  -- see other method).
-	 * @param xfireProxy Object used to make WS calls via XFire.
+	 * @param cxfProxy Object used to make WS calls via CXF.
 	 */
-	public static void removeTrustDelegation(Object xfireProxy)
+	public static void removeTrustDelegation(Object cxfProxy)
 	{
-		Client xfireClient = ClientProxy.getClient(xfireProxy);
-		removeTrustDelegation(xfireClient);
+		Client CXFClient = ClientProxy.getClient(cxfProxy);
+		removeTrustDelegation(CXFClient);
 	}
 	
 	/**
 	 * Removes all trust delegation handlers from the given proxy.
 	 * <p>
-	 * @param xfireClient XFire client underlying XFire proxy.
+	 * @param cxfClient CXF client underlying CXF proxy.
 	 */
-	public static void removeTrustDelegation(Client xfireClient)
+	public static void removeTrustDelegation(Client cxfClient)
 	{
-		List<?> outHandlers = xfireClient.getOutInterceptors();
+		List<?> outHandlers = cxfClient.getOutInterceptors();
 		for (int i=outHandlers.size()-1; i>=0; i--)
 		{
 			Object h = outHandlers.get(i);

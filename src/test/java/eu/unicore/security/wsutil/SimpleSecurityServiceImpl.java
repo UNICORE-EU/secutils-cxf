@@ -15,7 +15,6 @@ import java.util.List;
 
 import javax.annotation.Resource;
 import javax.jws.WebService;
-import javax.security.auth.x500.X500Principal;
 import javax.xml.ws.WebServiceContext;
 import javax.xml.ws.handler.MessageContext;
 
@@ -68,10 +67,7 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 	public String TestConsignor() throws RemoteException
 	{
 		SecurityTokens tokens = getTokens();
-		X509Certificate cc = tokens.getConsignorCertificate();
-		if (cc == null)
-			return null;
-		return cc.getSubjectX500Principal().getName();
+		return tokens.getConsignorName();
 	}
 	
 	public String TestETDValid() throws RemoteException
@@ -110,14 +106,14 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 		if (cert != null)
 			return cert.getSubjectX500Principal().getName();
 		else
-			return tokens.getUserName().getName();
+			return tokens.getUserName();
 	}
 
 	public String TestEffectiveUser() throws RemoteException
 	{
 		SecurityTokens tokens = getTokens();
-		X500Principal effUser = tokens.getEffectiveUserName(); 
-		return effUser == null ? null : effUser.getName();
+		String effUser = tokens.getEffectiveUserName(); 
+		return effUser == null ? null : effUser;
 	}
 
 	@Override

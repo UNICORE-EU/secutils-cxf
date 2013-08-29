@@ -17,8 +17,6 @@ import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
-import eu.emi.security.authn.x509.impl.KeystoreCertChainValidator;
-import eu.emi.security.authn.x509.impl.KeystoreCredential;
 import eu.unicore.util.configuration.ConfigurationException;
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
 import eu.unicore.util.jetty.HttpServerProperties;
@@ -46,14 +44,8 @@ public class JettyServer extends JettyServerBase
 		super(new URL[] {new URL("https://localhost:" + PORT), 
 				 new URL("http://localhost:" + (PORT+1))},  
 				 new DefaultClientConfiguration(
-						new KeystoreCertChainValidator(KS, 
-								KS_PWD.toCharArray(), 
-								"JKS",	-1),
-						new KeystoreCredential(KS, 
-								KS_PWD.toCharArray(),
-								KS_PWD.toCharArray(),
-								null,
-								"JKS")),
+						MockSecurityConfig.VALIDATOR,
+						MockSecurityConfig.SERVER_CRED),
 				getJettyProperties(), 
 				JettyLogger.class);
 		
