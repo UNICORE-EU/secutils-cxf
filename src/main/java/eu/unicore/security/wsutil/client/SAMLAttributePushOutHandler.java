@@ -26,6 +26,7 @@ import org.w3c.dom.Element;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import eu.unicore.samly2.assertion.Assertion;
+import eu.unicore.security.wsutil.SecuritySessionUtils;
 import eu.unicore.security.wsutil.WSSecHeader;
 import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.IClientConfiguration;
@@ -122,6 +123,7 @@ public class SAMLAttributePushOutHandler extends AbstractSoapInterceptor impleme
 		log.debug("Found SAML assertions to be sent, applying them");
 	}
 	
+	@Override
 	public void handleMessage(SoapMessage message)
 	{
 		if(!MessageUtils.isOutbound(message))
@@ -134,6 +136,12 @@ public class SAMLAttributePushOutHandler extends AbstractSoapInterceptor impleme
 		
 		if (toBeInserted == null || toBeInserted.size() == 0)
 			return;
+		
+		if (SecuritySessionUtils.haveSessionID(message))
+		{
+			log.debug("Skipping SAML out handler as security session is being used");
+			return;
+		}
 		
 		log.debug("Adding SAML assertions to the request's header.");
 		List<Header> h = message.getHeaders();

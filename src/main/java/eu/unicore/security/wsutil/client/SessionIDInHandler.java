@@ -40,7 +40,9 @@ import org.apache.cxf.phase.Phase;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 
+import eu.unicore.security.wsutil.SecuritySessionUtils;
 import eu.unicore.util.Log;
+import eu.unicore.util.httpclient.IClientConfiguration;
 import eu.unicore.util.httpclient.SessionIDProvider;
 
 /**
@@ -50,49 +52,57 @@ import eu.unicore.util.httpclient.SessionIDProvider;
  * @author schuller
  * @author K. Benedyczak
  */
-public class SessionIDInHandler extends AbstractSoapInterceptor {
+public class SessionIDInHandler extends AbstractSoapInterceptor implements Configurable {
 	private static final Logger log = Log.getLogger(Log.CLIENT, SessionIDInHandler.class);
-	private static final ThreadLocal<String>sessionIDs=new ThreadLocal<String>();
-
+	private static final ThreadLocal<String>currentSessionID=new ThreadLocal<String>();
+	private IClientConfiguration configuration;
+	
 	public SessionIDInHandler() {
 		super(Phase.INVOKE);
 	}
 
 	public synchronized void handleMessage(SoapMessage message) {
 		log.trace("SessionIDInHandler invoked");
-		sessionIDs.remove();
-		Header header=message.getHeader(SessionIDOutHandler.headerQName);
+		currentSessionID.remove();
+		Header header=message.getHeader(SecuritySessionUtils.headerQName);
 		if(header==null)return;
 		Element hdr = (Element) header.getObject();		
 		
-		Element id=DOMUtils.getFirstChildWithName(hdr,SessionIDOutHandler.idQName);
+		Element id=DOMUtils.getFirstChildWithName(hdr,SecuritySessionUtils.idQName);
 		String sessionID= id!=null? id.getTextContent() : null; 
-		if(sessionID!=null){
-			log.debug("Server returned security session id " + sessionID);
-			SessionIDProvider idProvider=SessionIDOutHandler.getSessionIDProvider(message);
-			if(idProvider!=null){
-				log.debug("Setting session ID for the sessionID provider");
-				idProvider.setSessionID(sessionID);
-			}
-			sessionIDs.set(sessionID);
-		}
-		
-		Element lt=DOMUtils.getFirstChildWithName(hdr,SessionIDOutHandler.ltQName);
+		Element lt=DOMUtils.getFirstChildWithName(hdr,SecuritySessionUtils.ltQName);
 		String lifetime= lt!=null? lt.getTextContent() : null; 
-		if(lifetime!=null){
-			log.debug("Server returned security session lifetime: " + lifetime);
-			SessionIDProvider idProvider=SessionIDOutHandler.getSessionIDProvider(message);
-			if(idProvider!=null){
-				idProvider.setLifetime(Long.valueOf(lifetime));
+
+		if (sessionID != null && lifetime != null) 
+		{
+			log.debug("Server returned security session id=" + sessionID + " lifetime=" + lifetime);
+			String targetUrl = (String) message.getContextualProperty(
+					SecuritySessionUtils.SESSION_TARGET_URL);
+			SessionIDProvider idProvider=configuration.getSessionIDProvider();
+			if (idProvider != null)
+			{
+				log.debug("Registering session in the session provider");
+				idProvider.registerSession(sessionID, targetUrl, Long.valueOf(lifetime), 
+						configuration);
+				currentSessionID.set(sessionID);
 			}
 		}
-		
 	}
 
+	/**
+	 * This method is useful for tests only. It returns the session id which was returned by the server
+	 * during the last WS call. This is thread local, so only the same thread can access this information.
+	 * @return
+	 */
 	public static String getSessionID(){
-		return sessionIDs.get();
+		return currentSessionID.get();
 	}
 
+	@Override
+	public void configure(IClientConfiguration properties)
+	{
+		this.configuration = properties;
+	}
 }
 
 

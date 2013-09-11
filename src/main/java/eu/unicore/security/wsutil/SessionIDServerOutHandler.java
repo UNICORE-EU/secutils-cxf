@@ -39,9 +39,6 @@ import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
 import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
-import org.w3c.dom.Element;
-
-import eu.unicore.security.wsutil.client.SessionIDOutHandler;
 
 /**
  * A server-side handler that writes the security session header.
@@ -71,13 +68,13 @@ public class SessionIDServerOutHandler extends AbstractSoapInterceptor {
 			}
 			
 			String sessionID=session.getSessionID();
+			if (sessionID == null)
+				return;
 			long lifetime=session.getLifetime();
 			
-			Element header=SessionIDOutHandler.buildHeader(sessionID, lifetime);
-			if(header == null)return;
-
+			Header header=SecuritySessionUtils.buildHeader(sessionID, lifetime);
 			List<Header> h = message.getHeaders();
-			h.add(new Header(SessionIDOutHandler.headerQName,header));
+			h.add(header);
 		}
 		finally{
 			clear();

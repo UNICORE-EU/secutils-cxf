@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.clustering.FailoverFeature;
 import org.apache.cxf.clustering.FailoverTargetSelector;
 import org.apache.cxf.clustering.RetryStrategy;
@@ -14,7 +13,6 @@ import org.apache.cxf.transport.Conduit;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transport.http.HTTPException;
 
-import eu.unicore.util.httpclient.SessionIDProvider;
 
 /**
  * Handle retries of failed WS calls
@@ -37,7 +35,7 @@ public class RetryFeature extends FailoverFeature{
 		super();
 		this.factory=factory;
 		setStrategy(new RetryStrategy());
-		setTargetSelector(new MyTargetSelector(this));
+		setTargetSelector(new MyTargetSelector());
 	}
 
 	public Set<Class<? extends Throwable>> getRecoverableExceptions() {
@@ -116,17 +114,11 @@ public class RetryFeature extends FailoverFeature{
 		return retry;
 	}
 
-	public static class MyTargetSelector extends FailoverTargetSelector{
-		
-		RetryFeature feature;
-
-		public MyTargetSelector(RetryFeature feature){
-			this.feature=feature;
-		}
+	public class MyTargetSelector extends FailoverTargetSelector{
 		
 		@Override
 		protected long getDelayBetweenRetries() {
-			return feature.getDelayBetweenRetries();
+			return RetryFeature.this.getDelayBetweenRetries();
 		}
 
 		@Override
@@ -135,7 +127,7 @@ public class RetryFeature extends FailoverFeature{
 			// as the retry code deletes the existing HTTPConduit,
 			// our settings (TLS etc) are lost, so we need to re-init
 			if(c!=null && c instanceof HTTPConduit){
-				feature.factory.setupHTTPParams((HTTPConduit)c);
+				RetryFeature.this.factory.setupHTTPParams((HTTPConduit)c);
 			}
 			return c;
 		}
@@ -154,18 +146,18 @@ public class RetryFeature extends FailoverFeature{
 			while (curr != null) {
 				if(curr.getMessage().contains("432")){
 					clearSessionID(exchange);
-					feature.setRetryImmediately();
+					RetryFeature.this.setRetryImmediately();
 					return true;
 				}
 				if(curr instanceof HTTPException){
 					int s=((HTTPException)curr).getResponseCode();
 					if(s == 432){
 						clearSessionID(exchange);
-						feature.setRetryImmediately();
+						RetryFeature.this.setRetryImmediately();
 						return true;
 					}
 				}
-				failover = feature.requiresFailover(curr);
+				failover = RetryFeature.this.requiresFailover(curr);
 				curr = curr.getCause();
 			}
 			if (ex != null) {
@@ -190,15 +182,7 @@ public class RetryFeature extends FailoverFeature{
 		}
 
 		protected void clearSessionID(Exchange exchange){
-			try{
-				SoapMessage soapMessage = (SoapMessage)exchange.getOutMessage();
-				SessionIDProvider p=SessionIDOutHandler.getSessionIDProvider(soapMessage);
-				if(p!=null){
-					p.setSessionID(null);
-				}
-			}catch(Exception ex){
-				ex.printStackTrace();
-			}
+			SessionIDOutHandler.setSkip(true);
 		}
 	}
 	

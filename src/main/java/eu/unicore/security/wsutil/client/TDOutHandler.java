@@ -27,6 +27,7 @@ import org.w3c.dom.Element;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.security.user.UserAssertion;
+import eu.unicore.security.wsutil.SecuritySessionUtils;
 import eu.unicore.security.wsutil.WSSecHeader;
 import eu.unicore.util.Log;
 
@@ -191,10 +192,11 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 		if(!MessageUtils.isOutbound(message))
 			return;
 
-		// if we have a security session, do not do anything
-		if(SessionIDOutHandler.haveSessionID(message))
+		if(SecuritySessionUtils.haveSessionID(message))
+		{
+			logger.debug("Skipping TD addition as security session is being used.");
 			return;
-		
+		}
 		if (assertionListDOM == null && userAssertionDOM == null)
 		{
 			logger.debug("Neither TD nor User assertion available.");

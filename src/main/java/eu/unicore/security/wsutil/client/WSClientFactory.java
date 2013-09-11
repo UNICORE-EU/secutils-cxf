@@ -64,6 +64,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import eu.unicore.security.wsutil.SecuritySessionUtils;
 import eu.unicore.security.wsutil.XmlBeansNsHackOutHandler;
 import eu.unicore.security.wsutil.XmlBinding;
 import eu.unicore.util.Log;
@@ -71,7 +72,6 @@ import eu.unicore.util.httpclient.HttpClientProperties;
 import eu.unicore.util.httpclient.HttpUtils;
 import eu.unicore.util.httpclient.IClientConfiguration;
 import eu.unicore.util.httpclient.SessionIDProvider;
-import eu.unicore.util.httpclient.SessionIDProviderFactory;
 
 /**
  * Helper to create web service clients using CXF. This class will configure 
@@ -109,8 +109,23 @@ public class WSClientFactory {
 		this.securityProperties = securityCfg.clone();
 		this.settings=securityProperties.getHttpClientProperties();
 		initHandlers();
+		configureHandlers();
 	}
 
+	protected void configureHandlers()
+	{
+		for (Interceptor<?> i: inHandlers)
+		{
+			if (i instanceof Configurable)
+				((Configurable) i).configure((IClientConfiguration) securityProperties);
+		}
+		for (Interceptor<?> i: outHandlers)
+		{
+			if (i instanceof Configurable)
+				((Configurable) i).configure((IClientConfiguration) securityProperties);
+		}
+	}
+	
 	/**
 	 * add default in/out/fault handlers<br/>
 	 */
@@ -383,10 +398,7 @@ public class WSClientFactory {
 		Client wsClient=getWSClient(proxy);
 		setupWSClientProxy(wsClient, uri);
 		if(securityProperties.useSecuritySessions()){
-			SessionIDProviderFactory fact=securityProperties.getSessionIDProviderFactory();
-			if(fact!=null){
-				wsClient.getRequestContext().put(SessionIDProvider.KEY, fact.get(uri));
-			}
+			wsClient.getRequestContext().put(SecuritySessionUtils.SESSION_TARGET_URL, uri);
 		}
 	}
 	
@@ -426,5 +438,10 @@ public class WSClientFactory {
 		}
 		
 		throw new IllegalArgumentException("Unknown databinding: "+annot.name());
+	}
+	
+	public SessionIDProvider getSessionIDProvider()
+	{
+		return securityProperties.getSessionIDProvider();
 	}
 }

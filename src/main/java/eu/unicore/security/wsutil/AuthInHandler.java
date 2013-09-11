@@ -55,7 +55,6 @@ import eu.unicore.security.UserAttributeHandler;
 import eu.unicore.security.consignor.ConsignorAPI;
 import eu.unicore.security.consignor.ConsignorAssertion;
 import eu.unicore.security.user.UserAssertion;
-import eu.unicore.security.wsutil.client.SessionIDOutHandler;
 import eu.unicore.util.Log;
 
 /**
@@ -207,7 +206,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	@Override
 	public void handleMessage(SoapMessage ctx)
 	{
-		String sessionID=getSecuritySessionID(ctx);
+		String sessionID=SecuritySessionUtils.getSecuritySessionID(ctx);
 		SecurityTokens mainToken;
 		if (sessionID==null)
 		{
@@ -217,7 +216,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			// re-using session
 			SecuritySession session = getSession(ctx, sessionID);
 			mainToken = session.getTokens();
-			mainToken.getContext().put(SessionIDOutHandler.REUSED_MARKER_KEY, Boolean.TRUE);
+			mainToken.getContext().put(SecuritySessionUtils.REUSED_MARKER_KEY, Boolean.TRUE);
 			// make sure session info goes to the client
 			SessionIDServerOutHandler.setSession(session);
 			if(logger.isDebugEnabled()){
@@ -707,18 +706,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		}
 		return action;
 	}
-	
-	protected String getSecuritySessionID(SoapMessage message)
-	{
-		String sessionID=null;
-		Header header=message.getHeader(SessionIDOutHandler.headerQName);
-		if(header!=null){
-			Element hdr = (Element) header.getObject();		
-			if(hdr!=null)
-				sessionID = hdr.getTextContent(); 
-		}
-		return sessionID;
-	}
+
 	
 	protected void throwFault(int httpErrorCode, String message)
 	{

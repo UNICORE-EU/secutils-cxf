@@ -32,57 +32,34 @@
 
 package eu.unicore.security.wsutil.client;
 
-import java.io.ByteArrayInputStream;
 import java.util.List;
-
-import javax.xml.namespace.QName;
 
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
-import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
 import org.apache.log4j.Logger;
-import org.w3c.dom.Element;
 
+import eu.unicore.security.wsutil.SecuritySessionUtils;
 import eu.unicore.util.Log;
+import eu.unicore.util.httpclient.IClientConfiguration;
 import eu.unicore.util.httpclient.SessionIDProvider;
 
 /**
  * A client handler that sets the security session header.
  * 
- * The outgoing session ID can be provided either "manually" using a thread-local via 
- * {@link #setSessionID(String)} or (better) using the {@link SessionIDProvider}
+ * The outgoing session ID can be provided by the {@link SessionIDProvider}
  * interface provided via the message context
  *  
  * @author schuller
  * @author K. Benedyczak
  */
-public class SessionIDOutHandler extends AbstractSoapInterceptor {
+public class SessionIDOutHandler extends AbstractSoapInterceptor implements Configurable {
 	private static final Logger log = Log.getLogger(Log.CLIENT, SessionIDOutHandler.class);
-	private static final ThreadLocal<String>sessionIDs=new ThreadLocal<String>();
-
-	/**
-	 * used to store the session ID in the security tokens
-	 */
-	public static final String SESSION_ID_KEY="unicore-security-session-id";
-
-	/**
-	 * used to mark that the security tokens were taken from an existing session
-	 */
-	public static final String REUSED_MARKER_KEY="reused-unicore-security-session";
-
-	//header namespace
-	public static final String SESSION_HDR_NS="http://www.unicore.eu/unicore/ws";
-
-	//header element name
-	public static final String SESSION_HEADER="SecuritySession";
-
-	public final static QName headerQName=new QName(SESSION_HDR_NS,SESSION_HEADER);
-
-	public final static QName idQName=new QName(SESSION_HDR_NS,"ID");
-	public final static QName ltQName=new QName(SESSION_HDR_NS,"Lifetime");
+	private IClientConfiguration settings;
+	private static ThreadLocal<Boolean> skip = new ThreadLocal<Boolean>();
+	
 	
 	public SessionIDOutHandler() {
 		super(Phase.PRE_PROTOCOL);
@@ -91,87 +68,60 @@ public class SessionIDOutHandler extends AbstractSoapInterceptor {
 	}
 
 	public synchronized void handleMessage(SoapMessage message) {
-		try{
-			if(!MessageUtils.isOutbound(message))
-				return;
-			
-			String sessionID=null;
-			
-			SessionIDProvider idProvider=getSessionIDProvider(message);
-			if(idProvider!=null){
-				sessionID=idProvider.getSessionID();
-				if (sessionID != null)
-					log.debug("Provider-managed session id will be used for the request");
-			}
-			
-			if(sessionID==null){
-				// try thread local
-				sessionID=getSessionID();
-				if (sessionID != null)
-					log.debug("Thread-local session id will be used for the request");
-			}
-			if(sessionID==null)
-				return;
-			log.debug("Found session id for the request, using it: " + sessionID);
-			Element header=buildHeader(sessionID,-1);
-			if(header == null)return;
+		if(!MessageUtils.isOutbound(message))
+			return;
 
-			List<Header> h = message.getHeaders();
-			h.add(new Header(headerQName,header));
+		String sessionID = null;
+		
+		Boolean doSkip = skip.get();
+		if (doSkip != null && doSkip)
+		{
+			log.debug("Security session will not be used for this call");
+			setSkip(false);
+			return;
 		}
-		finally{
-			clear();
+
+		String targetUrl = (String) message.getContextualProperty(SecuritySessionUtils.SESSION_TARGET_URL);
+		SessionIDProvider idProvider = settings.getSessionIDProvider();
+		if (idProvider == null)
+		{
+			log.debug("No security session provider is installed");
+			return;
 		}
+		
+		sessionID=idProvider.getSessionID(targetUrl, settings);
+		if(sessionID==null)
+		{
+			log.debug("No security session will be used for the request");
+			return;
+		}
+		
+		log.debug("Found session id for the request, using it: " + sessionID);
+		Header header=SecuritySessionUtils.buildHeader(sessionID,-1);
+		List<Header> h = message.getHeaders();
+		h.add(header);
+		message.setContextualProperty(SecuritySessionUtils.REUSED_MARKER_KEY, sessionID);
+	}
+
+	@Override
+	public void configure(IClientConfiguration properties)
+	{
+		this.settings = properties;
 	}
 	
 	/**
+	 * Allows to set (or clear) the skip flag. If skip flag is set then the handler won't use session id
+	 * even if available and matching. 
+	 * This is a thread local feature.
+	 * <p>
+	 * Important: the flag is automatically cleared after each handler invocation, i.e. one have to set it before each
+	 * network call.
 	 * 
-	 * @param sessionID
-	 * @param lifetime - if larger than -1, the lifetime info will be added to the element
-	 * @return
+	 * @param how
 	 */
-	public static Element buildHeader(String sessionID, long lifetime) {
-		Element header=null;
-		try{
-			if(sessionID==null) return null;
-
-			StringBuilder sb=new StringBuilder();
-			sb.append("<sid:"+SESSION_HEADER+" xmlns:sid=\""+SESSION_HDR_NS+"\">");
-			sb.append("<sid:ID>"+sessionID+"</sid:ID>");
-			if(lifetime>-1)sb.append("<sid:Lifetime>"+lifetime+"</sid:Lifetime>");
-			sb.append("</sid:"+SESSION_HEADER+">");
-			try{
-				header= DOMUtils.readXml(
-						new ByteArrayInputStream(sb.toString().getBytes())).getDocumentElement();
-			}catch(Exception e){
-				throw new RuntimeException(e);
-			}
-		}catch(Exception e){
-
-		}
-
-		return header;
-	}
-
-	public static void setSessionID(String sessionID){
-		sessionIDs.set(sessionID);
-	}
-
-	public static String getSessionID(){
-		return sessionIDs.get();
-	}
-	
-	public static void clear(){
-		sessionIDs.remove();
-	}
-	
-	public static SessionIDProvider getSessionIDProvider(SoapMessage message){
-		return (SessionIDProvider)message.getContextualProperty(SessionIDProvider.KEY);
-	}
-	
-	public static boolean haveSessionID(SoapMessage message){
-		SessionIDProvider p=getSessionIDProvider(message);
-		return p!=null && p.getSessionID()!=null;
+	public static void setSkip(boolean how)
+	{
+		skip.set(how);
 	}
 }
 

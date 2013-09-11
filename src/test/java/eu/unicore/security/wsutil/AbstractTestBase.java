@@ -96,9 +96,7 @@ public abstract class AbstractTestBase extends TestCase
 	 */
 	protected SimpleSecurityService makeProxy(IClientConfiguration sec) throws Exception
 	{
-		String addr="https://localhost:" + (JettyServer.PORT) + "/services/" 
-				+ serviceName;
-		return getWSClientFactory(sec).createPlainWSProxy(SimpleSecurityService.class, addr);
+		return getWSClientFactory(sec).createPlainWSProxy(SimpleSecurityService.class, getAddress());
 	}
 	
 	protected SimpleSecurityService makePlainProxy(IClientConfiguration sec) throws Exception
@@ -111,12 +109,16 @@ public abstract class AbstractTestBase extends TestCase
 
 	protected SimpleSecurityService makeSecuredProxy(IClientConfiguration sec) throws Exception
 	{
-		String addr="https://localhost:" + (JettyServer.PORT) + "/services/" 
-				+ serviceName;
-		return new UnicoreWSClientFactory(sec).createPlainWSProxy(SimpleSecurityService.class, addr);
+		return new UnicoreWSClientFactory(sec).createPlainWSProxy(SimpleSecurityService.class, getAddress());
 	}
 
 	protected WSClientFactory getWSClientFactory(IClientConfiguration sec){
 		return new UnicoreWSClientFactory(sec);
+	}
+	
+	protected String getAddress()
+	{
+		return "https://localhost:" + (JettyServer.PORT) + "/services/" 
+				+ serviceName;
 	}
 }

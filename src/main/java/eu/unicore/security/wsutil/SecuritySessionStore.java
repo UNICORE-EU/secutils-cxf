@@ -21,6 +21,7 @@ import eu.unicore.util.Log;
  * This class is thread safe.
  * 
  * @author K. Benedyczak
+ * @author B. Schuller
  */
 public class SecuritySessionStore
 {

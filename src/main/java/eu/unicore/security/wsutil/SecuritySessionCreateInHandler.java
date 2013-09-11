@@ -16,7 +16,6 @@ import org.apache.cxf.phase.Phase;
 import org.apache.log4j.Logger;
 
 import eu.unicore.security.SecurityTokens;
-import eu.unicore.security.wsutil.client.SessionIDOutHandler;
 import eu.unicore.util.Log;
 
 /**
@@ -61,7 +60,7 @@ public class SecuritySessionCreateInHandler extends AbstractSoapInterceptor
 			return;
 		}
 		
-		if(Boolean.TRUE.equals(securityTokens.getContext().get(SessionIDOutHandler.REUSED_MARKER_KEY))){
+		if(Boolean.TRUE.equals(securityTokens.getContext().get(SecuritySessionUtils.REUSED_MARKER_KEY))){
 			return;
 		}
 		
@@ -78,7 +77,7 @@ public class SecuritySessionCreateInHandler extends AbstractSoapInterceptor
 	protected SecuritySession createSession(SecurityTokens securityTokens){
 		SecuritySession session = null;
 		String sessionID=UUID.randomUUID().toString();
-		securityTokens.getContext().put(SessionIDOutHandler.SESSION_ID_KEY, sessionID);
+		securityTokens.getContext().put(SecuritySessionUtils.SESSION_ID_KEY, sessionID);
 		session = new SecuritySession(sessionID, securityTokens, sessionLifetime);
 		sessionStore.storeSession(session, securityTokens);
 		

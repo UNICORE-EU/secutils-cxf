@@ -11,6 +11,7 @@ package eu.unicore.security.wsutil;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import eu.emi.security.authn.x509.impl.X500NameUtils;
@@ -23,8 +24,7 @@ import eu.unicore.security.etd.ETDApi;
 import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.security.wsutil.client.ClientDSigUtil;
 import eu.unicore.security.wsutil.client.ClientTrustDelegationUtil;
-import eu.unicore.security.wsutil.client.SessionIDProviderImpl;
-import eu.unicore.security.wsutil.client.UnicoreWSClientFactory;
+import eu.unicore.util.httpclient.ClientSecuritySession;
 import eu.unicore.util.httpclient.SessionIDProvider;
 
 public class TestETD extends AbstractTestBase
@@ -59,7 +59,6 @@ public class TestETD extends AbstractTestBase
 			MockSecurityConfig config = new MockSecurityConfig(false, true, true);
 			config.getETDSettings().initializeSimple(JettyServer.SERVER_IDENTITY,
 					config.getCredential());
-			SessionIDProviderImpl.clearAll();
 			SimpleSecurityService s = makeSecuredProxy(config);
 			ClientDSigUtil.addDSigHandler(s, config.getCredential(), null, null);
 
@@ -103,7 +102,6 @@ public class TestETD extends AbstractTestBase
 		{
 			System.out.println("\nTest USER using proxy\n");
 			MockSecurityConfig config = new MockSecurityConfig(false, true, true); 
-			SessionIDProviderImpl.clearAll();
 			SimpleSecurityService s = makeSecuredProxy(config);
 
 			List<TrustDelegation> tds = createTDWithProxy();
@@ -130,7 +128,6 @@ public class TestETD extends AbstractTestBase
 			config.getETDSettings().initializeSimple(JettyServer.SERVER_IDENTITY,
 					config.getCredential());
 			config.getETDSettings().getRequestedUserAttributes2().put("preference", new String [] {"user"});
-			SessionIDProviderImpl.clearAll();
 			SimpleSecurityService s = makeSecuredProxy(config);
 
 			String prefRet = s.TestPreference();
@@ -303,30 +300,29 @@ public class TestETD extends AbstractTestBase
 		{
 			MockSecurityConfig sec = new MockSecurityConfig(false, true, true);
 			sec.setUseSecuritySessions(true);
-			sec.setSessionIDProviderFactory(SessionIDProviderImpl.getFactory());
 			SimpleSecurityService s = makeSecuredProxy(sec);
 			
 			String msg = s.TestSessionID();
 			System.out.println("reply from service = "+msg);
-			SessionIDProvider p = UnicoreWSClientFactory.getSessionIDProvider(s);
+			SessionIDProvider p = sec.getSessionIDProvider();
 			assertNotNull(p);
-			String id=p.getSessionID();
+			String id=p.getSessionID(getAddress(), sec);
 			System.out.println("ID = "+id);
 			assertEquals(msg, id);
 			
-			p.setSessionID(id);
 			String msg2 = s.TestSessionID();
 			System.out.println("2nd reply from service = "+msg2);
-			String id2=p.getSessionID();
+			String id2=p.getSessionID(getAddress(), sec);
 			
 			// it's still the same session
 			assertEquals(id2, id);
 			
 			// check that the SessionIDProviderImpl tracks everything
-			System.out.println("Stored sessionIDs: "+SessionIDProviderImpl.getAll());
-			assertEquals(1, SessionIDProviderImpl.getAll().size());
-			assertEquals(id2, SessionIDProviderImpl.getAll().values().iterator().next());
-			
+			Collection<ClientSecuritySession> all = p.getAllSessions();
+			System.out.println("Stored sessionIDs: " + p.getAllSessions());
+			assertEquals(1, all.size());
+			assertEquals(id2, all.iterator().next().getSessionId());
+			assertTrue(getAddress().startsWith(all.iterator().next().getScope()));
 			
 		} catch (Exception e)
 		{

@@ -26,6 +26,7 @@ import eu.emi.security.authn.x509.impl.CertificateUtils;
 import eu.emi.security.authn.x509.impl.FormatMode;
 import eu.emi.security.authn.x509.impl.SocketFactoryCreator;
 import eu.unicore.security.canl.LoggingX509TrustManager;
+import eu.unicore.security.canl.SSLContextCreator;
 import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.HostnameMismatchCallbackImpl;
 import eu.unicore.util.httpclient.IClientConfiguration;
@@ -43,6 +44,7 @@ import eu.unicore.util.httpclient.NoAuthKeyManager;
  * to authenticate the client and install a standard 
  * </p>
  * 
+ * TODO - this class should use code from {@link SSLContextCreator} ?
  * @author <a href="mailto:oleg -at- ural.ru">Oleg Kalnichevski</a>
  * @author K. Benedyczak
  * </p>

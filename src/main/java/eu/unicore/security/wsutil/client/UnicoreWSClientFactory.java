@@ -49,7 +49,6 @@ import eu.unicore.security.wsutil.RequiresSignature;
 import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
 import eu.unicore.util.httpclient.IClientConfiguration;
-import eu.unicore.util.httpclient.SessionIDProvider;
 
 /**
  * Extends {@link eu.unicore.security.wsutil.client.WSClientFactory}. 
@@ -102,7 +101,6 @@ public class UnicoreWSClientFactory extends WSClientFactory
 			outHandlers.add(new ExtendedTDOutHandler(security));
 
 		SAMLAttributePushOutHandler samlOutHandler = new SAMLAttributePushOutHandler();
-		samlOutHandler.configure(security);
 		outHandlers.add(samlOutHandler);
 		
 		addHandlers(inHandlers, security.getInHandlerClassNames());
@@ -130,10 +128,6 @@ public class UnicoreWSClientFactory extends WSClientFactory
 				try{
 					Class<? extends Interceptor<? extends Message>> clazz=loadClass(className);
 					Interceptor<? extends Message> h=(Interceptor<? extends Message>)clazz.newInstance();
-					if(h instanceof Configurable){
-						//initialise the handler with our client security properties
-						((Configurable) h).configure((IClientConfiguration) securityProperties);
-					}
 					list.add(h);
 					logger.debug("Sucessfully added security handler <"+className+">");
 				}catch(Exception e){
@@ -181,25 +175,5 @@ public class UnicoreWSClientFactory extends WSClientFactory
 			}
 		}
 		return opsToSign;
-	}
-	
-	
-	/**
-	 * helper to retrieve the {@link SessionIDProvider} from a given proxy object
-	 * @param proxy
-	 * @return
-	 */
-	public static SessionIDProvider getSessionIDProvider(Object proxy){
-		return (SessionIDProvider)WSClientFactory.getWSClient(proxy).getRequestContext().get(SessionIDProvider.KEY);
-	}
-	
-	/**
-	 * helper to set the {@link SessionIDProvider} for a given proxy object
-	 * @param provider
-	 * @param proxy
-	 * @return
-	 */
-	public static void setSessionIDProvider(SessionIDProvider provider, Object proxy){
-		WSClientFactory.getWSClient(proxy).getRequestContext().put(SessionIDProvider.KEY, provider);
 	}
 }

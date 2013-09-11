@@ -61,7 +61,6 @@ import eu.unicore.security.UnicoreSecurityFactory;
 import eu.unicore.security.ValidationResult;
 import eu.unicore.security.etd.ETDApi;
 import eu.unicore.security.etd.TrustDelegation;
-import eu.unicore.security.wsutil.client.SessionIDOutHandler;
 import eu.unicore.util.Log;
 
 /**
@@ -131,7 +130,7 @@ public class ETDInHandler extends AbstractSoapInterceptor
 			return;
 		}
 		
-		if(Boolean.TRUE.equals(securityTokens.getContext().get(SessionIDOutHandler.REUSED_MARKER_KEY))){
+		if(Boolean.TRUE.equals(securityTokens.getContext().get(SecuritySessionUtils.REUSED_MARKER_KEY))){
 			return;
 		}
 		

@@ -8,7 +8,7 @@ import java.io.ObjectOutputStream;
 import eu.unicore.security.SecurityTokens;
 
 /**
- * security session information
+ * Security session information, server side.
  * 
  * @author schuller
  */
