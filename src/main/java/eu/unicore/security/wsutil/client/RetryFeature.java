@@ -144,7 +144,7 @@ public class RetryFeature extends FailoverFeature{
 			Throwable curr = ex;
 			boolean failover = false;
 			while (curr != null) {
-				if(curr.getMessage().contains("432")){
+				if(curr.getMessage() != null && curr.getMessage().contains("432")){
 					clearSessionID(exchange);
 					RetryFeature.this.setRetryImmediately();
 					return true;
