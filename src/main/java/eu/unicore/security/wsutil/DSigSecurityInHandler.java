@@ -148,13 +148,14 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 	protected void verify(SecurityTokens securityTokens, Document doc, Element secHeader)throws Exception{
 		long start = System.currentTimeMillis();
 
-		if (securityTokens.getConsignorCertificate() == null)
+		X509Certificate[] consignorCC = securityTokens.getConsignor();
+		if (consignorCC == null || consignorCC.length == 0)
 		{
 			logger.debug("No consignor found in security context so" +
 					" skipping signature verification.");
 			return;
 		}
-		X509Certificate consignorCert = securityTokens.getConsignorCertificate();
+		X509Certificate consignorCert = consignorCC[0];
 		//we trust that consignor was properly verified by GW or transport layer
 		PublicKey consignorsKey = consignorCert.getPublicKey();
 

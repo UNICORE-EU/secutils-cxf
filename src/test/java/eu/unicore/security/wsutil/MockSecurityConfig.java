@@ -88,6 +88,7 @@ public class MockSecurityConfig extends DefaultClientConfiguration
 		{
 			MockSecurityConfig ret = new MockSecurityConfig(doHttpAuthn(), doSSLAuthn(), getCredential());
 			ret.setClassLoader(getClassLoader());
+			ret.setCredential(getCredential());
 			ret.setDoSignMessage(doSignMessage());
 			ret.setEtdSettings(getETDSettings().clone());
 			ret.setExtraSecurityTokens(getExtraSecurityTokens());
