@@ -127,16 +127,13 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 		if (delegate.isDelegate())
 		{
 			if (targetDn == null){
-				if(delegate.isRequired())
 					throw new IllegalSignatureException("When delegation is used the " +
 						"target service DN must be given.");
 			}
-			else{
-				ETDClientSettings etdSettings = sp.getETDSettings();
-				etdSettings.setExtendTrustDelegation(true);
-				etdSettings.setReceiver(new X500Principal(targetDn));
-				etdSettings.setDelegationRestrictions(delegate.getRestrictions());
-			}
+			ETDClientSettings etdSettings = sp.getETDSettings();
+			etdSettings.setExtendTrustDelegation(true);
+			etdSettings.setReceiver(new X500Principal(targetDn));
+			etdSettings.setDelegationRestrictions(delegate.getRestrictions());
 		}
 	}
 }
