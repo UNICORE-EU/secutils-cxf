@@ -108,10 +108,9 @@ public class JsonSecuritySessionPersistence implements SecuritySessionPersistenc
 			}catch(JSONException e){
 				// ignore
 			}
+			logger.debug("Loaded <"+sessionProvider.getAllSessions().size() +
+					"> security session ID(s) from <" + sessionIDFile.getAbsolutePath());
 		}
-
-		logger.debug("Loaded <"+sessionProvider.getAllSessions().size() +
-				"> security session ID(s) from <" + sessionIDFile.getAbsolutePath());
 	}
 }
 
