@@ -24,9 +24,18 @@ public class DelegationSpecification
 	private static final long DAY = 3600*24; 
 	public static final DelegationSpecification DO_NOT = new DelegationSpecification(false, 0);
 	public static final DelegationSpecification STANDARD = new DelegationSpecification(true, 14*DAY);
+	public static final DelegationSpecification REQUIRED = new DelegationSpecification(true, true, 14*DAY);
 	
 	private boolean delegate;
+	private boolean required;
 	private long lifetime;
+
+	public DelegationSpecification(boolean delegate, boolean required, long lifetime)
+	{
+		this.delegate = delegate;
+		this.required = required;
+		this.lifetime = lifetime;
+	}
 	
 	public DelegationSpecification(boolean delegate, long lifetime)
 	{
@@ -44,6 +53,16 @@ public class DelegationSpecification
 		this.delegate = delegate;
 	}
 
+	public boolean isRequired()
+	{
+		return required;
+	}
+
+	public void setRequired(boolean required)
+	{
+		this.required = required;
+	}
+	
 	public long getLifetime()
 	{
 		return lifetime;

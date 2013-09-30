@@ -78,7 +78,7 @@ public class ClientConfigurationProviderImpl implements ClientConfigurationProvi
 				serviceIdentity = identityResolver.resolveIdentity(serviceUrl);
 			} catch (IOException e)
 			{
-				if (delegate.isDelegate())
+				if (delegate.isRequired())
 					throw e;
 				//if no delegation we can try to continue, it depends on authnProvider
 				//whether it can work without the target DN.

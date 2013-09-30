@@ -33,7 +33,7 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 {
 	protected Properties properties;
 	protected PasswordCallback truststorePasswordCallback;
-	
+
 	public PropertiesBasedAuthenticationProvider(Properties properties,
 			PasswordCallback truststorePasswordCallback)
 	{
@@ -44,7 +44,7 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 	protected PropertiesBasedAuthenticationProvider()
 	{
 	}
-	
+
 	/**
 	 * Returns client configuration with anonymous local client. I.e. all HTTP client properties and trust settings
 	 * are loaded, credential settings are ignored. Trust settings are loaded only when SSL is enabled for the client.
@@ -59,7 +59,7 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 		if (sslEnabled == null || "true".equalsIgnoreCase(sslEnabled))
 		{
 			TruststoreProperties trustProperties = new TruststoreProperties(properties, 
-				Collections.singleton(new LoggingStoreUpdateListener()), truststorePasswordCallback);
+					Collections.singleton(new LoggingStoreUpdateListener()), truststorePasswordCallback);
 			validator = trustProperties.getValidator();
 		}
 		DefaultAuthnAndTrustConfiguration authAndTrust = new DefaultAuthnAndTrustConfiguration(validator, null);
@@ -69,7 +69,7 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 				ClientProperties.PROP_SSL_AUTHN_ENABLED, "false");
 		copy.setProperty(ClientProperties.DEFAULT_PREFIX+
 				ClientProperties.PROP_MESSAGE_SIGNING_ENABLED, "false");
-		
+
 		return new ClientProperties(copy, authAndTrust);
 	}
 
@@ -92,10 +92,10 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 				ClientProperties.PROP_SSL_AUTHN_ENABLED, "false");
 		copy.setProperty(ClientProperties.DEFAULT_PREFIX+
 				ClientProperties.PROP_MESSAGE_SIGNING_ENABLED, "false");
-		
+
 		return new ClientProperties(copy, authAndTrust);
 	}
-	
+
 	//workaround: use reflection to access possibly private Meta field
 	@SuppressWarnings("unchecked")
 	protected Map<String,PropertyMD>getMeta(Class<?> props){
@@ -120,19 +120,23 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 		}
 		return ret.toString();
 	}
-	
-	protected void applayLocalDelegation(DefaultClientConfiguration sp, String targetDn, 
+
+	protected void applyLocalDelegation(DefaultClientConfiguration sp, String targetDn, 
 			DelegationSpecification delegate)
 	{
 		if (delegate.isDelegate())
 		{
-			if (targetDn == null)
-				throw new IllegalSignatureException("When delegation is used the " +
+			if (targetDn == null){
+				if(delegate.isRequired())
+					throw new IllegalSignatureException("When delegation is used the " +
 						"target service DN must be given.");
-			ETDClientSettings etdSettings = sp.getETDSettings();
-			etdSettings.setExtendTrustDelegation(true);
-			etdSettings.setReceiver(new X500Principal(targetDn));
-			etdSettings.setDelegationRestrictions(delegate.getRestrictions());
+			}
+			else{
+				ETDClientSettings etdSettings = sp.getETDSettings();
+				etdSettings.setExtendTrustDelegation(true);
+				etdSettings.setReceiver(new X500Principal(targetDn));
+				etdSettings.setDelegationRestrictions(delegate.getRestrictions());
+			}
 		}
 	}
 }

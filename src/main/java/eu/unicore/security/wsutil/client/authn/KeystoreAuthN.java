@@ -45,7 +45,7 @@ public class KeystoreAuthN extends PropertiesBasedAuthenticationProvider impleme
 		ClientProperties sp=new ClientProperties(properties, truststorePasswordCallback, 
 				TruststoreProperties.DEFAULT_PREFIX, 
 				CredentialProperties.DEFAULT_PREFIX, ClientProperties.DEFAULT_PREFIX);
-		applayLocalDelegation(sp, targetDn, delegate);
+		applyLocalDelegation(sp, targetDn, delegate);
 		return sp;
 	}
 
