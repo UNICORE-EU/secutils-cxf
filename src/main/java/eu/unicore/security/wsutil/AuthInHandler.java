@@ -393,6 +393,8 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		SSOAuthnAssertionValidator validator = new SSOAuthnAssertionValidator(samlConsumerName, 
 				samlConsumerEndpointUri, null, samlGraceTime, samlAuthnTrustChecker, null, 
 				SAMLBindings.OTHER);
+		validator.setLaxInResponseToChecking(true);
+		validator.addConsumerSamlNameAlias(samlConsumerEndpointUri);
 		AssertionDocument assertionDoc;
 		try
 		{
@@ -710,6 +712,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	
 	protected void throwFault(int httpErrorCode, String message)
 	{
+		logger.debug("AuthN failed: " + message);
 		Fault f = new Fault((Throwable)null); // null is OK
 		f.setStatusCode(httpErrorCode); // unassigned according to IANA ;)
 		f.setMessage(message);

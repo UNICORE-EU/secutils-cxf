@@ -20,9 +20,9 @@ public interface ClientConfigurationProvider
 	/**
 	 * The main method
 	 * @param serviceUrl target service url. Must be given always.
-	 * @param serviceIdentity target service DN. Must be always given when delegation is requested,
-	 * or when {@link SAMLAuthN} is used. However when it is null then the {@link ServiceIdentityResolver} 
-	 * is consulted. 
+	 * @param serviceIdentity target service DN. Must be always given when delegation is requested. 
+	 * However when it is null then the {@link ServiceIdentityResolver} is consulted, so if the resolver can provide
+	 * a DN a call to this method with null argument and delegation turned on will succeed. 
 	 * @param delegation delegation settings
 	 * @return
 	 * @throws Exception

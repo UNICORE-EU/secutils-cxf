@@ -65,12 +65,14 @@ public class ExtendedTDOutHandler extends TDOutHandler
 	{
 		ETDClientSettings sec = config.getETDSettings();
 		X509Certificate[] issuer = sec.getIssuerCertificateChain();
-		if (issuer == null || issuer.length == 0)
+		if ((issuer == null || issuer.length == 0) && sec.getRequestedUser() == null)
 		{
-			logger.debug("No issuer was set, won't add any ETD/User assertion");
+			logger.debug("Neither issuer was set, nor requestedUser. Won't add any ETD/User assertion");
 			return;
 		}
-		String issuerDN = issuer[0].getSubjectX500Principal().getName();
+		String issuerDN = (issuer != null && issuer.length > 0) ? issuer[0].getSubjectX500Principal().getName()
+				: sec.getRequestedUser();
+
 		assertionList=sec.getTrustDelegationTokens() != null ? 
 			sec.getTrustDelegationTokens() : new ArrayList<TrustDelegation>();
 		if(sec.isExtendTrustDelegation()){
@@ -90,8 +92,7 @@ public class ExtendedTDOutHandler extends TDOutHandler
 		{
 			//first try to get one from the ETD chain:
 			if (assertionList.size() > 0)
-				requestedUser = assertionList.get(0).getIssuerFromSignature()
-				[0].getSubjectX500Principal().getName();
+				requestedUser = assertionList.get(0).getCustodianDN();
 			//if no ETD chain, then use our local identity
 			else
 				requestedUser = issuerDN;
@@ -112,10 +113,7 @@ public class ExtendedTDOutHandler extends TDOutHandler
 			super.init(assertionList, userAssertion);
 		} else
 		{
-			X509Certificate userCert = null;
-			if (assertionList.size() > 0)
-				userCert = assertionList.get(0).getIssuerFromSignature()[0];
-			super.init(assertionList, userCert, null, issuerDN);
+			super.init(assertionList, null, requestedUser, issuerDN);
 		}
 	}
 

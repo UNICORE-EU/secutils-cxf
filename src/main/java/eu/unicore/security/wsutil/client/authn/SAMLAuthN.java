@@ -27,6 +27,8 @@ import eu.unicore.security.wsutil.client.SAMLAttributePushOutHandler;
 import eu.unicore.security.wsutil.samlclient.AuthnResponseAssertions;
 import eu.unicore.security.wsutil.samlclient.SAMLAuthnClient;
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
+import eu.unicore.util.httpclient.ETDClientSettings;
+import eu.unicore.util.httpclient.SessionIDProviderImpl;
 
 /**
  * SAML SOAP binding based authentication. SAML authN assertion along with other assertions
@@ -84,10 +86,10 @@ public class SAMLAuthN extends PropertiesBasedAuthenticationProvider
 		SAMLAuthNProperties samlConfig = new SAMLAuthNProperties(properties);
 		DefaultClientConfiguration baseClientConfiguration = getAnonymousClientConfiguration();
 
-		if (targetDn == null || targetAddress == null)
-			throw new IllegalArgumentException("SAMLAuthN always require target service identity and address");
+		if (targetAddress == null)
+			throw new IllegalArgumentException("SAMLAuthN always require target service address");
 		String idpAddress = samlConfig.getValue(SAMLAuthNProperties.ADDRESS);
-		
+		targetAddress = SessionIDProviderImpl.extractServerID(targetAddress);
 		
 		AuthnResponseAssertions samlResponse = assertionsCache.get(getKey(targetAddress, targetDn));
 		if (samlResponse == null)
@@ -118,6 +120,8 @@ public class SAMLAuthN extends PropertiesBasedAuthenticationProvider
 	
 	/**
 	 * Authenticates with SAML AuthN at the given endpoint and receives SAML assertions.
+	 * If the target identity is not set (null) then query issuer identity is set to ENTITY Saml type 
+	 * and to the targetUrl value. Otherwise it is set to the target identity DN.
 	 * @param username
 	 * @param password
 	 * @param idpAddress
@@ -134,13 +138,17 @@ public class SAMLAuthN extends PropertiesBasedAuthenticationProvider
 		anonymousClientCfg.setHttpUser(username);
 		SAMLAuthnClient client = new SAMLAuthnClient(idpAddress, anonymousClientCfg);
 		
-		NameID requester = new NameID(targetIdentity, SAMLConstants.NFORMAT_DN);
+		NameID requester;
+		if (targetIdentity != null)
+			requester = new NameID(targetIdentity, SAMLConstants.NFORMAT_DN);
+		else
+			requester = new NameID(targetUrl, SAMLConstants.NFORMAT_ENTITY);
 		return client.authenticate(SAMLConstants.NFORMAT_DN, requester, targetUrl);
 	}
 	
 	private String getKey(String targetAddress, String targetDn)
 	{
-		return X500NameUtils.getComparableForm(targetDn) + "|||||" + targetAddress;
+		return targetDn == null ? "" : X500NameUtils.getComparableForm(targetDn) + "|||||" + targetAddress;
 	}
 	
 	/**
@@ -204,7 +212,9 @@ public class SAMLAuthN extends PropertiesBasedAuthenticationProvider
 			} else if (tds.size() > 1)
 				throw new IOException("Multiple trust delegations were found in the received assertions. " +
 					"This is unsupported.");
-			ret.getETDSettings().setTrustDelegationTokens(Collections.singletonList(tds.get(0)));
+			ETDClientSettings etdSettings = ret.getETDSettings();
+			etdSettings.setTrustDelegationTokens(Collections.singletonList(tds.get(0)));
+			etdSettings.setRequestedUser(tds.get(0).getCustodianDN());
 		}
 		return ret;
 	}
