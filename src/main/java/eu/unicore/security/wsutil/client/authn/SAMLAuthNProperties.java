@@ -28,7 +28,6 @@ public class SAMLAuthNProperties extends PropertiesHelper
 	public static final String ADDRESS = "address";
 	public static final String USERNAME = "username";
 	public static final String PASSWORD = "password";
-	public static final String FILE = "assertionsCacheFile";
 	
 	
 	public static final Map<String, PropertyMD> META = new HashMap<String, PropertyMD>();
@@ -41,9 +40,6 @@ public class SAMLAuthNProperties extends PropertiesHelper
 		META.put(PASSWORD, new PropertyMD().setSecret().setDescription("Password used to log in. It is suggested " +
 				"not to use this option for security reasons. If not given in configuration, " +
 				"it will be asked interactively."));
-		META.put(FILE, new PropertyMD().setPath().setDescription("File used to save assertions " +
-				"obtained from the service. If the file is not specified, then assertions are not saved locally" +
-				" what effects in neccessity to re-authenticate before each operation."));
 	}
 
 	public SAMLAuthNProperties(String prefix, Properties properties) throws ConfigurationException
