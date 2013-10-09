@@ -1,6 +1,7 @@
 package eu.unicore.security.wsutil.client;
 
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -12,6 +13,9 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.transport.Conduit;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transport.http.HTTPException;
+import org.apache.log4j.Logger;
+
+import eu.unicore.util.Log;
 
 
 /**
@@ -21,6 +25,8 @@ import org.apache.cxf.transport.http.HTTPException;
  */
 public class RetryFeature extends FailoverFeature{
 
+	private static final Logger log = Log.getLogger(Log.CLIENT, RetryFeature.class); 
+	
 	private final WSClientFactory factory;
 	
 	private boolean enabled=true;
@@ -34,7 +40,7 @@ public class RetryFeature extends FailoverFeature{
 	public RetryFeature(WSClientFactory factory) {
 		super();
 		this.factory=factory;
-		setStrategy(new RetryStrategy());
+		setStrategy(new IncreasingBackoffStrategy());
 		setTargetSelector(new MyTargetSelector());
 	}
 
@@ -66,6 +72,9 @@ public class RetryFeature extends FailoverFeature{
 		}
 		else{
 			res=getStrategy().getDelayBetweenRetries();
+		}
+		if(log.isDebugEnabled()){
+			log.debug("Will retry "+(res>0?"in "+res/1000+" sec.":"immediately."));
 		}
 		return res;
 	}
@@ -102,13 +111,21 @@ public class RetryFeature extends FailoverFeature{
 	 */
 	public boolean requiresFailover(Throwable ex){
 		if(!enabled)return false;
-		
-		boolean retry=false;
+		boolean retry = false;
 		for(Class<? extends Throwable>c: exceptionClasses){
-			retry = retry | c.isAssignableFrom(ex.getClass());
+			if(c.isAssignableFrom(ex.getClass())){
+				retry = true;
+			}
 		}
+		
 		for(ExceptionChecker c: exceptionCheckers){
-			retry = retry | c.requiresFailover(ex);
+			if(c.requiresFailover(ex)){
+				retry = true;
+			}
+		}
+		
+		if(log.isDebugEnabled()){
+			log.debug("Got "+(retry?"":"non-")+"recoverable exception "+ex.getClass().getName());
 		}
 		
 		return retry;
@@ -144,19 +161,26 @@ public class RetryFeature extends FailoverFeature{
 			Throwable curr = ex;
 			boolean failover = false;
 			while (curr != null) {
+				boolean isInvalidSession = false;
 				if(curr.getMessage() != null && curr.getMessage().contains("432")){
-					clearSessionID(exchange);
-					RetryFeature.this.setRetryImmediately();
-					return true;
+					isInvalidSession = true;
 				}
 				if(curr instanceof HTTPException){
 					int s=((HTTPException)curr).getResponseCode();
 					if(s == 432){
-						clearSessionID(exchange);
-						RetryFeature.this.setRetryImmediately();
-						return true;
+						isInvalidSession = true;
 					}
 				}
+				
+				if(isInvalidSession){
+					clearSessionID(exchange);
+					RetryFeature.this.setRetryImmediately();
+					if(log.isDebugEnabled()){
+						log.debug("Received alert: No valid security session, retrying ... ");
+					}
+					return true;
+				}
+				
 				failover = RetryFeature.this.requiresFailover(curr);
 				curr = curr.getCause();
 			}
@@ -192,6 +216,48 @@ public class RetryFeature extends FailoverFeature{
 		
 		public boolean requiresFailover(Throwable ex);
 		
+	}
+
+	// mostly copy&paste the original RetryStrategy to compute the delay
+	// based on the current number of attempts TODO add a CXF change request?
+	public static class IncreasingBackoffStrategy extends RetryStrategy {
+	    private int counter=0;
+	    private int factor=1;
+	    private static Random rand = new Random(); 
+	    
+	    protected boolean stillTheSameAddress() {
+	        if (getMaxNumberOfRetries() == 0) {
+	            return true;
+	        }
+	        if(counter==0)factor=1;
+	        increaseFactor();
+	        // let the target selector move to the next address
+	        // and then stay on the same address for maxNumberOfRetries
+	        if (++counter <= getMaxNumberOfRetries()) {
+	            return true;    
+	        } else {
+	            counter = 0;
+	            return false;
+	        }
+	    }
+	    
+	    // trivial but maybe useful for subclassing later
+	    protected void increaseFactor(){
+	    	 factor=2*factor;
+	    }
+	   
+	    /**
+	     * add some randomness to the delay, and increase it
+	     * based on the current number of attempts 
+	     */
+		@Override
+		public long getDelayBetweenRetries() {
+			long base = super.getDelayBetweenRetries();
+			int r = rand.nextInt((int)base/10);
+			return factor*(base+r);
+		}
+	    
+	    
 	}
 	
 }
