@@ -64,7 +64,8 @@ public class CXFUtils {
 			}
 		}
 		if(action==null){
-			return getMethod(message).getName();
+			Method m=getMethod(message);
+			action = m!=null ? m.getName() : null;
 		}
 		return  action;
 	}
@@ -72,6 +73,9 @@ public class CXFUtils {
 	public static Method getMethod(Message message){
 		Exchange ex=message.getExchange();
 		BindingOperationInfo bop = ex.get(BindingOperationInfo.class);
+		if(bop==null)
+			return null;
+		
 		MethodDispatcher md = (MethodDispatcher)ex.getService().get(MethodDispatcher.class.getName());
 		return md.getMethod(bop);
 	}
