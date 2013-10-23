@@ -88,9 +88,9 @@ public class SecuritySessionStore
 		Integer i=sessionsPerUser.get(userKey);
 		if (i==null) {
 			i=1;
-			sessionsPerUser.put(userKey, i);
 		}
-		return i;
+		sessionsPerUser.put(userKey, i+1);
+		return i+1;
 	}
 
 	private void decrementUserSessionCounter(String userKey){
@@ -98,7 +98,12 @@ public class SecuritySessionStore
 		if (i==null)
 			sessionsPerUser.put(userKey, 0);
 		else
+		{
 			sessionsPerUser.put(userKey, i-1);
+			if(log.isDebugEnabled()){
+				log.debug("Sessions for "+userKey+" : "+(i-1));
+			}
+		}
 	}
 
 	/**
@@ -128,6 +133,9 @@ public class SecuritySessionStore
 			}
 		}
 		if (lru!=null){
+			if(log.isDebugEnabled()){
+				log.debug("Removing LRU session for "+key);
+			}
 			sessions.remove(lru.getSessionID());
 			decrementUserSessionCounter(key);
 		}
