@@ -1,5 +1,6 @@
 package eu.unicore.security.wsutil.client;
 
+import java.net.SocketTimeoutException;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
@@ -112,6 +113,13 @@ public class RetryFeature extends FailoverFeature{
 	public boolean requiresFailover(Throwable ex){
 		if(!enabled)return false;
 		boolean retry = false;
+		
+		// do NOT retry socket read timouts! This could lead 
+		// to duplicate actions (e.g. job submits) 
+		if(ex instanceof SocketTimeoutException){
+			return false;
+		}
+			
 		for(Class<? extends Throwable>c: exceptionClasses){
 			if(c.isAssignableFrom(ex.getClass())){
 				retry = true;
@@ -253,6 +261,8 @@ public class RetryFeature extends FailoverFeature{
 		@Override
 		public long getDelayBetweenRetries() {
 			long base = super.getDelayBetweenRetries();
+			if(base<=0)return 0;
+			
 			int r = rand.nextInt((int)base/10);
 			return factor*(base+r);
 		}

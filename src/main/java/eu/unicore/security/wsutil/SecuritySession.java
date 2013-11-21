@@ -1,10 +1,5 @@
 package eu.unicore.security.wsutil;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
 import eu.unicore.security.SecurityTokens;
 
 /**
@@ -15,7 +10,7 @@ import eu.unicore.security.SecurityTokens;
 public class SecuritySession {
 	private final String sessionID;
 
-	private final byte[] securityTokensBin;
+	private final SecurityTokens tokens;
 
 	private final long expires;
 
@@ -31,7 +26,7 @@ public class SecuritySession {
 	 */
 	public SecuritySession(String sessionID, SecurityTokens tokens, long lifetime){
 		this.sessionID=sessionID;
-		this.securityTokensBin = serialize(tokens);
+		this.tokens = tokens;
 		this.expires=System.currentTimeMillis()+lifetime;
 		this.lastAccessed=System.currentTimeMillis();
 	}
@@ -41,32 +36,11 @@ public class SecuritySession {
 	 */
 	public SecurityTokens getTokens() {
 		lastAccessed=System.currentTimeMillis();
-		return deserialize(securityTokensBin);
-	}
-
-	private byte[] serialize(SecurityTokens tokens) {
 		try{
-			ByteArrayOutputStream bos=new ByteArrayOutputStream();
-			ObjectOutputStream oos=new ObjectOutputStream(bos);
-			synchronized (tokens) {
-				oos.writeObject(tokens);
-				oos.close();
-			}
-			return bos.toByteArray();
-		}catch(Exception ex){
-			throw new RuntimeException(ex);
+			return this.tokens.clone();
 		}
-	}
-
-	private SecurityTokens deserialize(byte[] binary) {
-		try{
-			ByteArrayInputStream is=new ByteArrayInputStream(binary);
-			ObjectInputStream ois=new ObjectInputStream(is);
-			Object result = ois.readObject();
-			ois.close();
-			return (SecurityTokens)result;
-		}catch(Exception ex){
-			throw new RuntimeException(ex);
+		catch(CloneNotSupportedException cne){
+			return tokens;
 		}
 	}
 
