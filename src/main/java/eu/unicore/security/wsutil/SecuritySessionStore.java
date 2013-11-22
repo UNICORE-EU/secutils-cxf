@@ -26,7 +26,7 @@ import eu.unicore.util.Log;
 public class SecuritySessionStore
 {
 	private static final Logger log = Log.getLogger(Log.SECURITY, SecuritySessionStore.class);
-	private final static int DEF_MAX_SESSIONS_PER_USER = 100;
+	private final static int DEF_MAX_SESSIONS_PER_USER = 5;
 	private final static long CLEANUP_INTERVAL = 1000*60; 
 
 	/**
@@ -81,7 +81,7 @@ public class SecuritySessionStore
 	}
 	
 	private String getUserKey(SecurityTokens tokens){
-		return tokens.getConsignorName()+"@"+tokens.getClientIP();
+		return tokens.getEffectiveUserName()+"@"+tokens.getClientIP();
 	}
 	
 	private Integer getOrCreateSessionCounter(String userKey){
