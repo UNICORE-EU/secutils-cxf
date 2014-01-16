@@ -112,10 +112,12 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 	protected String getMeta(Class<?> clazz, String prefix)
 	{
 		StringBuilder ret = new StringBuilder();
+		String nl = System.getProperty("line.separator");
 		for(Entry<String, PropertyMD> entry: getMeta(clazz).entrySet()){
 			PropertyMD prop=entry.getValue();
 			if(!prop.isHidden()){
-				ret.append(prefix+entry.getKey()+" : "+prop.getDescription());
+				ret.append(prefix).append(entry.getKey()).append(" : ").append(prop.getDescription());
+				ret.append(nl);
 			}
 		}
 		return ret.toString();

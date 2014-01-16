@@ -50,7 +50,7 @@ public class SAMLAuthN extends PropertiesBasedAuthenticationProvider
 	public static final String NAME = "unity";
 	
 	protected UsernameCallback usernameCallback;
-	protected AssertionsCache assertionsCache;
+	protected AssertionsCache assertionsCache = new InMemoryAssertionCache();
 
 	public SAMLAuthN(Properties properties, PasswordCallback passwordCallback, UsernameCallback usernameCallback,
 			AssertionsCache assertionsCache)
