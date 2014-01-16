@@ -73,10 +73,10 @@ public class SAMLAuthN extends PropertiesBasedAuthenticationProvider
 	@Override
 	public String getDescription()
 	{
-		return "Authenticate with login and password in Unity service. " +
-				"Obtained SAML credentials are locally stored and used until expire. " +
-				"For this method truststore must be properly configured but keystore/certificate " +
-				"credential is not used.";
+		return "Authenticate with login and password to a Unity service. " +
+				"The obtained SAML credentials are locally stored and used until they expire. " +
+				"For this method, a truststore must be properly configured, but no keystore/certificate " +
+				"credential is required.";
 	}
 
 	@Override
