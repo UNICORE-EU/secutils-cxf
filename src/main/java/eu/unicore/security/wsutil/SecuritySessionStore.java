@@ -134,8 +134,9 @@ public class SecuritySessionStore
 			if(log.isDebugEnabled()){
 				log.debug("Removing LRU session for "+key);
 			}
-			sessions.remove(lru.getSessionID());
-			decrementUserSessionCounter(key);
+			if(null!=sessions.remove(lru.getSessionID())){
+				decrementUserSessionCounter(key);
+			}
 		}
 	}
 }
