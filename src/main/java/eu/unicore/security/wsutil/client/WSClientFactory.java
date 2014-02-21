@@ -178,6 +178,7 @@ public class WSClientFactory {
 		T proxy=factory.create(iFace);
 		doAddHandlers(proxy);
 		doAddFeatures(proxy);
+		setupRetry(proxy);
 		setupProxy(proxy, url);
 		setupProxyInterface(iFace, getWSClient(proxy));
 		return proxy;
@@ -306,7 +307,7 @@ public class WSClientFactory {
 	
 	/**
 	 * Create a new and ready-to-use {@link RetryFeature} instance. This object might be further customized by 
-	 * adding additional recoverable exceptions, besides {@link SocketTimeoutException} which is by defualt set.
+	 * adding additional recoverable exceptions, besides {@link SocketTimeoutException} which is by default set.
 	 */
 	public RetryFeature getDefaultRetryFeature(){
 		RetryFeature r = new RetryFeature(this);
@@ -318,14 +319,25 @@ public class WSClientFactory {
 
 
 	/**
-	 * @param proxy
-	 * @param retry
+	 * Configure the given proxy object with the retry feature<br/>
+	 * The retry feature can later be retrieved with {@link #getRetryFeature(Object)}
+	 * 
+	 * @param proxy - the WS proxy
+	 * @param retry - the {@link RetryFeature}
 	 */
 	public void setupRetry(Object proxy, RetryFeature retry){
 		Client client = getWSClient(proxy);
 		retry.initialize(client, null);	
+		client.getRequestContext().put(RetryFeature.class.getName(), retry);
 	}
 	
+	/**
+	 * setup the default retry feature
+	 * @param proxy
+	 */
+	public void setupRetry(Object proxy){
+		setupRetry(proxy, getDefaultRetryFeature());
+	}
 	
 	private void configureHttpProxy(HTTPConduit http, String uri){
 		if (isNonProxyHost(uri)) 
@@ -409,6 +421,17 @@ public class WSClientFactory {
 	public static Client getWSClient(Object proxy)
 	{
 		return ClientProxy.getClient(proxy);
+	}
+
+	/**
+	 * get the {@link RetryFeature} configured for the given proxy object
+	 * @param proxy
+	 * @return retry feature or <code>null</code> if not yet set
+	 */
+	public static RetryFeature getRetryFeature(Object proxy)
+	{
+		Client c = getWSClient(proxy);
+		return (RetryFeature) c.getRequestContext().get(RetryFeature.class.getName());
 	}
 
 	/**
