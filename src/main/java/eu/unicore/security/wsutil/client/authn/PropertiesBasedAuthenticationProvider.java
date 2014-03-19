@@ -12,8 +12,6 @@ import java.util.Map.Entry;
 
 import javax.security.auth.x500.X500Principal;
 
-import com.sun.xml.txw2.IllegalSignatureException;
-
 import eu.emi.security.authn.x509.X509CertChainValidatorExt;
 import eu.emi.security.authn.x509.helpers.BinaryCertChainValidator;
 import eu.unicore.security.canl.DefaultAuthnAndTrustConfiguration;
@@ -129,7 +127,7 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 		if (delegate.isDelegate())
 		{
 			if (targetDn == null){
-					throw new IllegalSignatureException("When delegation is used the " +
+					throw new IllegalArgumentException("When delegation is used the " +
 						"target service DN must be given.");
 			}
 			ETDClientSettings etdSettings = sp.getETDSettings();
