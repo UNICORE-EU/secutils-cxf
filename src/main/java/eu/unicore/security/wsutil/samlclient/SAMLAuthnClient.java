@@ -26,9 +26,9 @@ import eu.unicore.samly2.validators.AssertionValidator;
 import eu.unicore.samly2.validators.SSOAuthnResponseValidator;
 import eu.unicore.samly2.webservice.SAMLAuthnInterface;
 import eu.unicore.util.httpclient.IClientConfiguration;
-
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.protocol.AuthnRequestDocument;
+import xmlbeans.org.oasis.saml2.protocol.AuthnRequestType;
 import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
 
 /**
@@ -67,13 +67,30 @@ public class SAMLAuthnClient extends AbstractSAMLClient
 	 * @param requestedNameFormat name format to be requested
 	 * @param consumerURL consumer URL, should be placed in the returned assertion as restriction
 	 * @param requesterSamlName used as issuer of the request, may be placed in the returned assertion as condition.
+	 * @param allowCreate whether a new name can be established by the IdP. Typically should be true, however if 
+	 * it is assumed that the request should be associated with an existing identity can be set to false.
+	 * @return
+	 * @throws SAMLValidationException
+	 */
+	public AuthnResponseAssertions authenticate(String requestedNameFormat, 
+			NameID requesterSamlName, String consumerURL, boolean allowCreate) throws SAMLValidationException
+	{
+		return getAssertionsGeneric(requestedNameFormat, consumerURL, requesterSamlName, allowCreate);
+	}
+
+	/**
+	 * Request is created locally, send and verified and parsed response returned. 
+	 * It is possible to set the desired identity format.
+	 * @param requestedNameFormat name format to be requested
+	 * @param consumerURL consumer URL, should be placed in the returned assertion as restriction
+	 * @param requesterSamlName used as issuer of the request, may be placed in the returned assertion as condition.
 	 * @return
 	 * @throws SAMLValidationException
 	 */
 	public AuthnResponseAssertions authenticate(String requestedNameFormat, 
 			NameID requesterSamlName, String consumerURL) throws SAMLValidationException
 	{
-		return getAssertionsGeneric(requestedNameFormat, consumerURL, requesterSamlName);
+		return authenticate(requestedNameFormat, requesterSamlName, consumerURL, true);
 	}
 
 	/**
@@ -86,7 +103,7 @@ public class SAMLAuthnClient extends AbstractSAMLClient
 	 */
 	public AuthnResponseAssertions authenticate(NameID requesterSamlName, String consumerURL) throws SAMLValidationException
 	{
-		return getAssertionsGeneric(null, consumerURL, requesterSamlName);
+		return getAssertionsGeneric(null, consumerURL, requesterSamlName, true);
 	}
 
 	/**
@@ -112,7 +129,7 @@ public class SAMLAuthnClient extends AbstractSAMLClient
 	 * @throws SAMLValidationException
 	 */
 	protected AuthnResponseAssertions getAssertionsGeneric(String format, String consumerURL, 
-			NameID requesterSamlName) throws SAMLValidationException
+			NameID requesterSamlName, boolean allowCreate) throws SAMLValidationException
 	{
 		if (requesterSamlName == null)
 			requesterSamlName = getLocalIssuer();
@@ -124,6 +141,10 @@ public class SAMLAuthnClient extends AbstractSAMLClient
 			request.setFormat(format);
 		if (consumerURL != null)
 			request.getXMLBean().setAssertionConsumerServiceURL(consumerURL);
+		AuthnRequestType authnReq = request.getXMLBean();
+		if (authnReq.getNameIDPolicy() == null)
+			authnReq.addNewNameIDPolicy();
+		authnReq.getNameIDPolicy().setAllowCreate(allowCreate);
 		return performSAMLQuery(request.getXMLBeanDoc());
 	}
 	
