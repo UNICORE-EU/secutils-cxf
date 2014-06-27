@@ -14,6 +14,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.headers.Header;
 import org.apache.cxf.helpers.CastUtils;
@@ -27,10 +28,16 @@ import org.apache.cxf.transport.servlet.ServletDestination;
 import org.apache.cxf.ws.addressing.AddressingProperties;
 import org.apache.cxf.ws.addressing.ContextUtils;
 import org.apache.cxf.ws.addressing.Names;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Node;
+
+import eu.unicore.security.HTTPAuthNTokens;
+import eu.unicore.util.Log;
 
 public class CXFUtils {
 
+	private static final Logger logger = Log.getLogger(Log.SERVICES, CXFUtils.class);
+	
 	public static boolean isLocalCall(Exchange exch){
 		return isLocalCall(exch.getInMessage());
 	}
@@ -41,9 +48,9 @@ public class CXFUtils {
 
 	public static String getAction(Message message){
 		if(message==null)return null;
-		
+
 		String action=null;
-		
+
 		if(message.get(Message.PROTOCOL_HEADERS)!=null){
 			Map<String, List<String>> headers = CastUtils.cast((Map<?, ?>)message.get(Message.PROTOCOL_HEADERS));
 			if (headers != null) {
@@ -56,7 +63,7 @@ public class CXFUtils {
 				}
 			}
 		}
-		
+
 		if(action==null && message instanceof SoapMessage){
 			Header wsaAction=((SoapMessage)message).getHeader(Names.WSA_ACTION_QNAME);
 			if(wsaAction!=null){
@@ -75,7 +82,7 @@ public class CXFUtils {
 		BindingOperationInfo bop = ex.get(BindingOperationInfo.class);
 		if(bop==null)
 			return null;
-		
+
 		MethodDispatcher md = (MethodDispatcher)ex.getService().get(MethodDispatcher.class.getName());
 		return md.getMethod(bop);
 	}
@@ -93,27 +100,27 @@ public class CXFUtils {
 		t.setOutputProperty(OutputKeys.INDENT, "no");
 		t.transform(new DOMSource(n), new StreamResult(os));
 	}
-	
+
 	/**
 	 * get the current message (stored thread-locally)
 	 */
 	public static Message getCurrentMessage(){
 		return PhaseInterceptorChain.getCurrentMessage();
 	}
-	
+
 	/**
 	 * get the ws-addressing properties from the current message
 	 */
 	public static AddressingProperties getAddressingProperties(){
 		return ContextUtils.retrieveMAPs(getCurrentMessage(), false, false);
 	}
-	
+
 	/**
 	 * get the client's SSL certificates from the SOAP message
 	 * @param message - the incomping SOAP message
 	 * @return client's certificate path retrieved via the HttpServletRequest
 	 */
-	public static X509Certificate[] getSSLCerts(SoapMessage message){
+	public static X509Certificate[] getSSLCerts(Message message){
 		X509Certificate[] certs =null;
 		HttpServletRequest req =(HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
 		if(req!=null){
@@ -121,23 +128,64 @@ public class CXFUtils {
 		}
 		return certs;
 	}
-	
+
 	/**
 	 * get the client's IP address from the SOAP message
 	 * @param message - the incoming SOAP message
 	 * @return the remote address as retrieved via the HttpServletRequest
 	 */
-	public static String getClientIP(SoapMessage message){
+	public static String getClientIP(Message message){
 		HttpServletRequest req = (HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
 		return req!=null? req.getRemoteAddr() : null ;
 	}
-	
+
+	/**
+	 * extract the HTTP credentials from the message
+	 * @param message
+	 * @return HTTPAuthNTokens or <code>null</code> if not available
+	 */
+	public static HTTPAuthNTokens getHTTPCredentials(Message message) {
+		HttpServletRequest req =(HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
+		if (req == null)
+			return null; 
+		String aa = req.getHeader("Authorization");
+		if (aa == null)
+			return null;
+		if (aa.length() < 7)
+		{
+			logger.warn("Ignoring too short Authorization header element in " +
+					"HTTP request: " + aa);
+			return null;
+		}
+		String encoded = aa.substring(6);
+		String decoded = new String(Base64.decodeBase64(encoded.getBytes()
+				));
+		String []split = decoded.split(":");
+		if (split.length > 2)
+		{
+			logger.warn("Ignoring malformed Authorization HTTP header element" +
+					" (to many ':' after decode: " + decoded + ")");
+			return null;
+		}
+		if (split.length == 2)
+			return new HTTPAuthNTokens(split[0], split[1]);
+		else if (split.length == 1)
+			return new HTTPAuthNTokens(split[0], null);
+		else
+		{
+			logger.warn("Ignoring malformed Authorization HTTP header element" +
+					" (empty string after decode)");
+			return null;
+		}
+	}
+
+
 	/**
 	 * get the HttpServletRequest
 	 * @param message - the incoming SOAP message
 	 */
-	public static HttpServletRequest getServletRequest(SoapMessage message){
+	public static HttpServletRequest getServletRequest(Message message){
 		return (HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
 	}
-	
+
 }

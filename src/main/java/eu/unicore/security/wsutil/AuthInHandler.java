@@ -16,10 +16,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.namespace.QName;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.common.util.StringUtils;
@@ -27,7 +25,6 @@ import org.apache.cxf.headers.Header;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.phase.Phase;
-import org.apache.cxf.transport.http.AbstractHTTPDestination;
 import org.apache.log4j.Logger;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
@@ -525,38 +522,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 
 	protected HTTPAuthNTokens getHTTPCredentials(SoapMessage message)
 	{
-		HttpServletRequest req =(HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
-		if (req == null)
-			return null; 
-		String aa = req.getHeader("Authorization");
-		if (aa == null)
-			return null;
-		if (aa.length() < 7)
-		{
-			logger.warn("Ignoring too short Authorization header element in " +
-					"HTTP request: " + aa);
-			return null;
-		}
-		String encoded = aa.substring(6);
-		String decoded = new String(Base64.decodeBase64(encoded.getBytes()
-				));
-		String []split = decoded.split(":");
-		if (split.length > 2)
-		{
-			logger.warn("Ignoring malformed Authorization HTTP header element" +
-					" (to many ':' after decode: " + decoded + ")");
-			return null;
-		}
-		if (split.length == 2)
-			return new HTTPAuthNTokens(split[0], split[1]);
-		else if (split.length == 1)
-			return new HTTPAuthNTokens(split[0], null);
-		else
-		{
-			logger.warn("Ignoring malformed Authorization HTTP header element" +
-			" (empty string after decode)");
-			return null;
-		}
+		return CXFUtils.getHTTPCredentials(message);
 	}
 
 
