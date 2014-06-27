@@ -217,6 +217,7 @@ public class WSClientFactory {
 		
 		for(Interceptor<? extends Message> h: outHandlers){ 
 				client.getOutInterceptors().add(h);
+				client.getOutInterceptors().add(new CleanupHandler(client));
 		}
 		
 		for(Interceptor<? extends Message> h: inHandlers){ 
@@ -225,6 +226,7 @@ public class WSClientFactory {
 		
 		for(Interceptor<? extends Message> h:faultHandlers){ 
 				client.getOutFaultInterceptors().add(h);
+				client.getOutFaultInterceptors().add(new CleanupHandler(client));
 		}
 	}
 
