@@ -106,6 +106,9 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	public static final String RAW_SAML_ASSERTIONS_KEY = AuthInHandler.class.getName() + 
 			".RAW_SAML_ASSERTIONS";
 
+	// special header for forwarding the client's IP address to the VSite
+	public final static String CONSIGNOR_IP_HEADER = "X-UNICORE-Consignor-IP";
+		
 	private boolean useGatewayAssertions;
 	private boolean useHTTPBasic;
 	private boolean useSSLData;
@@ -494,8 +497,14 @@ public class AuthInHandler extends AbstractSoapInterceptor
 				logger.debug("Using consignor info from Gateway.");
 				clientIP = extractIPFromConsignorAssertion(cAssertion);
 			}
-		} else
-			clientIP = getClientIP(message);
+		}
+		
+		if(clientIP == null)
+		{
+			// see if we have the special Gateway header
+			String ip = CXFUtils.getServletRequest(message).getHeader(CONSIGNOR_IP_HEADER);
+			clientIP = ip!=null? ip : getClientIP(message);
+		}
 		mainToken.setClientIP(clientIP);
 	}
 	
