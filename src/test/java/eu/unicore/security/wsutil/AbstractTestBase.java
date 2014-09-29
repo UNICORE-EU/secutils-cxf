@@ -60,7 +60,8 @@ public abstract class AbstractTestBase extends TestCase
 				"the!test".toCharArray(), "JKS", -1);
 		AuthInHandler authHandler = new AuthInHandler(true, true, true, null, sesStore);
 		authHandler.addUserAttributeHandler(new SimpleSecurityServiceImpl.SimpleUserAttributeHandler());
-		TruststoreBasedSamlTrustChecker samlTrustChecker = new TruststoreBasedSamlTrustChecker(trustedIssuersStore);
+		TruststoreBasedSamlTrustChecker samlTrustChecker = new TruststoreBasedSamlTrustChecker(
+				trustedIssuersStore, false);
 		authHandler.enableSamlAuthentication(MockSecurityConfig.SERVER_CRED.getSubjectName(), 
 				jetty.getUrls()[0].toExternalForm(), 
 				samlTrustChecker, 0);

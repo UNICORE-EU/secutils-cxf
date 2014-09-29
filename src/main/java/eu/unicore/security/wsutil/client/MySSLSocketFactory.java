@@ -16,8 +16,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.conn.ConnectTimeoutException;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 import org.apache.log4j.Logger;
 
 import eu.emi.security.authn.x509.X509CertChainValidator;
@@ -152,9 +150,10 @@ public class MySSLSocketFactory extends SSLSocketFactory
 	 * @throws UnknownHostException
 	 *                 if the IP address of the host cannot be determined
 	 */
+	@Deprecated
 	public Socket createSocket(final String host, final int port,
 			final InetAddress localAddress, final int localPort,
-			final HttpParams params) throws IOException,
+			final org.apache.http.params.HttpParams params) throws IOException,
 			UnknownHostException
 	{
 		if (params == null)
@@ -162,7 +161,7 @@ public class MySSLSocketFactory extends SSLSocketFactory
 			throw new IllegalArgumentException(
 					"Parameters may not be null");
 		}
-		int timeout = HttpConnectionParams.getConnectionTimeout(params);
+		int timeout = org.apache.http.params.HttpConnectionParams.getConnectionTimeout(params);
 		SSLSocketFactory socketfactory = getSSLContext()
 				.getSocketFactory();
 		if (timeout == 0)
