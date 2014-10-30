@@ -140,26 +140,14 @@ public class CXFUtils {
 	}
 
 	/**
-	 * extract the HTTP credentials from the message
+	 * extract the HTTP Basic authentication credentials from the message
 	 * @param message
 	 * @return HTTPAuthNTokens or <code>null</code> if not available
 	 */
 	public static HTTPAuthNTokens getHTTPCredentials(Message message) {
-		HttpServletRequest req =(HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
-		if (req == null)
-			return null; 
-		String aa = req.getHeader("Authorization");
-		if (aa == null)
-			return null;
-		if (aa.length() < 7)
-		{
-			logger.warn("Ignoring too short Authorization header element in " +
-					"HTTP request: " + aa);
-			return null;
-		}
-		String encoded = aa.substring(6);
-		String decoded = new String(Base64.decodeBase64(encoded.getBytes()
-				));
+		String decoded = getDecodedTokenValue("Basic",message);
+		if(decoded == null)return null;
+		
 		String []split = decoded.split(":");
 		if (split.length > 2)
 		{
@@ -179,7 +167,33 @@ public class CXFUtils {
 		}
 	}
 
+	/**
+	 * return the OAuth Bearer token (taken from HTTP Authorization header)
+	 * @param message
+	 * @return bearer token or <code>null</code> if not present
+	 */
+	public static String getBearerToken(Message message) {
+		return getDecodedTokenValue("Bearer",message);
+	}
 
+	private static String getDecodedTokenValue(String type, Message message){
+		HttpServletRequest req =(HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
+		if (req == null)
+			return null; 
+		String aa = req.getHeader("Authorization");
+		if (aa == null)
+			return null;
+		if (aa.length() < type.length()+1)
+		{
+			logger.warn("Ignoring too short Authorization header element in " +
+					"HTTP request: " + aa);
+			return null;
+		}
+		if(!aa.startsWith(type))return null;
+		String encoded = aa.substring(type.length()+1);
+		return new String(Base64.decodeBase64(encoded.getBytes()));
+	}
+	
 	/**
 	 * get the HttpServletRequest
 	 * @param message - the incoming SOAP message
