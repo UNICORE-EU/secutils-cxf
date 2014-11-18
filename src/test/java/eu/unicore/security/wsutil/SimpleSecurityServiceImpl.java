@@ -26,6 +26,7 @@ import eu.unicore.security.SecurityTokens;
 import eu.unicore.security.UserAttributeHandler;
 import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.security.wsutil.client.ConditionalGetUtil;
+import eu.unicore.security.wsutil.client.OAuthBearerTokenOutInterceptor;
 
 
 /**
@@ -96,6 +97,14 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 		HTTPAuthNTokens a = (HTTPAuthNTokens) tokens.getContext().get(
 				SecurityTokens.CTX_LOGIN_HTTP);
 		return a.getUserName() + "-" + a.getPasswd();
+	}
+	
+	public String TestBearerToken() throws RemoteException
+	{
+		SecurityTokens tokens = getTokens();
+		String bearer = (String) tokens.getContext().get(
+				OAuthBearerTokenOutInterceptor.TOKEN_KEY);
+		return "Got OAuth Bearer token: " + bearer;
 	}
 
 	public String TestUser() throws RemoteException

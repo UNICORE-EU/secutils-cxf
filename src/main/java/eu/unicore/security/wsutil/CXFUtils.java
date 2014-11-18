@@ -145,7 +145,7 @@ public class CXFUtils {
 	 * @return HTTPAuthNTokens or <code>null</code> if not available
 	 */
 	public static HTTPAuthNTokens getHTTPCredentials(Message message) {
-		String decoded = getDecodedTokenValue("Basic",message);
+		String decoded = getTokenValue("Basic",message,true);
 		if(decoded == null)return null;
 		
 		String []split = decoded.split(":");
@@ -173,10 +173,16 @@ public class CXFUtils {
 	 * @return bearer token or <code>null</code> if not present
 	 */
 	public static String getBearerToken(Message message) {
-		return getDecodedTokenValue("Bearer",message);
+		return getTokenValue("Bearer",message,false);
 	}
 
-	private static String getDecodedTokenValue(String type, Message message){
+	/**
+	 * @param type - token type, e.g. "Basic" 
+	 * @param message
+	 * @param decode - whether to base64 decode (required for Basic, not for Bearer token)
+	 * @return
+	 */
+	private static String getTokenValue(String type, Message message, boolean decode){
 		HttpServletRequest req =(HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
 		if (req == null)
 			return null; 
@@ -191,7 +197,7 @@ public class CXFUtils {
 		}
 		if(!aa.startsWith(type))return null;
 		String encoded = aa.substring(type.length()+1);
-		return new String(Base64.decodeBase64(encoded.getBytes()));
+		return decode ? new String(Base64.decodeBase64(encoded.getBytes())) : encoded;
 	}
 	
 	/**

@@ -35,6 +35,8 @@ public interface SimpleSecurityService
 	@WebMethod()
 	public String TestHTTPCreds() throws RemoteException;
 	@WebMethod()
+	public String TestBearerToken() throws RemoteException;
+	@WebMethod()
 	public String TestPreference() throws RemoteException;
 	@WebMethod()
 	public String TestETDValid() throws RemoteException;

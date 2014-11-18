@@ -145,6 +145,9 @@ public class WSClientFactory {
 			inHandlers.add(new SessionIDInHandler());
 			outHandlers.add(new SessionIDOutHandler());
 		}
+		
+		outHandlers.add(new OAuthBearerTokenOutInterceptor());
+		
 	}
 	
 	/**

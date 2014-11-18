@@ -52,6 +52,7 @@ import eu.unicore.security.UserAttributeHandler;
 import eu.unicore.security.consignor.ConsignorAPI;
 import eu.unicore.security.consignor.ConsignorAssertion;
 import eu.unicore.security.user.UserAssertion;
+import eu.unicore.security.wsutil.client.OAuthBearerTokenOutInterceptor;
 import eu.unicore.util.Log;
 
 /**
@@ -70,7 +71,7 @@ import eu.unicore.util.Log;
  * <ul>
  *  <li>User SAML assertions (inserted by the consignor)
  *  <li>WSA Action (not really authN part but it is handy to do it here) 
- *  <li>HTTP auth data is also extracted from the request.
+ *  <li>HTTP auth data (Basic or OAuth2 Bearer token) is also extracted from the request.
  *  <li> client's IP
  * </ul>
  * <p>
@@ -258,6 +259,12 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			{
 				mainToken.getContext().put(
 						SecurityTokens.CTX_LOGIN_HTTP, fromHttp);
+			}
+			// OAuth token
+			String bearer = CXFUtils.getBearerToken(ctx);
+			if(bearer != null){
+				if(logger.isDebugEnabled())logger.debug("Have OAuth bearer token.");
+				mainToken.getContext().put(OAuthBearerTokenOutInterceptor.TOKEN_KEY, bearer);
 			}
 		}
 
@@ -533,7 +540,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	{
 		return CXFUtils.getHTTPCredentials(message);
 	}
-
 
 	protected Element getUserAssertion(List<Element> assertions)
 	{

@@ -24,6 +24,7 @@ import eu.unicore.samly2.SAMLConstants.AuthNClasses;
 import eu.unicore.security.UnicoreSecurityFactory;
 import eu.unicore.security.consignor.ConsignorAPI;
 import eu.unicore.security.consignor.ConsignorAssertion;
+import eu.unicore.security.wsutil.client.OAuthBearerTokenOutInterceptor;
 
 public class TestAuthN extends AbstractTestBase
 {
@@ -272,6 +273,24 @@ public class TestAuthN extends AbstractTestBase
 				String http = MockSecurityConfig.HTTP_USER + "-" + MockSecurityConfig.HTTP_PASSWD;
 				assertTrue(http.equals(httpRet));
 			}
+		} catch (Throwable e)
+		{
+			e.printStackTrace();
+			fail();
+		}
+	}
+	
+	public void testBearerToken(){
+		try
+		{
+			System.out.println("\nTest Bearer token\n");
+			MockSecurityConfig config = new MockSecurityConfig(false, false, false); 
+			config.getExtraSecurityTokens().put(OAuthBearerTokenOutInterceptor.TOKEN_KEY,"test123");
+			
+			SimpleSecurityService s = makeProxy(config);
+			String ret = s.TestBearerToken();
+			assertTrue(ret.contains("test123"));
+			
 		} catch (Throwable e)
 		{
 			e.printStackTrace();
