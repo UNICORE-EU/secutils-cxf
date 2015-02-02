@@ -7,12 +7,13 @@ package eu.unicore.security.wsutil.client.authn;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
-
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.assertion.Assertion;
@@ -92,6 +93,10 @@ public class SAMLAuthN extends PropertiesBasedAuthenticationProvider
 		targetAddress = SessionIDProviderImpl.extractServerID(targetAddress);
 		
 		AuthnResponseAssertions samlResponse = assertionsCache.get(getKey(targetAddress, targetDn));
+		// set to null if cached assertions have become invalid
+		if(samlResponse != null && !isValid(samlResponse)) {
+			samlResponse = null;
+		}
 		if (samlResponse == null)
 		{
 			samlResponse = doSAMLAuthn(getUsername(samlConfig), 
@@ -102,6 +107,53 @@ public class SAMLAuthN extends PropertiesBasedAuthenticationProvider
 		return buildFinalSettings(samlResponse, baseClientConfiguration, delegate);
 	}
 
+
+	/**
+	 * @param samlResponse
+	 * @return
+	 */
+	private boolean isValid(AuthnResponseAssertions samlResponse) {
+		Date currentDate = Calendar.getInstance().getTime();
+		for (AttributeAssertionParser parser : samlResponse
+				.getAttributeAssertions()) {
+			if (parser.getNotBefore() != null
+					&& currentDate.before(parser.getNotBefore())) {
+				return false;
+			}
+			if (parser.getNotOnOrAfter() != null
+					&& currentDate.after(parser.getNotOnOrAfter())) {
+				return false;
+			}
+		}
+
+		for (AssertionParser parser : samlResponse.getAuthNAssertions()) {
+			if (parser.getNotBefore() != null
+					&& currentDate.before(parser.getNotBefore())) {
+				return false;
+			}
+			if (parser.getNotOnOrAfter() != null
+					&& currentDate.after(parser.getNotOnOrAfter())) {
+				return false;
+			}
+		}
+
+		for (AssertionDocument assertion : samlResponse.getOtherAssertions()) {
+			if (assertion.getAssertion().getConditions().getNotBefore() != null
+					&& currentDate.before(assertion.getAssertion()
+							.getConditions()
+					.getNotBefore().getTime())) {
+				return false;
+			}
+			if (assertion.getAssertion().getConditions().getNotOnOrAfter() != null
+					&& currentDate.after(assertion.getAssertion()
+							.getConditions()
+					.getNotOnOrAfter().getTime())) {
+				return false;
+			}
+		}
+
+		return true;
+	}
 
 	@Override
 	public String getUsage()
