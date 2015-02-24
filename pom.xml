@@ -4,7 +4,7 @@
   <groupId>eu.unicore.security</groupId>
   <artifactId>secutils-cxf</artifactId>
   <packaging>jar</packaging>
-  <version>1.1.2</version>
+  <version>1.1.3-SNAPSHOT</version>
   <name>secutils-cxf</name>
 
   <parent>
@@ -21,8 +21,8 @@
   </properties>
 
   <scm>
-    <connection>scm:svn:https://svn.code.sf.net/p/unicore/svn/securityFramework/secutils-cxf/tags/secutils-cxf-1.1.2</connection>
-    <developerConnection>scm:svn:https://svn.code.sf.net/p/unicore/svn/securityFramework/secutils-cxf/tags/secutils-cxf-1.1.2</developerConnection>
+    <connection>scm:svn:https://svn.code.sf.net/p/unicore/svn/securityFramework/secutils-cxf/trunk</connection>
+    <developerConnection>scm:svn:https://svn.code.sf.net/p/unicore/svn/securityFramework/secutils-cxf/trunk</developerConnection>
   </scm>
 
   <developers>
