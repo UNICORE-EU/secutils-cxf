@@ -283,13 +283,14 @@ public class TestAuthN extends AbstractTestBase
 	public void testBearerToken(){
 		try
 		{
+			String token = "test123";
 			System.out.println("\nTest Bearer token\n");
 			MockSecurityConfig config = new MockSecurityConfig(false, false, false); 
-			config.getExtraSecurityTokens().put(OAuthBearerTokenOutInterceptor.TOKEN_KEY,"test123");
+			config.getExtraSecurityTokens().put(OAuthBearerTokenOutInterceptor.TOKEN_KEY,token);
 			
 			SimpleSecurityService s = makeProxy(config);
 			String ret = s.TestBearerToken();
-			assertTrue(ret.contains("test123"));
+			assertTrue(ret.contains(token));
 			
 		} catch (Throwable e)
 		{
