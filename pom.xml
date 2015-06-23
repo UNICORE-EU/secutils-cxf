@@ -15,9 +15,9 @@
 
   <properties>
     <cxf.version>2.7.16</cxf.version>
-    <jetty.version>8.1.16.v20140903</jetty.version>
+    <jetty.version>8.1.17.v20150415</jetty.version>
     <httpclient.version>4.3.5</httpclient.version>
-    <seclib.version>4.1.4</seclib.version>
+    <seclib.version>4.1.5-SNAPSHOT</seclib.version>
   </properties>
 
   <scm>
@@ -113,6 +113,12 @@
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-databinding-xmlbeans</artifactId>
       <version>${cxf.version}</version>
+      <exclusions>
+        <exclusion>
+	  <groupId>org.apache.xmlbeans</groupId>
+	  <artifactId>xmlbeans</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
