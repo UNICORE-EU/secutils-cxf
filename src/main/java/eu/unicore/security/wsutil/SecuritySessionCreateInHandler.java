@@ -12,8 +12,10 @@ import java.util.UUID;
 
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
+import org.apache.cxf.headers.Header;
 import org.apache.cxf.phase.Phase;
 import org.apache.log4j.Logger;
+import org.w3c.dom.Element;
 
 import eu.unicore.security.SecurityTokens;
 import eu.unicore.util.Log;
@@ -68,11 +70,9 @@ public class SecuritySessionCreateInHandler extends AbstractSoapInterceptor
 	}
 
 	/**
-	 * get the stored session, or create a new one if required
+	 * create a new session
 	 *  
-	 * @param message
-	 * @param sessionID
-	 * @return
+	 * @param securityTokens
 	 */
 	protected SecuritySession createSession(SecurityTokens securityTokens){
 		SecuritySession session = null;
@@ -88,4 +88,20 @@ public class SecuritySessionCreateInHandler extends AbstractSoapInterceptor
 	}
 	
 
+	public static boolean haveSessionID(SoapMessage message)
+	{
+		return message.getContextualProperty(SecuritySessionUtils.REUSED_MARKER_KEY) != null;
+	}
+
+	public static String getSecuritySessionID(SoapMessage message)
+	{
+		String sessionID=null;
+		Header header=message.getHeader(SecuritySessionUtils.headerQName);
+		if(header!=null){
+			Element hdr = (Element) header.getObject();		
+			if(hdr!=null)
+				sessionID = hdr.getTextContent(); 
+		}
+		return sessionID;
+	}
 }

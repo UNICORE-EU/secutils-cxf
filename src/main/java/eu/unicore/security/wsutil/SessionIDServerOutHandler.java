@@ -32,13 +32,16 @@
 
 package eu.unicore.security.wsutil;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
+import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
+import org.w3c.dom.Element;
 
 /**
  * A server-side handler that writes the security session header.
@@ -72,7 +75,7 @@ public class SessionIDServerOutHandler extends AbstractSoapInterceptor {
 				return;
 			long lifetime=session.getLifetime();
 			
-			Header header=SecuritySessionUtils.buildHeader(sessionID, lifetime);
+			Header header = buildHeader(sessionID, lifetime);
 			List<Header> h = message.getHeaders();
 			h.add(header);
 		}
@@ -89,6 +92,31 @@ public class SessionIDServerOutHandler extends AbstractSoapInterceptor {
 		threadSession.remove();
 	}
 
+	/**
+	 * 
+	 * @param sessionID
+	 * @param lifetime - if larger than -1, the lifetime info will be added to the element
+	 * @return
+	 */
+	public static Header buildHeader(String sessionID, long lifetime) {
+		//TODO - use DOM API directly
+		Element headerEl=null;
+		StringBuilder sb=new StringBuilder();
+		sb.append("<sid:"+SecuritySessionUtils.SESSION_HEADER+" xmlns:sid=\""
+		+SecuritySessionUtils.SESSION_HDR_NS+"\">");
+		sb.append("<sid:ID>"+sessionID+"</sid:ID>");
+		if (lifetime > -1)
+			sb.append("<sid:Lifetime>"+lifetime+"</sid:Lifetime>");
+		sb.append("</sid:"+SecuritySessionUtils.SESSION_HEADER+">");
+		try{
+			byte[] asBytes = sb.toString().getBytes();
+			headerEl = DOMUtils.readXml(new ByteArrayInputStream(asBytes)).getDocumentElement();
+		}catch(Exception e){
+			throw new RuntimeException(e);
+		}
+		
+		return new Header(SecuritySessionUtils.headerQName, headerEl);
+	}
 }
 
 

@@ -110,23 +110,23 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	// special header for forwarding the client's IP address to the VSite
 	public final static String CONSIGNOR_IP_HEADER = "X-UNICORE-Consignor-IP";
 		
-	private boolean useGatewayAssertions;
-	private boolean useHTTPBasic;
-	private boolean useSSLData;
-	private X509Certificate gatewayC;
-	private boolean verifyConsignor;
+	private final boolean useGatewayAssertions;
+	private final boolean useHTTPBasic;
+	private final boolean useSSLData;
+	private final X509Certificate gatewayC;
+	private final boolean verifyConsignor;
 	private SamlTrustChecker samlAuthnTrustChecker;
 	private String samlConsumerName;
 	private String samlConsumerEndpointUri;
 	private long samlGraceTime;
 	
-	private String actor;
+	private final String actor;
 
-	private List<UserAttributeHandler> userAttributeHandlers = new ArrayList<UserAttributeHandler>();
+	private final List<UserAttributeHandler> userAttributeHandlers = new ArrayList<UserAttributeHandler>();
 	
 	private final Set<QName>qnameSet=new HashSet<QName>();
 	
-	private SecuritySessionStore sessionStore;
+	private final SecuritySessionStore sessionStore;
 	
 	/**
 	 * Constructs instance of the handler. It will accept assertions in the header element
@@ -140,6 +140,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	 * injected into context.
 	 * @param gatewayC if not null then consignor assertions will be verified. This
 	 * make sense only when useGatewayAssertions is true otherwise is ignored.
+	 * @param sessionStore security session storage
 	 */
 	public AuthInHandler(boolean useGatewayAssertions, boolean useSSLData,
 			boolean extractHTTPData, X509Certificate gatewayC, SecuritySessionStore sessionStore)
@@ -158,6 +159,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	 * @param gatewayC if not null then consignor assertions will be verified. This
 	 * make sense only when useGatewayAssertions is true otherwise is ignored.
 	 * @param actor Name of this service as used in WSSecurity actor field.
+	 * @param sessionStore security session storage
 	 */
 	public AuthInHandler(boolean useGatewayAssertions, boolean useSSLData,
 			boolean extractHTTPData, X509Certificate gatewayC, String actor,
@@ -169,11 +171,14 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		this.useGatewayAssertions = useGatewayAssertions;
 		this.useHTTPBasic = extractHTTPData;
 		this.useSSLData = useSSLData;
-		verifyConsignor = false;
 		if (gatewayC != null && useGatewayAssertions)
 		{
 			this.gatewayC = gatewayC;
 			verifyConsignor = true;
+		}
+		else{
+			this.gatewayC = null;
+			verifyConsignor = false;
 		}
 		this.actor = actor;
 		this.sessionStore = sessionStore;
@@ -207,7 +212,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	@Override
 	public void handleMessage(SoapMessage ctx)
 	{
-		String sessionID=SecuritySessionUtils.getSecuritySessionID(ctx);
+		String sessionID=SecuritySessionCreateInHandler.getSecuritySessionID(ctx);
 		SecurityTokens mainToken;
 		if (sessionID==null)
 		{
@@ -239,7 +244,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		session=sessionStore.getSession(sessionID);
 		if (session==null || session.isExpired()){
 			// got a session ID from the client, but no session: fault
-			sessionID=null;
 			throwFault(432, "No (valid) security session found, please (re-)send full security data!");
 		}
 		return session;

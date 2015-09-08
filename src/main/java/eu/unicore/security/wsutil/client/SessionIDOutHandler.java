@@ -42,6 +42,7 @@ import org.apache.cxf.phase.Phase;
 import org.apache.log4j.Logger;
 
 import eu.unicore.security.wsutil.SecuritySessionUtils;
+import eu.unicore.security.wsutil.SessionIDServerOutHandler;
 import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.IClientConfiguration;
 import eu.unicore.util.httpclient.SessionIDProvider;
@@ -97,7 +98,7 @@ public class SessionIDOutHandler extends AbstractSoapInterceptor implements Conf
 		}
 		
 		log.debug("Found session id for the request, using it: " + sessionID);
-		Header header=SecuritySessionUtils.buildHeader(sessionID,-1);
+		Header header=SessionIDServerOutHandler.buildHeader(sessionID,-1);
 		List<Header> h = message.getHeaders();
 		h.add(header);
 		message.setContextualProperty(SecuritySessionUtils.REUSED_MARKER_KEY, sessionID);

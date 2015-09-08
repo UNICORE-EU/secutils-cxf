@@ -4,20 +4,20 @@
   <groupId>eu.unicore.security</groupId>
   <artifactId>secutils-cxf</artifactId>
   <packaging>jar</packaging>
-  <version>1.1.4-SNAPSHOT</version>
+  <version>1.2.0-SNAPSHOT</version>
   <name>secutils-cxf</name>
 
   <parent>
     <groupId>eu.unicore</groupId>
     <artifactId>unicore-parent</artifactId>
-    <version>1.18</version>
+    <version>1.19</version>
   </parent>
 
   <properties>
     <cxf.version>2.7.16</cxf.version>
     <jetty.version>8.1.17.v20150415</jetty.version>
     <httpclient.version>4.3.5</httpclient.version>
-    <seclib.version>4.1.5</seclib.version>
+    <seclib.version>4.2.0-SNAPSHOT</seclib.version>
   </properties>
 
   <scm>
