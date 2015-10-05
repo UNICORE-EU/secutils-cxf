@@ -17,7 +17,7 @@
     <cxf.version>2.7.16</cxf.version>
     <jetty.version>8.1.17.v20150415</jetty.version>
     <httpclient.version>4.3.5</httpclient.version>
-    <seclib.version>4.2.1-SNAPSHOT</seclib.version>
+    <seclib.version>4.2.1</seclib.version>
   </properties>
 
   <scm>

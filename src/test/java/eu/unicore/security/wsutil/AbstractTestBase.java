@@ -61,7 +61,7 @@ public abstract class AbstractTestBase extends TestCase
 		AuthInHandler authHandler = new AuthInHandler(true, true, true, null, sesStore);
 		authHandler.addUserAttributeHandler(new SimpleSecurityServiceImpl.SimpleUserAttributeHandler());
 		TruststoreBasedSamlTrustChecker samlTrustChecker = new TruststoreBasedSamlTrustChecker(
-				trustedIssuersStore, false);
+				trustedIssuersStore);
 		authHandler.enableSamlAuthentication(MockSecurityConfig.SERVER_CRED.getSubjectName(), 
 				jetty.getUrls()[0].toExternalForm(), 
 				samlTrustChecker, 0);
