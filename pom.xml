@@ -21,8 +21,8 @@
   </properties>
 
   <scm>
-    <connection>scm:svn:https://svn.code.sf.net/p/unicore/svn/securityFramework/secutils-cxf/trunk</connection>
-    <developerConnection>scm:svn:https://svn.code.sf.net/p/unicore/svn/securityFramework/secutils-cxf/trunk</developerConnection>
+    <connection>scm:git://git.code.sf.net/p/unicore/secutils-cxf</connection>
+    <developerConnection>scm:git:ssh://git.code.sf.net/p/unicore/secutils-cxf</developerConnection>
   </scm>
 
   <developers>
