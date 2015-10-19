@@ -10,6 +10,7 @@ import java.security.cert.X509Certificate;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
@@ -22,6 +23,7 @@ import eu.emi.security.authn.x509.X509CertChainValidator;
 import eu.emi.security.authn.x509.X509Credential;
 import eu.emi.security.authn.x509.impl.CertificateUtils;
 import eu.emi.security.authn.x509.impl.FormatMode;
+import eu.emi.security.authn.x509.impl.HostnameMismatchCallback;
 import eu.emi.security.authn.x509.impl.SocketFactoryCreator;
 import eu.unicore.security.canl.LoggingX509TrustManager;
 import eu.unicore.security.canl.SSLContextCreator;
@@ -186,8 +188,26 @@ public class MySSLSocketFactory extends SSLSocketFactory
 
 	private void checkHostname(SSLSocket socket) throws IOException
 	{
-		HostnameMismatchCallbackImpl callback = new HostnameMismatchCallbackImpl(
-				sec.getServerHostnameCheckingMode());
+		HostnameMismatchCallbackImpl hostnameMismatchCallback = 
+				new HostnameMismatchCallbackImpl(sec.getServerHostnameCheckingMode());
+		HostnameMismatchCallback callback = new HostnameMismatchCallback()
+		{
+			@Override
+			public void nameMismatch(SSLSocket socket, X509Certificate peerCertificate, String hostName)
+					throws SSLException
+			{
+				boolean nameIsOK = hostnameMismatchCallback.nameMismatch(
+						socket.getSession(), peerCertificate, hostName);
+				if (!nameIsOK)
+					try
+					{
+						socket.close();
+					} catch (IOException e)
+					{
+						throw new IllegalStateException("Can't close connection", e);
+					}
+			}
+		}; 
 		SocketFactoryCreator.connectWithHostnameChecking(socket, callback);
 	}
 	

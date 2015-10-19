@@ -57,11 +57,6 @@ public class JettyServer extends JettyServerBase
 	{
 		HttpServerProperties ret = HttpServerProperties.getSimpleTestSettings();
 		ret.setProperty(HttpServerProperties.REQUIRE_CLIENT_AUTHN, "false");
-		
-		// TODO when using old IO with connection-close, client/server 
-		// sometimes seems to run into timeouts
-		// see TestAuthN
-		ret.setProperty(HttpServerProperties.USE_NIO, "false");
 		return ret;
 	}
 
