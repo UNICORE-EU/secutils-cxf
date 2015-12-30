@@ -200,7 +200,7 @@ public class SAMLAuthN extends PropertiesBasedAuthenticationProvider
 	
 	private String getKey(String targetAddress, String targetDn)
 	{
-		return targetDn == null ? "" : X500NameUtils.getComparableForm(targetDn) + "|||||" + targetAddress;
+		return (targetDn == null ? "" : X500NameUtils.getComparableForm(targetDn)) + "|||||" + targetAddress;
 	}
 	
 	/**
