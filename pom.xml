@@ -4,7 +4,7 @@
   <groupId>eu.unicore.security</groupId>
   <artifactId>secutils-cxf</artifactId>
   <packaging>jar</packaging>
-  <version>2.0.0-SNAPSHOT</version>
+  <version>1.4.0-SNAPSHOT</version>
   <name>secutils-cxf</name>
 
   <parent>
@@ -14,10 +14,10 @@
   </parent>
 
   <properties>
-    <cxf.version>2.7.16</cxf.version>
+    <cxf.version>3.1.4</cxf.version>
     <jetty.version>9.3.4.v20151007</jetty.version>
     <httpclient.version>4.5.1</httpclient.version>
-    <seclib.version>5.0.0-SNAPSHOT</seclib.version>
+    <seclib.version>4.3.1-SNAPSHOT</seclib.version>
   </properties>
 
   <scm>
@@ -139,7 +139,7 @@
     <repository>
       <id>unicore.eu</id>
       <name>UNICORE repository</name>
-      <url>http://unicore-dev.zam.kfa-juelich.de/maven</url>
+      <url>https://unicore-dev.zam.kfa-juelich.de/maven</url>
     </repository>
   </repositories>
 

@@ -101,7 +101,7 @@ public class SessionIDOutHandler extends AbstractSoapInterceptor implements Conf
 		Header header=SessionIDServerOutHandler.buildHeader(sessionID,-1);
 		List<Header> h = message.getHeaders();
 		h.add(header);
-		message.setContextualProperty(SecuritySessionUtils.REUSED_MARKER_KEY, sessionID);
+		message.put(SecuritySessionUtils.REUSED_MARKER_KEY, sessionID);
 	}
 
 	@Override

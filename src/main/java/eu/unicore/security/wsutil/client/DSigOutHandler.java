@@ -11,13 +11,13 @@ import java.util.Vector;
 import javax.xml.crypto.dsig.Reference;
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPMessage;
-import javax.xml.transform.TransformerException;
+import javax.xml.stream.XMLStreamException;
 
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor.SAAJOutEndingInterceptor;
-import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.phase.Phase;
+import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.log4j.Logger;
 import org.apache.ws.security.WSConstants;
 import org.apache.ws.security.WSEncryptionPart;
@@ -155,11 +155,11 @@ public class DSigOutHandler extends AbstractSoapInterceptor
 			try 
 			{
 				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				DOMUtils.writeXml(docToSign.getDocumentElement(), bos);
+				StaxUtils.writeTo(docToSign.getDocumentElement(), bos);
 				logger.trace("Message before signing:\n" + bos.toString());
-			} catch (TransformerException e) 
+			} catch (XMLStreamException e) 
 			{
-				logger.fatal("",e);
+				logger.fatal("Can not dump document to log it",e);
 			}
 		}
 		//prepare for signing
@@ -192,11 +192,11 @@ public class DSigOutHandler extends AbstractSoapInterceptor
 			try 
 			{
 				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				DOMUtils.writeXml(docToSign.getDocumentElement(), bos);
+				StaxUtils.writeTo(docToSign.getDocumentElement(), bos);
 				logger.trace("Signed message:\n" + bos.toString());
-			} catch (TransformerException e)
+			} catch (XMLStreamException e)
 			{
-				logger.fatal("",e);
+				logger.fatal("Can not dump signed message to log it", e);
 			}
 		}
 		

@@ -17,9 +17,9 @@ import java.util.Map;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
-import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
+import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -34,7 +34,7 @@ import eu.unicore.util.httpclient.IClientConfiguration;
 /**
  * This handler inserts SAML attribute assertions into the request. 
  * Of course this handler should be used in client mode.
- * The assertions to be sent are retrieved from the {@link IClientProperties}'s 
+ * The assertions to be sent are retrieved from the {@link IClientConfiguration}'s 
  * extraSecurityTokens map. One should put there assertions either as a list of parsed
  * object of type List&lt;Assertion> or as a list of raw XML elements of type 
  * List&lt;Element>. In the first case assertions should be stored under the key
@@ -154,7 +154,7 @@ public class SAMLAttributePushOutHandler extends AbstractSoapInterceptor impleme
 			{
 				try{
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
-					DOMUtils.writeXml(o, bos);
+					StaxUtils.writeTo(o, bos);
 					log.trace(bos.toString());
 				}catch(Exception ex){
 					log.warn("Can't output assertion", ex);
@@ -172,7 +172,7 @@ public class SAMLAttributePushOutHandler extends AbstractSoapInterceptor impleme
 		{
 			AssertionDocument asDoc = a.getXMLBeanDoc();
 			try{
-				Element elem = DOMUtils.readXml(asDoc.newInputStream()).getDocumentElement();
+				Element elem = StaxUtils.read(asDoc.newInputStream()).getDocumentElement();
 				toBeInserted.add(elem);
 			}catch(Exception ex){
 				throw new IOException(ex);

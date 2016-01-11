@@ -34,6 +34,7 @@ package eu.unicore.security.wsutil.client;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.List;
 
 import javax.xml.namespace.QName;
@@ -41,9 +42,9 @@ import javax.xml.namespace.QName;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
-import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
+import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 
@@ -94,8 +95,8 @@ public class ConditionalGetOutHandler extends AbstractSoapInterceptor {
 
 			sb.append("</cget:"+CG_HEADER+">");
 			try{
-				header= DOMUtils.readXml(
-						new ByteArrayInputStream(sb.toString().getBytes())).getDocumentElement();
+				InputStream is = new ByteArrayInputStream(sb.toString().getBytes());
+				header = StaxUtils.read(is).getDocumentElement();
 			}catch(Exception e){
 				throw new RuntimeException(e);
 			}
@@ -104,7 +105,7 @@ public class ConditionalGetOutHandler extends AbstractSoapInterceptor {
 				logger.debug("(Re-)initialised outhandler");
 				try{
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
-					DOMUtils.writeXml(header, bos);
+					StaxUtils.writeTo(header, bos);
 					logger.debug(bos.toString());
 				}catch(Exception e){
 					logger.warn("",e);

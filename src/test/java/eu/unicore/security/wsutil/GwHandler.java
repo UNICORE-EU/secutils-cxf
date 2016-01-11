@@ -14,8 +14,8 @@ import java.util.List;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
-import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.phase.Phase;
+import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -58,7 +58,7 @@ public class GwHandler extends AbstractSoapInterceptor
 		try
 		{
 			AssertionDocument ad = assertion.getXMLBeanDoc();
-			Document doc=DOMUtils.readXml(ad.newInputStream());
+			Document doc = StaxUtils.read(ad.newInputStream());
 			assertionAsJDOM=doc.getDocumentElement();
 		} catch(Exception e)
 		{
@@ -81,7 +81,7 @@ public class GwHandler extends AbstractSoapInterceptor
 				try
 				{
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
-					DOMUtils.writeXml(assertionAsJDOM, bos);
+					StaxUtils.writeTo(assertionAsJDOM, bos);
 					logger.trace("Consignor assertion:\n" + bos.toString());
 				} catch(Exception e)
 				{

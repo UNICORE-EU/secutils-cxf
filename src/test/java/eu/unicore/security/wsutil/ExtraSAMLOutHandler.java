@@ -13,9 +13,9 @@ import java.util.List;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
-import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.phase.Phase;
+import org.apache.cxf.staxutils.StaxUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -43,7 +43,7 @@ public class ExtraSAMLOutHandler extends AbstractSoapInterceptor
 		Element wsSecEl = sec.getOrInsertWSSecElement(h);
 		try{
 			Assertion a = new Assertion();
-			Document doc=DOMUtils.readXml(a.getXMLBeanDoc().newInputStream());
+			Document doc = StaxUtils.read(a.getXMLBeanDoc().newInputStream());
 			Document parent=wsSecEl.getOwnerDocument();
 			wsSecEl.appendChild(parent.importNode(doc.getDocumentElement(),true));
 		}catch(Exception e){

@@ -38,9 +38,9 @@ import java.util.List;
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
-import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
+import org.apache.cxf.staxutils.StaxUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -110,7 +110,7 @@ public class SessionIDServerOutHandler extends AbstractSoapInterceptor {
 		sb.append("</sid:"+SecuritySessionUtils.SESSION_HEADER+">");
 		try{
 			byte[] asBytes = sb.toString().getBytes();
-			headerEl = DOMUtils.readXml(new ByteArrayInputStream(asBytes)).getDocumentElement();
+			headerEl = StaxUtils.read(new ByteArrayInputStream(asBytes)).getDocumentElement();
 		}catch(Exception e){
 			throw new RuntimeException(e);
 		}

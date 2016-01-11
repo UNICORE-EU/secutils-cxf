@@ -25,6 +25,7 @@ import org.apache.cxf.headers.Header;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.phase.Phase;
+import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.log4j.Logger;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
@@ -665,7 +666,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		try
 		{
 			ByteArrayOutputStream os=new ByteArrayOutputStream();
-			DOMUtils.writeXml(assertion, os);
+			StaxUtils.writeTo(assertion, os);
 			AssertionDocument aDoc = AssertionDocument.Factory.parse(os.toString());
 			userA = new UserAssertion(aDoc);
 			return userA;

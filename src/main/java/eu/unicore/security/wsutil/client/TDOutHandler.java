@@ -9,6 +9,7 @@
 package eu.unicore.security.wsutil.client;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +18,9 @@ import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor;
 import org.apache.cxf.headers.Header;
-import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
+import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -158,8 +159,9 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 			try
 			{
 				for (TrustDelegation td: assertionList){
-						Element el=DOMUtils.readXml(td.getXMLBeanDoc().newInputStream()).getDocumentElement();
-						assertionListDOM.add(el);
+					InputStream is = td.getXMLBeanDoc().newInputStream();
+					Element elem = StaxUtils.read(is).getDocumentElement();
+					assertionListDOM.add(elem);
 				}
 				logger.debug("Initialised TD Outhandler with " +
 						"TD chain of length = " + assertionList.size());
@@ -176,7 +178,7 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 			try
 			{
 				AssertionDocument user = userA.getXMLBeanDoc();
-				userAssertionDOM=DOMUtils.readXml(user.newInputStream()).getDocumentElement();
+				userAssertionDOM = StaxUtils.read(user.newInputStream()).getDocumentElement();
 			} catch(Exception e)
 			{
 				logger.fatal("Can't create USER assertion: ", e);
@@ -233,7 +235,7 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 				try
 				{
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
-					DOMUtils.writeXml(userAssertionDOM, bos);
+					StaxUtils.writeTo(userAssertionDOM, bos);
 					logger.trace("User assertion:\n" + bos.toString());
 				} catch(Exception e)
 				{
