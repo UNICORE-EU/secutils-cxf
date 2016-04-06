@@ -4,7 +4,7 @@
   <groupId>eu.unicore.security</groupId>
   <artifactId>secutils-cxf</artifactId>
   <packaging>jar</packaging>
-  <version>1.4.1-SNAPSHOT</version>
+  <version>1.4.1</version>
   <name>secutils-cxf</name>
 
   <parent>
@@ -23,7 +23,7 @@
   <scm>
     <connection>scm:git://git.code.sf.net/p/unicore/secutils-cxf</connection>
     <developerConnection>scm:git:ssh://git.code.sf.net/p/unicore/secutils-cxf</developerConnection>
-    <tag>HEAD</tag>
+    <tag>secutils-cxf-1.4.1</tag>
   </scm>
 
   <developers>
