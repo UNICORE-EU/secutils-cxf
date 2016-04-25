@@ -14,10 +14,10 @@
   </parent>
 
   <properties>
-    <cxf.version>3.1.5</cxf.version>
+    <cxf.version>3.1.6</cxf.version>
     <jetty.version>9.3.7.v20160115</jetty.version>
     <httpclient.version>4.5.1</httpclient.version>
-    <seclib.version>4.3.1</seclib.version>
+    <seclib.version>4.3.2-SNAPSHOT</seclib.version>
   </properties>
 
   <scm>
