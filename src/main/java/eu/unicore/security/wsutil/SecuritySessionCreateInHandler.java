@@ -21,8 +21,8 @@ import eu.unicore.security.SecurityTokens;
 import eu.unicore.util.Log;
 
 /**
- * Security in-handler for UNICORE. Creates a security session if needed. Security session is established if no 
- * existing session id was provided by the client.
+ * Security in-handler for UNICORE. Creates a security session 
+ * if no existing session id was provided by the client.
  * 
  * @author K. Benedyczak
  */
@@ -42,10 +42,7 @@ public class SecuritySessionCreateInHandler extends AbstractSoapInterceptor
 	
 	public SecuritySessionCreateInHandler(SecuritySessionStore sessionStore, long sessionLifetime)
 	{
-		super(Phase.PRE_INVOKE);
-		addAfter(AuthInHandler.class.getName());
-		addAfter(ETDInHandler.class.getName());
-		addAfter(DSigSecurityInHandler.class.getName()); //not really needed, but let's keep this one at the end
+		super(Phase.INVOKE);
 		this.sessionStore = sessionStore;
 		this.sessionLifetime = sessionLifetime;
 	}

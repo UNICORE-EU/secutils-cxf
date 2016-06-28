@@ -49,7 +49,6 @@ import org.apache.cxf.phase.Phase;
 import org.apache.log4j.Logger;
 import org.w3c.dom.Element;
 
-import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import eu.emi.security.authn.x509.X509CertChainValidator;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.emi.security.authn.x509.proxy.ProxyUtils;
@@ -62,6 +61,7 @@ import eu.unicore.security.ValidationResult;
 import eu.unicore.security.etd.ETDApi;
 import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.util.Log;
+import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 
 /**
  * 

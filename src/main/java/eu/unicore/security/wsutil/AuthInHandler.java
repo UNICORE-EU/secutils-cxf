@@ -370,7 +370,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			String userName = userA.getSubjectName();
 			mainToken.setUserName(userName);
 			if (logger.isDebugEnabled())
-				logger.debug("Requested USER (retrived as a DN): " + 
+				logger.debug("Requested USER (retrieved as a DN): " + 
 						X500NameUtils.getReadableForm(userName));
 		} else
 		{
