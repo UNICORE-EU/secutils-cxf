@@ -160,7 +160,6 @@ public class WSClientFactory {
 	 * 
 	 * @param iFace
 	 * @param url
-	 * @param sec
 	 * @return a proxy for the service defined by the interface iFace
 	 * @throws MalformedURLException 
 	 * @throws Exception
@@ -191,7 +190,7 @@ public class WSClientFactory {
 	 * Note: if the URL is https, the JDK SSL settings are used, NOT the 
 	 * UNICORE security settings,
 	 * 
-	 * @param serviceURL the URL where the service wsdl can be found
+	 * @param url the URL where the service wsdl can be found
 	 * 
 	 * @return a Client that supports SSL Connections
 	 * @throws Exception
@@ -253,8 +252,6 @@ public class WSClientFactory {
 	 * Gzip compression, HTTP proxy, HTTP timeouts
 	 *  
 	 * @param client the Proxy to be configured.
-	 * @param cnf Security configuration.
-	 * @param properties
 	 * @param uri
 	 */
 	protected void setupWSClientProxy(Client client, String uri)
@@ -403,7 +400,7 @@ public class WSClientFactory {
 	 * Gzip compression, HTTP proxy. 
 	 *  
 	 * @param proxy Proxy to be configured.
-	 * @param cnf Security configuration.
+	 * @param uri
 	 */
 	protected void setupProxy(Object proxy, String uri)
 	{

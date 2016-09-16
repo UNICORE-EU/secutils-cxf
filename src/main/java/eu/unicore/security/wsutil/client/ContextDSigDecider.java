@@ -18,7 +18,7 @@ import eu.unicore.security.wsutil.DSigDecider;
 
 /**
  * Simple implementation of {@link DSigDecider} for client calls. 
- * It decides basing on information which is retrieved from {@link MessageContext}.
+ * It decides basing on information which is retrieved from the outbound message
  * Additionally one may set SIGN_MESSAGE context property to true to turn on digital 
  * signature for the call. 
  * 

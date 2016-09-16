@@ -270,11 +270,6 @@ public class ETDInHandler extends AbstractSoapInterceptor
 	 * Returns true only in three cases: if consignor==user or 
 	 * if consignor has trust delegated by user or if this is internal server call.
 	 * from the user.
-	 * @param tdGenericValidity
-	 * @param tdTokens
-	 * @param consignor
-	 * @param user
-	 * @return
 	 */
 	protected boolean checkIfConsignorTrusted(boolean tdGenericValidity, boolean consignorIsProxy, 
 			List<TrustDelegation> tdTokens, String realConsignor, 
@@ -308,7 +303,6 @@ public class ETDInHandler extends AbstractSoapInterceptor
 	 * 
 	 * @param user - the original user, requested
 	 * @param td
-	 * @return
 	 */
 	protected boolean checkSuppliedTD(String user, List<TrustDelegation> td)
 	{
@@ -350,8 +344,7 @@ public class ETDInHandler extends AbstractSoapInterceptor
 
 	/**
 	 * extract trust delegation assertions from the header
-	 * @param header
-	 * @return
+	 * @param secCtx
 	 */
 	protected List<TrustDelegation> getTrustAssertionsFromHeader(Map<String, Object> secCtx)
 	{
@@ -388,7 +381,6 @@ public class ETDInHandler extends AbstractSoapInterceptor
 	 * get the X500 name of the issuer
 	 * 
 	 * @param tdTokens
-	 * @return
 	 */
 	protected String getIssuerName(List<TrustDelegation> tdTokens)
 	{
@@ -434,9 +426,6 @@ public class ETDInHandler extends AbstractSoapInterceptor
 	
 	/**
 	 * get the X509 certificate of the issuer
-	 * 
-	 * @param tdTokens
-	 * @return
 	 */
 	protected X509Certificate[] getIssuer(List<TrustDelegation> tdTokens)
 	{

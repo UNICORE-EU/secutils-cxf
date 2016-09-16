@@ -20,9 +20,7 @@ import java.lang.annotation.Target;
 public @interface XmlBinding {
 	
 	/**
-	 * the name of the binding to use (jaxb, xmlbeans, ...)
-	 * 
-	 * @return
+	 * return the name of the binding to use (jaxb, xmlbeans, ...)
 	 */
 	public String name();
 

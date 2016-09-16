@@ -117,10 +117,10 @@ public class ClientTrustDelegationUtil
 	 * @param callerDN DN of CONSIGNOR or null if User assertion shouldn't be added.
 	 */
 	public static void addTrustDelegation(Client cxfClient, 
-			List<TrustDelegation> tdChain, X509Certificate userCert,
+			List<TrustDelegation> tdChain, X509Certificate user,
 			String callerDN)
 	{
-		addTrustDelegation(cxfClient, tdChain, userCert, null, callerDN);
+		addTrustDelegation(cxfClient, tdChain, user, null, callerDN);
 	}
 
 	/**
@@ -135,7 +135,7 @@ public class ClientTrustDelegationUtil
 	 *  
 	 * @param cxfProxy Object used to make WS calls via CXF.
 	 * @param tdChain list of trust delegations.
-	 * @param user certificate of USER or null if User assertion shouldn't be added.
+	 * @param userDN DN of USER or null if User assertion shouldn't be added.
 	 * @param callerDN DN of CONSIGNOR or null if User assertion shouldn't be added.
 	 */
 	public static void addTrustDelegation(Object cxfProxy, 
@@ -158,7 +158,7 @@ public class ClientTrustDelegationUtil
 	 *  
 	 * @param cxfClient CXF client underlying CXF proxy.
 	 * @param tdChain list of trust delegations.
-	 * @param user certificate of USER or null if User assertion shouldn't be added.
+	 * @param userDN DN of USER or null if User assertion shouldn't be added.
 	 * @param callerDN DN of CONSIGNOR or null if User assertion shouldn't be added.
 	 */
 	public static void addTrustDelegation(Client cxfClient, 
@@ -179,7 +179,7 @@ public class ClientTrustDelegationUtil
 	 *  
 	 * @param cxfClient CXF client underlying CXF proxy.
 	 * @param tdChain list of trust delegations.
-	 * @param user certificate of USER or null if User assertion shouldn't be added.
+	 * @param userDN DN of USER or null if User assertion shouldn't be added.
 	 * @param callerDN DN of CONSIGNOR or null if User assertion shouldn't be added.
 	 */
 	private static void addTrustDelegation(Client cxfClient, 

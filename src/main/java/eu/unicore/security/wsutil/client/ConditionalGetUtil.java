@@ -134,7 +134,7 @@ public class ConditionalGetUtil {
 		 * Compares the client-side Etag to the new one. If they do not match, the
 		 * server needs to send the new data. The outgoing handler is set up correctly.
 		 * To avoid computing the new etag, the server should in all cases check
-		 * the modification time using {@link #mustSendData(Calendar)} before invoking 
+		 * the modification time using {@link #mustSendData(Calendar,String)} before invoking 
 		 * this method
 		 * 
 		 * @param lastModified - the server-side modification time 
@@ -168,8 +168,6 @@ public class ConditionalGetUtil {
 
 		/**
 		 * compute md5 of the passed-in string
-		 * @param string
-		 * @return
 		 */
 		public static String md5(String string){
 			try{

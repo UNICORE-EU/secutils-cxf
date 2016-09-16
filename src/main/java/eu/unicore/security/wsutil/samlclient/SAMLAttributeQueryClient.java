@@ -86,8 +86,8 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 	/**
 	 * Gets an assertion using high level API arguments.
 	 * @param whose
+	 * @param requesterSamlName
 	 * @param attributes
-	 * @return
 	 * @throws SAMLValidationException
 	 */
 	protected AttributeAssertionParser getAssertionGeneric(NameID whose, NameID requesterSamlName, 

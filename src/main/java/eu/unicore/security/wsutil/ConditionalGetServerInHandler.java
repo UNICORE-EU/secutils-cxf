@@ -106,7 +106,6 @@ public class ConditionalGetServerInHandler extends AbstractSoapInterceptor
 
 	/**
 	 * get the etag value from the IfNoneMatch header
-	 * @return
 	 */
 	public static String getIfNoneMatch(){
 		return etag.get();
@@ -114,7 +113,6 @@ public class ConditionalGetServerInHandler extends AbstractSoapInterceptor
 
 	/**
 	 * get the raw string value of the IfModifiedSince header
-	 * @return
 	 */
 	public static String getIfModifiedSince(){
 		return lastModified.get();

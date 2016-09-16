@@ -238,7 +238,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	 *  
 	 * @param message
 	 * @param sessionID
-	 * @return
 	 */
 	protected SecuritySession getSession(SoapMessage message, String sessionID){
 		SecuritySession session = null;
@@ -600,7 +599,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	 * first assertion is tried and returned if looks like consignor i.e. has a proper
 	 * attribute tag.
 	 * @param assertions
-	 * @return
 	 */
 	protected ConsignorAssertion getConsignorAssertion(List<Element> assertions)
 	{
