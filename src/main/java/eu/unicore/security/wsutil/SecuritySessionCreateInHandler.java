@@ -42,7 +42,7 @@ public class SecuritySessionCreateInHandler extends AbstractSoapInterceptor
 	
 	public SecuritySessionCreateInHandler(SecuritySessionStore sessionStore, long sessionLifetime)
 	{
-		super(Phase.INVOKE);
+		super(Phase.PRE_INVOKE);
 		this.sessionStore = sessionStore;
 		this.sessionLifetime = sessionLifetime;
 	}
