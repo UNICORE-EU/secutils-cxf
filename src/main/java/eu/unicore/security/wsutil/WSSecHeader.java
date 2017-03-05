@@ -105,7 +105,6 @@ public class WSSecHeader
 	 * get the WSSec header from the list of SOAP headers, if it exists
 	 * 
 	 * @param headers
-	 * @return
 	 */
 	public Element findWSSecElement(List<Header> headers)
 	{

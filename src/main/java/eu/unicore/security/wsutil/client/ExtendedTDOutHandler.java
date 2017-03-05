@@ -55,11 +55,9 @@ public class ExtendedTDOutHandler extends TDOutHandler
 	/**
 	 * Initialise the handler. The supplied security properties 
 	 * may contain an existing list of trust delegations. <br/>
-	 * If the {@link IUASSecurityProperties#isTrustDelegationEnabled()} returns true, 
-	 * a new assertion will be generated (and an existing chain will be extended.) 
-	 * In this case	the security properties should contain the name of the receiver.<br/>
+	 * If configured in the ETD settings, a new assertion will be generated (and an existing chain will be extended.) 
+	 * In this case	the ETD settings should contain the name of the receiver.<br/>
 	 * Else, the supplied TD chain will be used as-is.
-	 * @see IUASSecurityProperties
 	 */
 	public ExtendedTDOutHandler(IClientConfiguration config)
 	{

@@ -22,7 +22,6 @@ public interface ToBeSignedDecider
 	/**
 	 * Returns list of parts required to be signed.
 	 * @param docToSign
-	 * @return
 	 */
 	public Vector<WSEncryptionPart> getElementsToBeSigned(Document docToSign);
 }

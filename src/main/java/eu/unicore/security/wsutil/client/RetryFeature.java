@@ -108,7 +108,6 @@ public class RetryFeature extends FailoverFeature{
 	   		<li>IOException</li>
 	   </ul> 
 	 * @param ex
-	 * @return
 	 */
 	public boolean requiresFailover(Throwable ex){
 		if(!enabled)return false;

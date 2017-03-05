@@ -93,10 +93,8 @@ public class SessionIDServerOutHandler extends AbstractSoapInterceptor {
 	}
 
 	/**
-	 * 
 	 * @param sessionID
 	 * @param lifetime - if larger than -1, the lifetime info will be added to the element
-	 * @return
 	 */
 	public static Header buildHeader(String sessionID, long lifetime) {
 		//TODO - use DOM API directly

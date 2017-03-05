@@ -46,8 +46,6 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 	/**
 	 * Returns client configuration with anonymous local client. I.e. all HTTP client properties and trust settings
 	 * are loaded, credential settings are ignored. Trust settings are loaded only when SSL is enabled for the client.
-	 * @param uccPreferences
-	 * @return
 	 */
 	@Override
 	public DefaultClientConfiguration getAnonymousClientConfiguration()
@@ -76,9 +74,6 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 	 * This configuration is not Authenticator specific in any way, and therefore both local credential 
 	 * and validator are not set (credential is null, validator is trust-all).
 	 * Additionally SSL authn and message signing is turned off, regardless of properties file settings.
-	 * 
-	 * 
-	 * @return
 	 */
 	public DefaultClientConfiguration getBaseClientConfiguration()
 	{

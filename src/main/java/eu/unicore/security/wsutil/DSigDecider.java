@@ -19,7 +19,6 @@ public interface DSigDecider
 	/**
 	 * Returns true iff for the message there should be DSig processing enabled. 
 	 * @param ctx context of current message
-	 * @return
 	 */
 	public boolean isMessageDSigCandidate(Message ctx);
 

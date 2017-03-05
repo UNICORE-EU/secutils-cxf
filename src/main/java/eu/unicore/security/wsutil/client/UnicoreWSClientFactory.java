@@ -67,8 +67,7 @@ public class UnicoreWSClientFactory extends WSClientFactory
 	private ContextDSigDecider decider;
 	
 	/**
-	 * Uses {@link JSR181ServiceFactory} and {@link AbstractClientConfiguration} what
-	 * means that whole security is turned off.
+	 * Uses {@link DefaultClientConfiguration}
 	 */
 	public UnicoreWSClientFactory(){
 		this(new DefaultClientConfiguration());
@@ -76,8 +75,7 @@ public class UnicoreWSClientFactory extends WSClientFactory
 	
 	/**
 	 * Constructor allowing to set all parameters. 
-	 * @param serviceFactory {@link ServiceFactory} to be used
-	 * @param sec security and client settings
+	 * @param sec client security settings
 	 */
 	public UnicoreWSClientFactory(IClientConfiguration sec){
 		super(sec);

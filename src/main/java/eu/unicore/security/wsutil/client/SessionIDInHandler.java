@@ -92,7 +92,6 @@ public class SessionIDInHandler extends AbstractSoapInterceptor implements Confi
 	/**
 	 * This method is useful for tests only. It returns the session id which was returned by the server
 	 * during the last WS call. This is thread local, so only the same thread can access this information.
-	 * @return
 	 */
 	public static String getSessionID(){
 		return currentSessionID.get();

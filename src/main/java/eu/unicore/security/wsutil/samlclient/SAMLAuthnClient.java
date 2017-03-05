@@ -65,11 +65,10 @@ public class SAMLAuthnClient extends AbstractSAMLClient
 	 * Request is created locally, send and verified and parsed response returned. 
 	 * It is possible to set the desired identity format.
 	 * @param requestedNameFormat name format to be requested
-	 * @param consumerURL consumer URL, should be placed in the returned assertion as restriction
 	 * @param requesterSamlName used as issuer of the request, may be placed in the returned assertion as condition.
+	 * @param consumerURL consumer URL, should be placed in the returned assertion as restriction
 	 * @param allowCreate whether a new name can be established by the IdP. Typically should be true, however if 
 	 * it is assumed that the request should be associated with an existing identity can be set to false.
-	 * @return
 	 * @throws SAMLValidationException
 	 */
 	public AuthnResponseAssertions authenticate(String requestedNameFormat, 
@@ -84,7 +83,6 @@ public class SAMLAuthnClient extends AbstractSAMLClient
 	 * @param requestedNameFormat name format to be requested
 	 * @param consumerURL consumer URL, should be placed in the returned assertion as restriction
 	 * @param requesterSamlName used as issuer of the request, may be placed in the returned assertion as condition.
-	 * @return
 	 * @throws SAMLValidationException
 	 */
 	public AuthnResponseAssertions authenticate(String requestedNameFormat, 
@@ -98,7 +96,6 @@ public class SAMLAuthnClient extends AbstractSAMLClient
 	 * Desired identity format is undefined.
 	 * @param consumerURL consumer URL, should be placed in the returned assertion as restriction
 	 * @param requesterSamlName used as issuer of the request, may be placed in the returned assertion as condition.
-	 * @return
 	 * @throws SAMLValidationException
 	 */
 	public AuthnResponseAssertions authenticate(NameID requesterSamlName, String consumerURL) throws SAMLValidationException
@@ -109,7 +106,6 @@ public class SAMLAuthnClient extends AbstractSAMLClient
 	/**
 	 * Sends a prepared request and returns a verified and parsed answer.
 	 * @param request
-	 * @return
 	 * @throws SAMLValidationException
 	 */
 	public AuthnResponseAssertions authenticate(AuthnRequestDocument request) throws SAMLValidationException
@@ -123,9 +119,10 @@ public class SAMLAuthnClient extends AbstractSAMLClient
 
 	/**
 	 * Gets an assertion using high level API arguments.
-	 * @param whose
-	 * @param attributes
-	 * @return
+	 * @param format
+	 * @param consumerURL
+	 * @param requesterSamlName
+	 * @param allowCreate
 	 * @throws SAMLValidationException
 	 */
 	protected AuthnResponseAssertions getAssertionsGeneric(String format, String consumerURL, 
@@ -153,7 +150,7 @@ public class SAMLAuthnClient extends AbstractSAMLClient
 	 * Performs a SAML query using a provided AttributeQUery argument. 
 	 * Response is parsed and validated.
 	 *  
-	 * @param attrQuery what to query for
+	 * @param request what to query for
 	 * @return parsed and verified assertion
 	 * @throws SAMLValidationException
 	 */

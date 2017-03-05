@@ -2,9 +2,7 @@ package eu.unicore.security.wsutil.client;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.security.cert.X509Certificate;
 
@@ -16,7 +14,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.log4j.Logger;
 
 import eu.emi.security.authn.x509.X509CertChainValidator;
@@ -122,70 +119,6 @@ public class MySSLSocketFactory extends SSLSocketFactory
 		return this.sslcontext;
 	}
 
-	/**
-	 * Attempts to get a new socket connection to the given host within the
-	 * given time limit.
-	 * <p>
-	 * To circumvent the limitations of older JREs that do not support
-	 * connect timeout a controller thread is executed. The controller
-	 * thread attempts to create a new socket within the given limit of
-	 * time. If socket constructor does not return until the timeout
-	 * expires, the controller terminates and throws an
-	 * {@link ConnectTimeoutException}
-	 * </p>
-	 * 
-	 * @param host
-	 *                the host name/IP
-	 * @param port
-	 *                the port on the host
-	 * @param localAddress
-	 *                the local host name/IP to bind the socket to
-	 * @param localPort
-	 *                the port on the local machine
-	 * @param params
-	 *                {@link HttpParams Http connection parameters}
-	 * 
-	 * @return Socket a new socket
-	 * 
-	 * @throws IOException
-	 *                 if an I/O error occurs while creating the socket
-	 * @throws UnknownHostException
-	 *                 if the IP address of the host cannot be determined
-	 */
-	@Deprecated
-	public Socket createSocket(final String host, final int port,
-			final InetAddress localAddress, final int localPort,
-			final org.apache.http.params.HttpParams params) throws IOException,
-			UnknownHostException
-	{
-		if (params == null)
-		{
-			throw new IllegalArgumentException(
-					"Parameters may not be null");
-		}
-		int timeout = org.apache.http.params.HttpConnectionParams.getConnectionTimeout(params);
-		SSLSocketFactory socketfactory = getSSLContext()
-				.getSocketFactory();
-		if (timeout == 0)
-		{
-			Socket socket = socketfactory.createSocket(host, port,
-					localAddress, localPort); 
-			checkHostname((SSLSocket) socket);
-			return socket;
-		} else
-		{
-			Socket socket = socketfactory.createSocket();
-			SocketAddress localaddr = new InetSocketAddress(
-					localAddress, localPort);
-			SocketAddress remoteaddr = new InetSocketAddress(host,
-					port);
-			socket.bind(localaddr);
-			socket.connect(remoteaddr, timeout);
-			checkHostname((SSLSocket) socket);
-			return socket;
-		}
-	}
-
 	private void checkHostname(SSLSocket socket) throws IOException
 	{
 		HostnameMismatchCallbackImpl hostnameMismatchCallback = 
@@ -211,9 +144,6 @@ public class MySSLSocketFactory extends SSLSocketFactory
 		SocketFactoryCreator.connectWithHostnameChecking(socket, callback);
 	}
 	
-	/**
-	 * @see SecureProtocolSocketFactory#createSocket(java.lang.String,int,java.net.InetAddress,int)
-	 */
 	public Socket createSocket(String host, int port,
 			InetAddress clientHost, int clientPort)
 			throws IOException, UnknownHostException
@@ -224,9 +154,6 @@ public class MySSLSocketFactory extends SSLSocketFactory
 		return socket;
 	}
 
-	/**
-	 * @see SecureProtocolSocketFactory#createSocket(java.lang.String,int)
-	 */
 	public Socket createSocket(String host, int port) throws IOException,
 			UnknownHostException
 	{
@@ -236,9 +163,6 @@ public class MySSLSocketFactory extends SSLSocketFactory
 		return socket;
 	}
 
-	/**
-	 * @see SecureProtocolSocketFactory#createSocket(java.net.Socket,java.lang.String,int,boolean)
-	 */
 	public Socket createSocket(Socket socket, String host, int port,
 			boolean autoClose) throws IOException,
 			UnknownHostException

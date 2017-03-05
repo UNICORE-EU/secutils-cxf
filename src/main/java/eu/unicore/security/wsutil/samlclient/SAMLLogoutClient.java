@@ -41,7 +41,6 @@ public class SAMLLogoutClient extends AbstractSAMLClient
 	/**
 	 * Sends a prepared request and returns an answer.
 	 * @param request
-	 * @return
 	 * @throws SAMLValidationException
 	 */
 	public LogoutResponseDocument logout(LogoutRequestDocument request) throws SAMLValidationException

@@ -25,7 +25,6 @@ public interface AuthenticationProvider {
 	
 	/**
 	 * return human-readable usage info (e.g. config properties and their description)
-	 * @param out
 	 */
 	public String getUsage();
 	
@@ -33,9 +32,9 @@ public interface AuthenticationProvider {
 	 * The main method of this interface is used to retrieve a working 
 	 * {@link IClientConfiguration}. As the returned implementation sometimes needs to be modified,
 	 * the mutable {@link DefaultClientConfiguration} or its extension is required. 
-	 * @param targetDn identity (DN) of the service for which the returned settings will be used
 	 * @param targetAddress address of the service for which the returned settings will be used.
-	 * @param delegate whether to delegate and how
+	 * @param targetDn identity (DN) of the service for which the returned settings will be used
+	 * @param delegation whether to delegate and how
 	 */
 	public DefaultClientConfiguration getClientConfiguration(String targetAddress, String targetDn, 
 			DelegationSpecification delegation) throws Exception;
@@ -44,7 +43,6 @@ public interface AuthenticationProvider {
 	 * Gives an access to a possibly anonymous client. The client will have its trust settings configured 
 	 * (in the way the general client's configuration sets them up - so if the SSL is disabled 
 	 * then the trust settings are null), but the credential and delegation won't be set up.
-	 * @return
 	 * @throws Exception
 	 */
 	public IClientConfiguration getAnonymousClientConfiguration() throws Exception;
