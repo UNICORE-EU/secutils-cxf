@@ -17,7 +17,7 @@
     <cxf.version>3.1.10</cxf.version>
     <jetty.version>9.4.2.v20170220</jetty.version>
     <httpclient.version>4.5.3</httpclient.version>
-    <seclib.version>4.4.0-SNAPSHOT</seclib.version>
+    <seclib.version>4.4.0</seclib.version>
   </properties>
 
   <scm>
