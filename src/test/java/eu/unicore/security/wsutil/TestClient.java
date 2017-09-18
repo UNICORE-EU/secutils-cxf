@@ -26,7 +26,7 @@ public class TestClient extends AbstractTestBase{
 		assertEquals("pass",ap.getPassword());
 
 		assertEquals("http://foo",hc.getClient().getProxyServer());
-		assertEquals(123,hc.getClient().getProxyServerPort());
+		assertEquals(123,(int)hc.getClient().getProxyServerPort());
 		
 	}
 

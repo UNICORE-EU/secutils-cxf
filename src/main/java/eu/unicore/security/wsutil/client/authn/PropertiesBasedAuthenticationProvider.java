@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 
 import javax.security.auth.x500.X500Principal;
 
+import eu.emi.security.authn.x509.ValidationErrorListener;
 import eu.emi.security.authn.x509.X509CertChainValidatorExt;
 import eu.emi.security.authn.x509.helpers.BinaryCertChainValidator;
 import eu.unicore.security.canl.DefaultAuthnAndTrustConfiguration;
@@ -31,6 +32,7 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 {
 	protected Properties properties;
 	protected PasswordCallback truststorePasswordCallback;
+	protected ValidationErrorListener validationErrorListener;
 
 	public PropertiesBasedAuthenticationProvider(Properties properties,
 			PasswordCallback truststorePasswordCallback)
@@ -57,6 +59,9 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 			TruststoreProperties trustProperties = new TruststoreProperties(properties, 
 					Collections.singleton(new LoggingStoreUpdateListener()), truststorePasswordCallback);
 			validator = trustProperties.getValidator();
+		}
+		if(validator!=null && validationErrorListener!=null){
+			validator.addValidationListener(validationErrorListener);
 		}
 		DefaultAuthnAndTrustConfiguration authAndTrust = new DefaultAuthnAndTrustConfiguration(validator, null);
 		Properties copy = new Properties();
@@ -131,4 +136,9 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 			etdSettings.setDelegationRestrictions(delegate.getRestrictions());
 		}
 	}
+
+	public void setValidationErrorListener(ValidationErrorListener validationErrorListener){
+		this.validationErrorListener = validationErrorListener;
+	}
+
 }
