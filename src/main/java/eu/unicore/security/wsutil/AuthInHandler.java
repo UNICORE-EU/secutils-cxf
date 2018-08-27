@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -119,12 +120,14 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	private SamlTrustChecker samlAuthnTrustChecker;
 	private String samlConsumerName;
 	private String samlConsumerEndpointUri;
+	private final List<String> alternativeSAMLConsumerNames = new ArrayList<>();
+	
 	private long samlGraceTime;
 	
 	private final String actor;
 
 	private final List<UserAttributeHandler> userAttributeHandlers = new ArrayList<UserAttributeHandler>();
-	
+
 	private final Set<QName>qnameSet=new HashSet<QName>();
 	
 	private final SecuritySessionStore sessionStore;
@@ -186,12 +189,20 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	}
 
 	public void enableSamlAuthentication(String consumerSamlName, String consumerEndpointUri, 
-			SamlTrustChecker samlTrustChecker, long samlValidityGraceTime)
+			SamlTrustChecker samlTrustChecker, long samlValidityGraceTime, List<String>alternativeConsumerNames)
 	{
 		this.samlAuthnTrustChecker = samlTrustChecker;
 		this.samlConsumerEndpointUri = consumerEndpointUri;
 		this.samlConsumerName = consumerSamlName;
 		this.samlGraceTime = samlValidityGraceTime;
+		this.alternativeSAMLConsumerNames.addAll(alternativeConsumerNames);
+	}
+	
+	public void enableSamlAuthentication(String consumerSamlName, String consumerEndpointUri,
+			SamlTrustChecker samlTrustChecker, long samlValidityGraceTime)
+	{
+		enableSamlAuthentication(consumerSamlName, consumerEndpointUri,
+				samlTrustChecker, samlValidityGraceTime, Collections.emptyList());
 	}
 	
 	public void disableSamlAuthentication()
@@ -406,6 +417,9 @@ public class AuthInHandler extends AbstractSoapInterceptor
 				SAMLBindings.OTHER);
 		validator.setLaxInResponseToChecking(true);
 		validator.addConsumerSamlNameAlias(samlConsumerEndpointUri);
+		for(String name: alternativeSAMLConsumerNames){
+			validator.addConsumerSamlNameAlias(name);
+		}
 		AssertionDocument assertionDoc;
 		try
 		{
