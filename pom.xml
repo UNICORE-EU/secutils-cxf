@@ -4,7 +4,7 @@
   <groupId>eu.unicore.security</groupId>
   <artifactId>secutils-cxf</artifactId>
   <packaging>jar</packaging>
-  <version>1.5.2</version>
+  <version>1.5.3</version>
   <name>secutils-cxf</name>
 
   <parent>
@@ -15,9 +15,9 @@
 
   <properties>
     <cxf.version>3.1.13</cxf.version>
-    <jetty.version>9.4.2.v20170220</jetty.version>
+    <jetty.version>9.4.11.v20180605</jetty.version>
     <httpclient.version>4.5.3</httpclient.version>
-    <seclib.version>4.5.0</seclib.version>
+    <seclib.version>4.5.3</seclib.version>
   </properties>
 
   <scm>
