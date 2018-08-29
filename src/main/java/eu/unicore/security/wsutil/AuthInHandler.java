@@ -111,7 +111,10 @@ public class AuthInHandler extends AbstractSoapInterceptor
 
 	// special header for forwarding the client's IP address to the VSite
 	public final static String CONSIGNOR_IP_HEADER = "X-UNICORE-Consignor-IP";
-		
+
+	// special header used by the gateway for forwarding the GW URL (as sent by the client) to the VSite
+	public final static String GW_EXTERNAL_URL = "X-UNICORE-Gateway";
+
 	private final boolean useGatewayAssertions;
 	private final boolean useHTTPBasic;
 	private final boolean useSSLData;
@@ -412,11 +415,16 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	protected void processSAMLAuthentication(Element samlAuthnAssertion, ConsignorAssertion cAssertion, 
 			SecurityTokens mainToken, SoapMessage message)
 	{
+		String endpoint = samlConsumerEndpointUri;
+		String externalURL = CXFUtils.getServletRequest(message).getHeader(GW_EXTERNAL_URL);
+		if(externalURL!=null && !endpoint.startsWith(externalURL)){
+			endpoint = externalURL+"/services";
+		}
 		SSOAuthnAssertionValidator validator = new SSOAuthnAssertionValidator(samlConsumerName, 
-				samlConsumerEndpointUri, null, samlGraceTime, samlAuthnTrustChecker, null, 
+				endpoint, null, samlGraceTime, samlAuthnTrustChecker, null, 
 				SAMLBindings.OTHER);
 		validator.setLaxInResponseToChecking(true);
-		validator.addConsumerSamlNameAlias(samlConsumerEndpointUri);
+		validator.addConsumerSamlNameAlias(endpoint);
 		for(String name: alternativeSAMLConsumerNames){
 			validator.addConsumerSamlNameAlias(name);
 		}
