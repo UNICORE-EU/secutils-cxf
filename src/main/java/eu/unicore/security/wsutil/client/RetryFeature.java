@@ -24,7 +24,7 @@ import eu.unicore.util.Log;
  * 
  * @author schuller
  */
-public class RetryFeature extends FailoverFeature{
+public class RetryFeature extends FailoverFeature {
 
 	private static final Logger log = Log.getLogger(Log.CLIENT, RetryFeature.class); 
 	
@@ -159,9 +159,7 @@ public class RetryFeature extends FailoverFeature{
 		// mostly copy&paste the original code to add a hook for our own exception
 		// exception checks -> TODO add a CXF change request?
 		@Override
-		protected boolean requiresFailover(Exchange exchange) {
-			Exception ex = getException(exchange);
-			
+		protected boolean requiresFailover(Exchange exchange, Exception ex) {
 			getLogger().log(Level.FINE,
 					"CHECK_LAST_INVOKE_FAILED",
 					new Object[] {ex != null});
