@@ -15,6 +15,7 @@
 
   <properties>
     <cxf.version>3.3.1</cxf.version>
+    <saaj.version>1.5.1</saaj.version>
     <jaxws.version>2.3.2</jaxws.version>
     <wss.version>2.2.2</wss.version>
     <jetty.version>9.4.11.v20180605</jetty.version>
@@ -134,6 +135,11 @@
     </dependency>
     
     <!-- cxf stuff -->
+    <dependency>
+      <groupId>com.sun.xml.messaging.saaj</groupId>
+      <artifactId>saaj-impl</artifactId>
+      <version>${saaj.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-frontend-jaxws</artifactId>
