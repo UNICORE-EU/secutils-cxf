@@ -2,11 +2,12 @@ package eu.unicore.security.wsutil.client;
 
 
 import java.io.ByteArrayOutputStream;
+import java.security.Provider;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import javax.xml.crypto.dsig.Reference;
 import javax.xml.namespace.QName;
@@ -19,13 +20,12 @@ import org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor.SAAJOutEndingIntercep
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.log4j.Logger;
-import org.apache.ws.security.WSConstants;
-import org.apache.ws.security.WSEncryptionPart;
-import org.apache.ws.security.WSSConfig;
-import org.apache.ws.security.WSSecurityException;
-import org.apache.ws.security.components.crypto.Crypto;
-import org.apache.ws.security.message.WSSecHeader;
-import org.apache.ws.security.message.WSSecSignature;
+import org.apache.wss4j.common.WSEncryptionPart;
+import org.apache.wss4j.common.crypto.Crypto;
+import org.apache.wss4j.common.ext.WSSecurityException;
+import org.apache.wss4j.dom.WSConstants;
+import org.apache.wss4j.dom.message.WSSecHeader;
+import org.apache.wss4j.dom.message.WSSecSignature;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -162,44 +162,45 @@ public class DSigOutHandler extends AbstractSoapInterceptor
 				logger.fatal("Can not dump document to log it",e);
 			}
 		}
-		//prepare for signing
-		WSSecSignature signatory = new MyWSSecSignature();
-		WSSConfig config = WSSConfig.getNewInstance();
-		config.setWsiBSPCompliant(true);
-		signatory.setWsConfig(config);
+	
+//		WSSConfig config = WSSConfig.getNewInstance();
+//		signatory.setWsConfig(config);
 		
-		Vector<WSEncryptionPart> toBeSigned = getElementsToBeSigned(docToSign);
-		WSSecHeader secHeader = new WSSecHeader();
-	        
+		List<WSEncryptionPart> toBeSigned = getElementsToBeSigned(docToSign);
+		WSSecHeader secHeader = new WSSecHeader(docToSign);
+	    
 	    //sign
 		try
 		{
-			secHeader.insertSecurityHeader(docToSign);
+			secHeader.insertSecurityHeader();
+			WSSecSignature signatory = new MyWSSecSignature(secHeader);
 			signatory.setUserInfo(credential.getKeyAlias(), 
 					new String(credential.getKeyPassword()));
-			signatory.prepare(docToSign, merlin, secHeader);
-			List<Reference> references = signatory.addReferencesToSign(toBeSigned, secHeader);
+			signatory.prepare(merlin);
+			List<Reference> references = signatory.addReferencesToSign(toBeSigned);
 			signatory.computeSignature(references);
 		} catch (WSSecurityException e)
 		{
 			logger.fatal("Problem while signing SOAP message: ", e);
 			return;
 		}
-		long end = System.currentTimeMillis();
-		logger.debug("Signed outgoing message, processing time: " + (end-start));
-		if(logger.isTraceEnabled())
-		{
-			try 
+		
+		if(logger.isDebugEnabled()){
+			long end = System.currentTimeMillis();
+			logger.debug("Signed outgoing message, processing time: " + (end-start));
+			if(logger.isTraceEnabled())
 			{
-				ByteArrayOutputStream bos = new ByteArrayOutputStream();
-				StaxUtils.writeTo(docToSign.getDocumentElement(), bos);
-				logger.trace("Signed message:\n" + bos.toString());
-			} catch (XMLStreamException e)
-			{
-				logger.fatal("Can not dump signed message to log it", e);
+				try 
+				{
+					ByteArrayOutputStream bos = new ByteArrayOutputStream();
+					StaxUtils.writeTo(docToSign.getDocumentElement(), bos);
+					logger.trace("Signed message:\n" + bos.toString());
+				} catch (XMLStreamException e)
+				{
+					logger.fatal("Can not dump signed message to log it", e);
+				}
 			}
 		}
-		
 	}
 
 	@Override
@@ -214,11 +215,11 @@ public class DSigOutHandler extends AbstractSoapInterceptor
 	 * @param docToSign
 	 * @return
 	 */
-	private Vector<WSEncryptionPart> getElementsToBeSigned(Document docToSign)
+	private List<WSEncryptionPart> getElementsToBeSigned(Document docToSign)
 	{
 		if (partsDecider != null)
 			return partsDecider.getElementsToBeSigned(docToSign);
-		Vector<WSEncryptionPart> toBeSigned = new Vector<WSEncryptionPart>();
+		List<WSEncryptionPart> toBeSigned = new ArrayList<>();
 		
 		toBeSigned.add(new WSEncryptionPart("Body",
 				"http://schemas.xmlsoap.org/soap/envelope/", ""));
@@ -240,6 +241,19 @@ public class DSigOutHandler extends AbstractSoapInterceptor
 	 */
 	private static class MyWSSecSignature extends WSSecSignature
 	{
+		public MyWSSecSignature(Document doc, Provider provider) {
+			super(doc, provider);
+		}
+
+		public MyWSSecSignature(Document doc) {
+			super(doc);
+		}
+
+		public MyWSSecSignature(WSSecHeader securityHeader) {
+			super(securityHeader);
+		}
+
+		@Override
 		public List<String> getInclusivePrefixes(Element target, boolean excludeVisible) 
 		{
 			if (target.getLocalName().equals("Security"))

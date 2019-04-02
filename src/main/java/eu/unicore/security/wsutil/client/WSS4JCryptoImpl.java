@@ -8,14 +8,17 @@ import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.regex.Pattern;
 
 import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.login.CredentialException;
 
-import org.apache.ws.security.WSSecurityException;
-import org.apache.ws.security.components.crypto.CredentialException;
-import org.apache.ws.security.components.crypto.Crypto;
-import org.apache.ws.security.components.crypto.CryptoBase;
-import org.apache.ws.security.components.crypto.CryptoType;
+import org.apache.wss4j.common.crypto.Crypto;
+import org.apache.wss4j.common.crypto.CryptoBase;
+import org.apache.wss4j.common.crypto.CryptoType;
+import org.apache.wss4j.common.ext.WSSecurityException;
+import org.apache.wss4j.common.ext.WSSecurityException.ErrorCode;
 import org.bouncycastle.util.Arrays;
 
 import eu.emi.security.authn.x509.X509Credential;
@@ -45,11 +48,25 @@ public class WSS4JCryptoImpl extends CryptoBase implements Crypto
 	private void checkCerts(X509Certificate arg) throws WSSecurityException 
 	{
 		if (!Arrays.areEqual(credential.getCertificate().getSignature(), arg.getSignature()))
-			throw new WSSecurityException(WSS4JCryptoImpl.class + 
+			throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
 				" was asked about data of certificate " +
-				"which is not associated with credential: " + arg.toString());
+				"which is not associated with credential: " + arg.toString()));
 	}
 	
+	private void checkCerts(PublicKey arg) throws WSSecurityException 
+	{
+		if (!credential.getCertificate().getPublicKey().equals(arg))
+			throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
+				" was asked about data of certificate " +
+				"which is not associated with credential: " + arg.toString()));
+	}
+	
+	@Override
+	public PrivateKey getPrivateKey(PublicKey publicKey, CallbackHandler callbackHandler) throws WSSecurityException {
+		checkCerts(publicKey);
+		return credential.getKey();
+	}
+
 	@Override
 	public PrivateKey getPrivateKey(X509Certificate arg0, CallbackHandler arg1) throws WSSecurityException
 	{
@@ -61,8 +78,8 @@ public class WSS4JCryptoImpl extends CryptoBase implements Crypto
 	public PrivateKey getPrivateKey(String arg0, String arg1) throws WSSecurityException
 	{
 		if (!credential.getKeyAlias().equals(arg0))
-			throw new WSSecurityException(WSS4JCryptoImpl.class + 
-				" was asked about private key with wrong alias: " + arg0);
+			throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
+				" was asked about private key with wrong alias: " + arg0));
 			
 		return credential.getKey();
 	}
@@ -78,34 +95,35 @@ public class WSS4JCryptoImpl extends CryptoBase implements Crypto
 		case ISSUER_SERIAL:
 			if (!X500NameUtils.equal(credential.getCertificate().getIssuerX500Principal(),
 					cryptoType.getIssuer()))
-				throw new WSSecurityException(WSS4JCryptoImpl.class + 
-					" was asked about cert chain with wrong issuer: " + cryptoType.getIssuer());
+				throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
+						" was asked about cert chain with wrong issuer: " + cryptoType.getIssuer()));
+				
 				
 			if (!cryptoType.getSerial().equals(credential.getCertificate().getSerialNumber()))
-				throw new WSSecurityException(WSS4JCryptoImpl.class + 
-					" was asked about cert chain with wrong serial: " + cryptoType.getSerial());
+				throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
+						" was asked about cert chain with wrong serial: " + cryptoType.getSerial()));
 			break;
 		case THUMBPRINT_SHA1:
-			throw new WSSecurityException(WSS4JCryptoImpl.class + 
-				" not implemented: THUMB_SHA1");
+			throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
+					" not implemented: THUMB_SHA1"));
 			//break;
 		case SKI_BYTES:
-			throw new WSSecurityException(WSS4JCryptoImpl.class + 
-					" not implemented: SKI_BYTES");
+			throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
+					" not implemented:  SKI_BYTES"));
 			//break;
 		case SUBJECT_DN:
 			if (!X500NameUtils.equal(credential.getCertificate().getSubjectX500Principal(), 
 					cryptoType.getSubjectDN()))
-				throw new WSSecurityException(WSS4JCryptoImpl.class + 
-					" was asked about cert chain with wrong subject: " + cryptoType.getSubjectDN());
+				throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
+						" was asked about cert chain with wrong subject: " + cryptoType.getSubjectDN()));
 			break;
 		case ALIAS:
 			if (cryptoType.getAlias() == null)
-				throw new WSSecurityException(WSS4JCryptoImpl.class + 
-						" was asked about cert chain with null alias");
+				throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
+						" was asked about cert chain with null alias"));
 			if (!cryptoType.getAlias().equals(credential.getKeyAlias()))
-				throw new WSSecurityException(WSS4JCryptoImpl.class + 
-					" was asked about cert chain with wrong alias: " + cryptoType.getAlias());
+				throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
+					" was asked about cert chain with wrong alias: " + cryptoType.getAlias()));
 			break;
 		}
 		return credential.getCertificateChain();
@@ -119,24 +137,22 @@ public class WSS4JCryptoImpl extends CryptoBase implements Crypto
 	}
 
 	@Override
-	public boolean verifyTrust(X509Certificate[] arg0) throws WSSecurityException
+	public void verifyTrust(PublicKey arg0) throws WSSecurityException
 	{
-		throw new WSSecurityException(WSS4JCryptoImpl.class + 
-				" not implemented: verifyTrust(X509Certificate[])");
+		throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
+				" not implemented: verifyTrust()"));
 	}
 
 	@Override
-	public boolean verifyTrust(PublicKey arg0) throws WSSecurityException
+	public void verifyTrust(X509Certificate[] arg0, boolean arg1,     
+			Collection<Pattern> subjectCertConstraints, Collection<Pattern> issuerCertConstraints
+		    ) throws WSSecurityException
 	{
-		throw new WSSecurityException(WSS4JCryptoImpl.class + 
-				" not implemented: verifyTrust(PublicKey)");
+		throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
+				" not implemented: verifyTrust()"));
 	}
 
-	@Override
-	public boolean verifyTrust(X509Certificate[] arg0, boolean arg1) throws WSSecurityException
-	{
-		throw new WSSecurityException(WSS4JCryptoImpl.class + 
-				" not implemented: verifyTrust(X509Certificate[], boolean)");
+	protected WSSecurityException createWSSE(Exception message){
+		return new WSSecurityException(ErrorCode.FAILURE, message);
 	}
-
 }

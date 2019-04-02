@@ -11,7 +11,7 @@ package eu.unicore.security.wsutil;
 import java.util.Set;
 import java.util.Vector;
 
-import org.apache.ws.security.WSEncryptionPart;
+import org.apache.wss4j.common.WSEncryptionPart;
 import org.w3c.dom.Document;
 
 import eu.unicore.security.SignatureStatus;

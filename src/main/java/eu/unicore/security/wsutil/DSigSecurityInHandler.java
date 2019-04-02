@@ -17,7 +17,7 @@ import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
 import org.apache.cxf.phase.Phase;
 import org.apache.log4j.Logger;
-import org.apache.ws.security.WSEncryptionPart;
+import org.apache.wss4j.common.WSEncryptionPart;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
