@@ -164,6 +164,7 @@ public class RetryFeature extends FailoverFeature {
 					"CHECK_LAST_INVOKE_FAILED",
 					new Object[] {ex != null});
 			Throwable curr = ex;
+			if(curr==null)curr = getException(exchange);
 			boolean failover = false;
 			while (curr != null) {
 				boolean isInvalidSession = false;
