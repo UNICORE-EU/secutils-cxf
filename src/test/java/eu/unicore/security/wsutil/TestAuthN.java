@@ -19,7 +19,6 @@ import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.emi.security.authn.x509.proxy.ProxyCertificate;
 import eu.emi.security.authn.x509.proxy.ProxyCertificateOptions;
 import eu.emi.security.authn.x509.proxy.ProxyGenerator;
-import eu.unicore.bugsreporter.annotation.RegressionTest;
 import eu.unicore.samly2.SAMLConstants.AuthNClasses;
 import eu.unicore.security.UnicoreSecurityFactory;
 import eu.unicore.security.consignor.ConsignorAPI;
@@ -28,8 +27,6 @@ import eu.unicore.security.wsutil.client.OAuthBearerTokenOutInterceptor;
 
 public class TestAuthN extends AbstractTestBase
 {
-	@RegressionTest(url="https://sourceforge.net/tracker/index.php?func=detail&aid=3418447&group_id=102081&atid=633902",
-			description="Among others checks if the Consignor assertion is accepted when also the wss:security element with SAML assertions is present")
 	public void testGWConsignorNormal()
 	{
 		try

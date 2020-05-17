@@ -4,14 +4,10 @@
   <groupId>eu.unicore.security</groupId>
   <artifactId>secutils-cxf</artifactId>
   <packaging>jar</packaging>
-  <version>2.0.4-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
   <name>secutils-cxf</name>
-
-  <parent>
-    <groupId>eu.unicore</groupId>
-    <artifactId>unicore-parent</artifactId>
-    <version>1.22</version>
-  </parent>
+  <description>CXF integration library for UNICORE</description>
+  <url>https://github.com/UNICORE-EU/secutils-cxf</url>
 
   <properties>
     <cxf.version>3.3.1</cxf.version>
@@ -20,20 +16,31 @@
     <wss.version>2.2.2</wss.version>
     <jetty.version>9.4.28.v20200408</jetty.version>
     <httpclient.version>4.5.3</httpclient.version>
-    <seclib.version>4.5.10</seclib.version>
+    <seclib.version>5.0.0</seclib.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
   </properties>
 
   <scm>
-    <connection>scm:git://git.code.sf.net/p/unicore/secutils-cxf</connection>
-    <developerConnection>scm:git:ssh://git.code.sf.net/p/unicore/secutils-cxf</developerConnection>
+    <connection>scm:git:git://github.com/UNICORE-EU/secutils-cxf.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/UNICORE-EU/secutils-cxf.git</developerConnection>
+    <url>https://github.com/UNICORE-EU/secutils-cxf</url>
     <tag>HEAD</tag>
   </scm>
-
+  
+  <licenses>
+    <license>
+      <name>BSD</name>
+      <url>https://opensource.org/licenses/BSD-3-Clause</url>
+    </license>
+  </licenses>
+	
   <developers>
     <developer>
       <name>Krzysztof Benedyczak</name>
-      <organization>ICM Warsaw</organization>
-      <organizationUrl>http://www.icm.edu.pl</organizationUrl>
+      <organization>Bixbit</organization>
+      <organizationUrl>https://unity-idm.eu</organizationUrl>
     </developer>
     <developer>
       <name>Bernd Schuller</name>
@@ -95,11 +102,11 @@
           <artifactId>opensaml-saml-impl</artifactId>
           <groupId>org.opensaml</groupId>
         </exclusion>
-	<exclusion>
+	    <exclusion>
           <artifactId>opensaml-xacml-impl</artifactId>
           <groupId>org.opensaml</groupId>
         </exclusion>
-	<exclusion>
+	    <exclusion>
           <artifactId>opensaml-xacml-saml-impl</artifactId>
           <groupId>org.opensaml</groupId>
         </exclusion>
@@ -115,13 +122,6 @@
       <artifactId>xalan</artifactId>
       <version>2.7.1</version>
     </dependency>
-    <!-- use our patched version of xmlbeans that uses Saxon-HE 
-         and works with Java 8-->
-    <dependency>
-      <groupId>org.apache.xmlbeans</groupId>
-      <artifactId>xmlbeans-jdk8</artifactId>
-      <version>2.6.0</version>
-    </dependency>	
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
@@ -151,29 +151,59 @@
     </dependency>
   </dependencies>
 
-  <repositories>
-    <repository>
-      <id>unicore.eu</id>
-      <name>UNICORE repository</name>
-      <url>https://unicore-dev.zam.kfa-juelich.de/maven</url>
-    </repository>
-  </repositories>
-
   <build>
     <plugins>
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-release-plugin</artifactId>
-	<version>2.5.3</version>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.5.3</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.2</version>
         <configuration>
           <forkMode>pertest</forkMode>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.1.0</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <additionalJOption>-Xdoclint:none</additionalJOption>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.6</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.7</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>sonatype-nexus-staging</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>true</autoReleaseAfterClose>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
-
 </project>
