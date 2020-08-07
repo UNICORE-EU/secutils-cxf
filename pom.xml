@@ -14,7 +14,7 @@
     <saaj.version>1.5.1</saaj.version>
     <jaxws.version>2.3.2</jaxws.version>
     <wss.version>2.2.2</wss.version>
-    <jetty.version>9.4.28.v20200408</jetty.version>
+    <jetty.version>9.4.31.v20200723</jetty.version>
     <httpclient.version>4.5.3</httpclient.version>
     <seclib.version>5.0.0</seclib.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
