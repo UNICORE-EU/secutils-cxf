@@ -55,6 +55,48 @@
       <artifactId>jaxws-ri</artifactId>
       <version>${jaxws.version}</version>
       <type>pom</type>
+      <exclusions>
+	<exclusion>
+	  <groupId>com.sun.xml.ws</groupId>
+	  <artifactId>samples</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>com.sun.xml.ws</groupId>
+	  <artifactId>release-documentation</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>com.sun.xml.ws</groupId>
+	  <artifactId>jaxws-tools</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>com.sun.xml.ws</groupId>
+	  <artifactId>jaxws-eclipselink-plugin</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>com.sun.xml.ws</groupId>
+	  <artifactId>sdo-eclipselink-plugin</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>com.sun.xml.bind</groupId>
+	  <artifactId>jaxb-xjc</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>com.sun.xml.bind</groupId>
+	  <artifactId>jaxb-jxc</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>org.glassfish.jaxb</groupId>
+	  <artifactId>jaxb-xjc</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>org.glassfish.gmbal</groupId>
+	  <artifactId>gmbal</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>org.jboss.spec.javax.rmi</groupId>
+	  <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.sun.activation</groupId>
@@ -80,6 +122,12 @@
       <groupId>eu.unicore.security</groupId>
       <artifactId>securityLibrary</artifactId>
       <version>${seclib.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>xalan</artifactId>
+          <groupId>xalan</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
@@ -109,12 +157,6 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- needed by wss4j -->
-    <dependency>
-      <groupId>xalan</groupId>
-      <artifactId>xalan</artifactId>
-      <version>2.7.1</version>
-    </dependency>
     <!-- use our patched version of xmlbeans that uses Saxon-HE 
          and works with Java 8-->
     <dependency>
@@ -138,16 +180,38 @@
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-frontend-jaxws</artifactId>
       <version>${cxf.version}</version>
+      <exclusions>
+	<exclusion>
+	  <groupId>org.glassfish.jaxb</groupId>
+	  <artifactId>jaxb-xjc</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>org.jboss.spec.javax.rmi</groupId>
+	  <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-transports-http</artifactId>
       <version>${cxf.version}</version>
+      <exclusions>
+	<exclusion>
+	  <groupId>org.jboss.spec.javax.rmi</groupId>
+	  <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-features-clustering</artifactId>
       <version>${cxf.version}</version>
+      <exclusions>
+	<exclusion>
+	  <groupId>org.jboss.spec.javax.rmi</groupId>
+	  <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
