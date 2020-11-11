@@ -9,12 +9,6 @@
   <description>CXF integration library for UNICORE</description>
   <url>https://github.com/UNICORE-EU/secutils-cxf</url>
 
-  <parent>
-    <groupId>eu.unicore</groupId>
-    <artifactId>unicore-parent</artifactId>
-    <version>1.22</version>
-  </parent>
-
   <properties>
     <cxf.version>3.3.8</cxf.version>
     <saaj.version>1.5.1</saaj.version>
