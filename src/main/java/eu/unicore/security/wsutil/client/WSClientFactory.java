@@ -46,6 +46,7 @@ import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.configuration.security.ProxyAuthorizationPolicy;
 import org.apache.cxf.databinding.AbstractDataBinding;
 import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.ext.logging.LoggingFeature;
 import org.apache.cxf.feature.Feature;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.interceptor.Interceptor;
@@ -59,7 +60,7 @@ import org.apache.cxf.transports.http.configuration.ProxyServerType;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import eu.unicore.security.wsutil.SecuritySessionUtils;
 import eu.unicore.security.wsutil.XmlBeansNsHackOutHandler;
@@ -126,10 +127,6 @@ public class WSClientFactory {
 	 */
 	protected void initHandlers()
 	{
-		if(securityProperties.isMessageLogging()){
-			inHandlers.add(new LogInMessageHandler());	
-			outHandlers.add(new LogOutMessageHandler());
-		}
 		
 		inHandlers.add(new CheckUnderstoodHeadersHandler());
 		outHandlers.add(new CheckUnderstoodHeadersHandler());
@@ -151,6 +148,9 @@ public class WSClientFactory {
 	 * The default implementation does nothing
 	 */
 	protected void initFeatures(){
+		if(securityProperties.isMessageLogging()){
+			features.add(new LoggingFeature());
+		}
 	}
 
 	/**
@@ -445,7 +445,7 @@ public class WSClientFactory {
 		String wsdlurl = url + "?wsdl";
 		HttpGet method = new HttpGet(wsdlurl);
 		HttpResponse response=client.execute(method);
-		return IOUtils.toString(response.getEntity().getContent());
+		return IOUtils.toString(response.getEntity().getContent(),"UFT-8");
 	}
 	
 	public static AbstractDataBinding getBinding(Class<?>clazz){

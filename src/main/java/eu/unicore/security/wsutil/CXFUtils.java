@@ -28,7 +28,7 @@ import org.apache.cxf.transport.servlet.ServletDestination;
 import org.apache.cxf.ws.addressing.AddressingProperties;
 import org.apache.cxf.ws.addressing.ContextUtils;
 import org.apache.cxf.ws.addressing.Names;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Node;
 
 import eu.unicore.security.HTTPAuthNTokens;

@@ -42,7 +42,7 @@ import javax.jws.WebMethod;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.message.Message;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import eu.unicore.security.wsutil.OperationsRequiringSignature;
 import eu.unicore.security.wsutil.RequiresSignature;
@@ -125,7 +125,7 @@ public class UnicoreWSClientFactory extends WSClientFactory
 			if (className!=null && className.length()!=0) {
 				try{
 					Class<? extends Interceptor<? extends Message>> clazz=loadClass(className);
-					Interceptor<? extends Message> h=(Interceptor<? extends Message>)clazz.newInstance();
+					Interceptor<? extends Message> h=(Interceptor<? extends Message>)clazz.getConstructor().newInstance();
 					list.add(h);
 					logger.debug("Sucessfully added security handler <"+className+">");
 				}catch(Exception e){

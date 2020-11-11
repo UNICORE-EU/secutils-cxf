@@ -17,7 +17,7 @@ import java.util.Map;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.elements.SAMLAttribute;

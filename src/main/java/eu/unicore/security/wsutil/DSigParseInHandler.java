@@ -14,11 +14,9 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamReader;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 
-import eu.unicore.security.dsig.DOMUtilities;
-import eu.unicore.security.wsutil.client.LogInMessageHandler;
 import eu.unicore.util.Log;
 
 
@@ -59,7 +57,6 @@ public class DSigParseInHandler extends AbstractSoapInterceptor
 	{
 		super(Phase.READ);
 		getBefore().add(ReadHeadersInterceptor.class.getName());
-		getBefore().add(LogInMessageHandler.class.getName());
 		this.decider = decider;
 	}
 
@@ -102,10 +99,6 @@ public class DSigParseInHandler extends AbstractSoapInterceptor
 					e1.getMessage());
 			throw e1;
 		}
-
-		if (logger.isTraceEnabled())
-			DOMUtilities.logDOMAsRawString("SOAP message DOM is: \n",
-					doc, logger);
 
 		W3CDOMStreamReader replayStream = new W3CDOMStreamReader(doc.getDocumentElement());
 		message.setContent(XMLStreamReader.class,replayStream);

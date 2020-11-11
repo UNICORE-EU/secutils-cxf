@@ -103,20 +103,25 @@ public class WSS4JCryptoImpl extends CryptoBase implements Crypto
 				throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
 						" was asked about cert chain with wrong serial: " + cryptoType.getSerial()));
 			break;
+		
 		case THUMBPRINT_SHA1:
 			throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
 					" not implemented: THUMB_SHA1"));
-			//break;
 		case SKI_BYTES:
 			throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
 					" not implemented:  SKI_BYTES"));
-			//break;
+		
+		case ENDPOINT:
+			throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
+					" not implemented:  ENDPOINT"));
+				
 		case SUBJECT_DN:
 			if (!X500NameUtils.equal(credential.getCertificate().getSubjectX500Principal(), 
 					cryptoType.getSubjectDN()))
 				throw createWSSE(new Exception(WSS4JCryptoImpl.class + 
 						" was asked about cert chain with wrong subject: " + cryptoType.getSubjectDN()));
 			break;
+		
 		case ALIAS:
 			if (cryptoType.getAlias() == null)
 				throw createWSSE(new Exception(WSS4JCryptoImpl.class + 

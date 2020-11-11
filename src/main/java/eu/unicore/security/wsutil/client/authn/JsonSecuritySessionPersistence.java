@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -87,7 +87,7 @@ public class JsonSecuritySessionPersistence implements SecuritySessionPersistenc
 
 		if (sessionIDFile != null && sessionIDFile.exists()) {
 			try{
-				JSONObject sessionsJSON = new JSONObject(FileUtils.readFileToString(sessionIDFile));
+				JSONObject sessionsJSON = new JSONObject(FileUtils.readFileToString(sessionIDFile, "UTF-8"));
 				Iterator<String>serverIDs = sessionsJSON.keys();
 				while(serverIDs.hasNext()){
 					String serverID=serverIDs.next();

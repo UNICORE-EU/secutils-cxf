@@ -39,7 +39,7 @@ import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
 import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import eu.unicore.security.wsutil.SecuritySessionUtils;
 import eu.unicore.security.wsutil.SessionIDServerOutHandler;

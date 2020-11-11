@@ -46,7 +46,7 @@ import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.phase.Phase;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 
 import eu.emi.security.authn.x509.X509CertChainValidator;

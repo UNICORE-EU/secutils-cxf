@@ -41,7 +41,7 @@ public class AdditionalInHandler extends AbstractSoapInterceptor
 		
 		Element el =DOMUtils.getFirstChildWithName(wsSecEl, "http://test.org", "Tola");
 		if (el != null){
-			msg.put("tola", new Boolean(true));
+			msg.put("tola", Boolean.TRUE);
 		}
 	}
 }

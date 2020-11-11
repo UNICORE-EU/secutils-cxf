@@ -16,12 +16,13 @@ import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.headers.Header;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.staxutils.StaxUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import eu.unicore.security.consignor.ConsignorAssertion;
+import eu.unicore.util.Log;
 
 /**
  * Inserts assertion as GW does.
@@ -29,7 +30,7 @@ import eu.unicore.security.consignor.ConsignorAssertion;
  */
 public class GwHandler extends AbstractSoapInterceptor 
 {
-	private static final Logger logger = Logger.getLogger(GwHandler.class);
+	private static final Logger logger = Log.getLogger("test", GwHandler.class);
 
 	private Element assertionAsJDOM;
 

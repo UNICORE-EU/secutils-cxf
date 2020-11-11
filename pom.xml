@@ -4,19 +4,25 @@
   <groupId>eu.unicore.security</groupId>
   <artifactId>secutils-cxf</artifactId>
   <packaging>jar</packaging>
-  <version>3.0.1-SNAPSHOT</version>
+  <version>3.1.0-SNAPSHOT</version>
   <name>secutils-cxf</name>
   <description>CXF integration library for UNICORE</description>
   <url>https://github.com/UNICORE-EU/secutils-cxf</url>
 
+  <parent>
+    <groupId>eu.unicore</groupId>
+    <artifactId>unicore-parent</artifactId>
+    <version>1.22</version>
+  </parent>
+
   <properties>
-    <cxf.version>3.3.1</cxf.version>
+    <cxf.version>3.3.8</cxf.version>
     <saaj.version>1.5.1</saaj.version>
     <jaxws.version>2.3.2</jaxws.version>
     <wss.version>2.2.2</wss.version>
     <jetty.version>9.4.31.v20200723</jetty.version>
     <httpclient.version>4.5.3</httpclient.version>
-    <seclib.version>5.0.0</seclib.version>
+    <seclib.version>5.1.0</seclib.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -54,7 +60,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.8.2</version>
+      <version>4.13.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -62,6 +68,48 @@
       <artifactId>jaxws-ri</artifactId>
       <version>${jaxws.version}</version>
       <type>pom</type>
+      <exclusions>
+	<exclusion>
+	  <groupId>com.sun.xml.ws</groupId>
+	  <artifactId>samples</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>com.sun.xml.ws</groupId>
+	  <artifactId>release-documentation</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>com.sun.xml.ws</groupId>
+	  <artifactId>jaxws-tools</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>com.sun.xml.ws</groupId>
+	  <artifactId>jaxws-eclipselink-plugin</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>com.sun.xml.ws</groupId>
+	  <artifactId>sdo-eclipselink-plugin</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>com.sun.xml.bind</groupId>
+	  <artifactId>jaxb-xjc</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>com.sun.xml.bind</groupId>
+	  <artifactId>jaxb-jxc</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>org.glassfish.jaxb</groupId>
+	  <artifactId>jaxb-xjc</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>org.glassfish.gmbal</groupId>
+	  <artifactId>gmbal</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>org.jboss.spec.javax.rmi</groupId>
+	  <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.sun.activation</groupId>
@@ -87,6 +135,12 @@
       <groupId>eu.unicore.security</groupId>
       <artifactId>securityLibrary</artifactId>
       <version>${seclib.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>xalan</artifactId>
+          <groupId>xalan</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
@@ -116,12 +170,13 @@
         </exclusion>
       </exclusions>
     </dependency>
-    <!-- needed by wss4j -->
+    <!-- use our patched version of xmlbeans that uses Saxon-HE 
+         and works with Java 8-->
     <dependency>
-      <groupId>xalan</groupId>
-      <artifactId>xalan</artifactId>
-      <version>2.7.1</version>
-    </dependency>
+      <groupId>org.apache.xmlbeans</groupId>
+      <artifactId>xmlbeans-jdk8</artifactId>
+      <version>2.6.0</version>
+    </dependency>	
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
@@ -138,15 +193,42 @@
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-frontend-jaxws</artifactId>
       <version>${cxf.version}</version>
+      <exclusions>
+	<exclusion>
+	  <groupId>org.glassfish.jaxb</groupId>
+	  <artifactId>jaxb-xjc</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>org.jboss.spec.javax.rmi</groupId>
+	  <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-transports-http</artifactId>
       <version>${cxf.version}</version>
+      <exclusions>
+	<exclusion>
+	  <groupId>org.jboss.spec.javax.rmi</groupId>
+	  <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-features-clustering</artifactId>
+      <version>${cxf.version}</version>
+      <exclusions>
+	<exclusion>
+	  <groupId>org.jboss.spec.javax.rmi</groupId>
+	  <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+	</exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-features-logging</artifactId>
       <version>${cxf.version}</version>
     </dependency>
   </dependencies>

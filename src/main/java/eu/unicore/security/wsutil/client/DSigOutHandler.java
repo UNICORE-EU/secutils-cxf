@@ -19,7 +19,7 @@ import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
 import org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor.SAAJOutEndingInterceptor;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.staxutils.StaxUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.apache.wss4j.common.WSEncryptionPart;
 import org.apache.wss4j.common.crypto.Crypto;
 import org.apache.wss4j.common.ext.WSSecurityException;

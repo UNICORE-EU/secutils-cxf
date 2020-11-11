@@ -14,7 +14,7 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.transport.Conduit;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transport.http.HTTPException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 
 import eu.unicore.util.Log;
 

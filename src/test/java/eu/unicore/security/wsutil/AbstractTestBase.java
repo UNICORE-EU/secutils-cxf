@@ -5,8 +5,6 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
-import junit.framework.TestCase;
-
 import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
 import org.apache.cxf.message.Message;
@@ -14,11 +12,10 @@ import org.apache.cxf.transport.servlet.CXFNonSpringServlet;
 
 import eu.emi.security.authn.x509.impl.KeystoreCertChainValidator;
 import eu.unicore.samly2.trust.TruststoreBasedSamlTrustChecker;
-import eu.unicore.security.wsutil.client.LogInMessageHandler;
-import eu.unicore.security.wsutil.client.LogOutMessageHandler;
 import eu.unicore.security.wsutil.client.UnicoreWSClientFactory;
 import eu.unicore.security.wsutil.client.WSClientFactory;
 import eu.unicore.util.httpclient.IClientConfiguration;
+import junit.framework.TestCase;
 
 /**
  * @author schuller
@@ -49,7 +46,6 @@ public abstract class AbstractTestBase extends TestCase
 		addHandlers(s);
 		factory.getOutInterceptors().add(new ConditionalGetServerOutHandler());
 		factory.getOutInterceptors().add(new SessionIDServerOutHandler());
-		factory.getOutInterceptors().add(new LogOutMessageHandler());
 		factory.create();
 	}
 
@@ -77,7 +73,6 @@ public abstract class AbstractTestBase extends TestCase
 		s.add(addHandler);
 		s.add(etdHandler);
 		s.add(sessionHandler);
-		s.add(new LogInMessageHandler());
 		s.add(new ConditionalGetServerInHandler());
 	}
 	

@@ -27,7 +27,7 @@ import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.staxutils.StaxUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.w3c.dom.Element;

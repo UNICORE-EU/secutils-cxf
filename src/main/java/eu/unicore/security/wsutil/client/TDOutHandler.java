@@ -21,7 +21,7 @@ import org.apache.cxf.headers.Header;
 import org.apache.cxf.message.MessageUtils;
 import org.apache.cxf.phase.Phase;
 import org.apache.cxf.staxutils.StaxUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
