@@ -10,13 +10,13 @@
   <url>https://github.com/UNICORE-EU/secutils-cxf</url>
 
   <properties>
-    <cxf.version>3.3.8</cxf.version>
+    <cxf.version>3.3.9</cxf.version>
     <saaj.version>1.5.1</saaj.version>
     <jaxws.version>2.3.2</jaxws.version>
     <wss.version>2.2.2</wss.version>
-    <jetty.version>9.4.31.v20200723</jetty.version>
+    <jetty.version>9.4.35.v20201120</jetty.version>
     <httpclient.version>4.5.3</httpclient.version>
-    <seclib.version>5.1.0</seclib.version>
+    <seclib.version>5.1.1</seclib.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -114,16 +114,19 @@
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
       <version>${jetty.version}</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlets</artifactId>
       <version>${jetty.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-rewrite</artifactId>
       <version>${jetty.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>eu.unicore.security</groupId>
@@ -232,7 +235,8 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.22.2</version>
         <configuration>
-          <forkMode>pertest</forkMode>
+          <forkCount>1</forkCount>
+          <reuseForks>false</reuseForks>
         </configuration>
       </plugin>
       <plugin>

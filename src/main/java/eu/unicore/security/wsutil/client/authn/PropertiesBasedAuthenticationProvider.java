@@ -15,6 +15,7 @@ import javax.security.auth.x500.X500Principal;
 import eu.emi.security.authn.x509.ValidationErrorListener;
 import eu.emi.security.authn.x509.X509CertChainValidatorExt;
 import eu.emi.security.authn.x509.helpers.BinaryCertChainValidator;
+import eu.unicore.security.canl.CredentialProperties;
 import eu.unicore.security.canl.DefaultAuthnAndTrustConfiguration;
 import eu.unicore.security.canl.LoggingStoreUpdateListener;
 import eu.unicore.security.canl.PasswordCallback;
@@ -91,7 +92,21 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 		copy.setProperty(ClientProperties.DEFAULT_PREFIX+
 				ClientProperties.PROP_MESSAGE_SIGNING_ENABLED, "false");
 
-		return new ClientProperties(copy, authAndTrust);
+		ClientProperties p = new ClientProperties(copy, authAndTrust);
+		setupValidationListener(p);
+		return p;
+	}
+
+	@Override
+	public DefaultClientConfiguration getClientConfiguration(String targetAddress,
+			String targetDn, DelegationSpecification delegate) throws Exception
+	{
+		ClientProperties sp=new ClientProperties(properties, truststorePasswordCallback,
+				TruststoreProperties.DEFAULT_PREFIX,
+				CredentialProperties.DEFAULT_PREFIX, ClientProperties.DEFAULT_PREFIX);
+		applyLocalDelegation(sp, targetDn, delegate);
+		setupValidationListener(sp);
+		return sp;
 	}
 
 	//workaround: use reflection to access possibly private Meta field
@@ -121,10 +136,16 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 		return ret.toString();
 	}
 
+	protected void setupValidationListener(DefaultClientConfiguration dcc) {
+		if(dcc.getValidator()!=null && validationErrorListener!=null) {
+			dcc.getValidator().addValidationListener(validationErrorListener);
+		}
+	}
+
 	protected void applyLocalDelegation(DefaultClientConfiguration sp, String targetDn, 
 			DelegationSpecification delegate)
 	{
-		if (delegate.isDelegate())
+		if (delegate!=null && delegate.isDelegate())
 		{
 			if (targetDn == null){
 					throw new IllegalArgumentException("When delegation is used the " +

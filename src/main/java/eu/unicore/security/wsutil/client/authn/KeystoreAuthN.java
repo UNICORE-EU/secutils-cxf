@@ -5,8 +5,6 @@ import java.util.Properties;
 import eu.unicore.security.canl.CredentialProperties;
 import eu.unicore.security.canl.PasswordCallback;
 import eu.unicore.security.canl.TruststoreProperties;
-import eu.unicore.util.httpclient.ClientProperties;
-import eu.unicore.util.httpclient.DefaultClientConfiguration;
 
 /**
  * Classic UNICORE 6 authentication method: local X.509 certificate is used, 
@@ -36,17 +34,6 @@ public class KeystoreAuthN extends PropertiesBasedAuthenticationProvider impleme
 	@Override
 	public String getDescription() {
 		return "Uses a local keystore and optional truststore file.";
-	}
-
-	@Override
-	public DefaultClientConfiguration getClientConfiguration(String targetAddress,
-			String targetDn, DelegationSpecification delegate) throws Exception
-	{
-		ClientProperties sp=new ClientProperties(properties, truststorePasswordCallback, 
-				TruststoreProperties.DEFAULT_PREFIX, 
-				CredentialProperties.DEFAULT_PREFIX, ClientProperties.DEFAULT_PREFIX);
-		applyLocalDelegation(sp, targetDn, delegate);
-		return sp;
 	}
 
 	@Override
