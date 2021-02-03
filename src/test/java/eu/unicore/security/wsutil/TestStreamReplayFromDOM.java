@@ -8,11 +8,11 @@ import java.io.FileInputStream;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamReader;
+import org.junit.Assert;
 import org.w3c.dom.Document;
 
 import eu.unicore.security.dsig.StandaloneCanonizer;
