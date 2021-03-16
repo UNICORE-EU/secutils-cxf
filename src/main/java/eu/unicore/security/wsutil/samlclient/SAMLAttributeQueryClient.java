@@ -15,6 +15,10 @@ import java.util.Set;
 
 import javax.xml.ws.soap.SOAPFaultException;
 
+import org.apache.logging.log4j.Logger;
+
+import eu.emi.security.authn.x509.X509Credential;
+import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.assertion.AttributeAssertionParser;
 import eu.unicore.samly2.elements.NameID;
 import eu.unicore.samly2.elements.SAMLAttribute;
@@ -23,11 +27,14 @@ import eu.unicore.samly2.exceptions.SAMLResponderException;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.proto.AttributeQuery;
 import eu.unicore.samly2.trust.PKISamlTrustChecker;
+import eu.unicore.samly2.trust.SamlTrustChecker;
 import eu.unicore.samly2.validators.AssertionValidator;
 import eu.unicore.samly2.validators.AttributeAssertionResponseValidator;
 import eu.unicore.samly2.webservice.SAMLQueryInterface;
+import eu.unicore.security.dsig.DSigException;
+import eu.unicore.security.dsig.DigSignatureUtil;
+import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.IClientConfiguration;
-
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
@@ -51,33 +58,54 @@ import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
  */
 public class SAMLAttributeQueryClient extends AbstractSAMLClient
 {
+	protected static final Logger logger = Log.getLogger(Log.CLIENT, SAMLAttributeQueryClient.class);
+	
 	private SAMLQueryInterface queryProxy;
 
 	
-	public SAMLAttributeQueryClient(String address, IClientConfiguration clientConfiguration) 
-		throws MalformedURLException
+	public SAMLAttributeQueryClient(String address, IClientConfiguration clientConfiguration)
+			throws MalformedURLException
 	{
-		super(address, clientConfiguration, new PKISamlTrustChecker(clientConfiguration.getValidator(), true));
-		queryProxy = factory.createPlainWSProxy(SAMLQueryInterface.class, address);
+		this(address, clientConfiguration, new PKISamlTrustChecker(clientConfiguration.getValidator(), true));
+
 	}
-	
+
+	public SAMLAttributeQueryClient(String address, IClientConfiguration clientConfiguration,
+			SamlTrustChecker trustChecker) throws MalformedURLException
+	{
+		super(address, clientConfiguration, trustChecker);
+		queryProxy = factory.createPlainWSProxy(SAMLQueryInterface.class, address);
+
+	}
+
 	public AttributeAssertionParser getAssertion(NameID whose, NameID requesterSamlName) throws SAMLValidationException
 	{
-		return getAssertionGeneric(whose, requesterSamlName, null);
+		return getAssertionGeneric(whose, requesterSamlName, null, false, null);
 	}
 
 	public AttributeAssertionParser getAssertion(NameID whose, NameID requesterSamlName, SAMLAttribute attribute) 
 			throws SAMLValidationException
 	{
-		return getAssertionGeneric(whose, requesterSamlName, Collections.singleton(attribute));
+		return getAssertionGeneric(whose, requesterSamlName, Collections.singleton(attribute), false, null);
 	}
 
 	public AttributeAssertionParser getAssertion(NameID whose, NameID requesterSamlName, Set<SAMLAttribute> attributes) 
 			throws SAMLValidationException
 	{
-		return getAssertionGeneric(whose, requesterSamlName, attributes);
+		return getAssertionGeneric(whose, requesterSamlName, attributes, false, null);
 	}
 
+	public AttributeAssertionParser getAssertion(NameID whose, NameID requesterSamlName, boolean sign,
+			X509Credential credential) throws SAMLValidationException
+	{
+		return getAssertionGeneric(whose, requesterSamlName, null, sign, credential);
+	}
+	
+	public ResponseDocument getRawAssertion(NameID whose, NameID requesterSamlName, Set<SAMLAttribute> attributes,
+			boolean sign, X509Credential credential) throws SAMLValidationException
+	{
+		return performRawSAMLQuery(prepareQuery(whose, requesterSamlName, attributes, sign, credential));
+	}
 	
 	/*-********************************************************
 	 * INTERNAL methods 
@@ -90,44 +118,63 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 	 * @param attributes
 	 * @throws SAMLValidationException
 	 */
-	protected AttributeAssertionParser getAssertionGeneric(NameID whose, NameID requesterSamlName, 
-			Set<SAMLAttribute> attributes) throws SAMLValidationException
+	protected AttributeAssertionParser getAssertionGeneric(NameID whose, NameID requesterSamlName,
+			Set<SAMLAttribute> attributes, boolean sign, X509Credential credential)
+			throws SAMLValidationException
+	{
+		return performSAMLQuery(prepareQuery(whose, requesterSamlName, attributes, sign, credential), credential);
+	}
+	
+	private AttributeQuery prepareQuery(NameID whose, NameID requesterSamlName, Set<SAMLAttribute> attributes,
+			boolean sign, X509Credential credential) throws SAMLValidationException
 	{
 		AttributeQuery attrQuery = createQuery(whose, requesterSamlName);
 		if (attributes != null && attributes.size() > 0)
 			attrQuery.setAttributes(attributes.toArray(new SAMLAttribute[attributes.size()]));
-		return performSAMLQuery(attrQuery);
+		if (sign && credential != null)
+		{
+			try
+			{
+				attrQuery.sign(credential.getKey(), credential.getCertificateChain());
+			} catch (Exception e)
+			{
+				throw new SAMLValidationException("Can't sign request", e);
+			}
+		}
+
+		try
+		{
+			logger.trace("Attribute query document: " + DigSignatureUtil
+					.dumpDOMToString(SAMLUtils.getDOM(attrQuery.getXMLBeanDoc())));
+		} catch (DSigException e)
+		{
+			logger.error("Can not dump query document to log");
+		}
+		return attrQuery;
 	}
-	
-	
 	/**
 	 * Performs a SAML query using a provided AttributeQUery argument. 
 	 * Response is parsed and validated.
 	 *  
 	 * @param attrQuery what to query for
+	 * @param credential for assertion decryption
 	 * @return parsed and verified assertion
 	 * @throws SAMLValidationException
 	 */
-	protected AttributeAssertionParser performSAMLQuery(AttributeQuery attrQuery)
+	protected AttributeAssertionParser performSAMLQuery(AttributeQuery attrQuery, X509Credential credential)
 			throws SAMLValidationException
 	{
-		ResponseDocument xmlRespDoc;
+		ResponseDocument xmlRespDoc = performRawSAMLQuery(attrQuery);
 
-		try
-		{
-			xmlRespDoc = queryProxy.attributeQuery(attrQuery.getXMLBeanDoc());
-		} catch (SOAPFaultException e)
-		{
-			throw new SAMLResponderException("SAML service invocation failed: " + e.getMessage(), e);
-		}
-		
 		AttributeAssertionResponseValidator validator = new AttributeAssertionResponseValidator(
 				null, 
 				null, 
 				null, //no we don't want to check 'inResponseTo'
 				AssertionValidator.DEFAULT_VALIDITY_GRACE_PERIOD, 
 				trustChecker, 
-				attrQuery.getXMLBean().getSubject().getNameID());
+				attrQuery.getXMLBean().getSubject().getNameID(),
+				//support assertion decryption
+				credential == null ? null : credential.getKey());
 		validator.validate(xmlRespDoc);
 		
 		List<AssertionDocument> assertions = validator.getAttributeAssertions();
@@ -143,7 +190,23 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 
 		return new AttributeAssertionParser(assertion);
 	}
+	
+	protected ResponseDocument performRawSAMLQuery(AttributeQuery attrQuery)
+			throws SAMLValidationException
+	{
+		ResponseDocument xmlRespDoc;
 
+		try
+		{
+			xmlRespDoc = queryProxy.attributeQuery(attrQuery.getXMLBeanDoc());
+		} catch (SOAPFaultException e)
+		{
+			throw new SAMLResponderException("SAML service invocation failed: " + e.getMessage(), e);
+		}
+		
+		return xmlRespDoc;
+	}
+	
 	protected AttributeQuery createQuery(NameID whose, NameID requesterSamlName) throws SAMLValidationException
 	{
 		NameIDType subjectN = whose.getXBean();
@@ -154,5 +217,11 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 			throw new SAMLValidationException("No SAML issuer was given and it is not " +
 					"possible to generate one as local credential is missing.");
 		return new AttributeQuery(requesterSamlName.getXBean(), subject.getXBean());
+	}
+	
+
+	public void setQueryProxy(SAMLQueryInterface queryProxy)
+	{
+		this.queryProxy = queryProxy;
 	}
 }
