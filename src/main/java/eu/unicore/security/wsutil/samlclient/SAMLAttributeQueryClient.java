@@ -100,7 +100,7 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 	{
 		return getAssertionGeneric(whose, requesterSamlName, null, sign, credential);
 	}
-	
+
 	public ResponseDocument getRawAssertion(NameID whose, NameID requesterSamlName, Set<SAMLAttribute> attributes,
 			boolean sign, X509Credential credential) throws SAMLValidationException
 	{
@@ -116,13 +116,16 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 	 * @param whose
 	 * @param requesterSamlName
 	 * @param attributes
+	 * @param sign 
+	 * @param credential for sign assertion if needed
 	 * @throws SAMLValidationException
 	 */
 	protected AttributeAssertionParser getAssertionGeneric(NameID whose, NameID requesterSamlName,
 			Set<SAMLAttribute> attributes, boolean sign, X509Credential credential)
 			throws SAMLValidationException
 	{
-		return performSAMLQuery(prepareQuery(whose, requesterSamlName, attributes, sign, credential), credential);
+		return performSAMLQuery(prepareQuery(whose, requesterSamlName, attributes, sign, credential),
+				credential);
 	}
 	
 	private AttributeQuery prepareQuery(NameID whose, NameID requesterSamlName, Set<SAMLAttribute> attributes,
@@ -191,8 +194,15 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 		return new AttributeAssertionParser(assertion);
 	}
 	
-	protected ResponseDocument performRawSAMLQuery(AttributeQuery attrQuery)
-			throws SAMLValidationException
+	/**
+	 * Performs a SAML query using a provided AttributeQUery argument.
+	 * Response is not parsed and validated.
+	 * 
+	 * @param attrQuery
+	 * @return
+	 * @throws SAMLValidationException
+	 */
+	protected ResponseDocument performRawSAMLQuery(AttributeQuery attrQuery) throws SAMLValidationException
 	{
 		ResponseDocument xmlRespDoc;
 
@@ -203,10 +213,10 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 		{
 			throw new SAMLResponderException("SAML service invocation failed: " + e.getMessage(), e);
 		}
-		
+
 		return xmlRespDoc;
 	}
-	
+
 	protected AttributeQuery createQuery(NameID whose, NameID requesterSamlName) throws SAMLValidationException
 	{
 		NameIDType subjectN = whose.getXBean();
