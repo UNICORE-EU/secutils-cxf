@@ -20,6 +20,7 @@ import eu.unicore.samly2.assertion.AttributeAssertionParser;
 import eu.unicore.samly2.elements.NameID;
 import eu.unicore.samly2.exceptions.SAMLResponderException;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
+import eu.unicore.samly2.messages.XMLExpandedMessage;
 import eu.unicore.samly2.proto.AuthnRequest;
 import eu.unicore.samly2.trust.PKISamlTrustChecker;
 import eu.unicore.samly2.validators.AssertionValidator;
@@ -175,7 +176,7 @@ public class SAMLAuthnClient extends AbstractSAMLClient
 				trustChecker,
 				null, //replay checking not needed for direct connection
 				SAMLBindings.SOAP);
-		validator.validate(xmlRespDoc);
+		validator.validate(xmlRespDoc, new XMLExpandedMessage(xmlRespDoc, xmlRespDoc.getResponse()));
 		
 		List<AssertionDocument> authnAssertionsXml = validator.getAuthNAssertions();
 		List<AssertionParser> authAssertions = new ArrayList<AssertionParser>(authnAssertionsXml.size());
