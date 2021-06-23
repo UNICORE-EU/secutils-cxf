@@ -127,7 +127,7 @@ public class UnicoreWSClientFactory extends WSClientFactory
 					Class<? extends Interceptor<? extends Message>> clazz=loadClass(className);
 					Interceptor<? extends Message> h=(Interceptor<? extends Message>)clazz.getConstructor().newInstance();
 					list.add(h);
-					logger.debug("Sucessfully added security handler <"+className+">");
+					logger.debug("Sucessfully added security handler <{}>", className);
 				}catch(Exception e){
 					logger.error("Could not setup security handler <"+className+"!", e);
 				}

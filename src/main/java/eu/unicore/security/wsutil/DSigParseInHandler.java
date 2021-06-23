@@ -104,7 +104,7 @@ public class DSigParseInHandler extends AbstractSoapInterceptor
 		message.setContent(XMLStreamReader.class,replayStream);
 		message.put(DOCUMENT_DOM_KEY, doc);
 		long stop = System.currentTimeMillis();
-		logger.debug("DOM creation time: " + (stop-start));
+		logger.debug("DOM creation time: {}", (stop-start));
 	}
 
 }

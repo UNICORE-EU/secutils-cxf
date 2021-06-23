@@ -10,13 +10,13 @@
   <url>https://github.com/UNICORE-EU/secutils-cxf</url>
 
   <properties>
-    <cxf.version>3.3.9</cxf.version>
+    <cxf.version>3.4.4</cxf.version>
     <saaj.version>1.5.1</saaj.version>
     <jaxws.version>2.3.2</jaxws.version>
     <wss.version>2.2.2</wss.version>
     <jetty.version>9.4.41.v20210516</jetty.version>
     <httpclient.version>4.5.13</httpclient.version>
-    <seclib.version>5.3.0</seclib.version>
+    <seclib.version>5.3.1</seclib.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -45,8 +45,8 @@
     <developer>
       <name>Bernd Schuller</name>
       <email>bschuller at users.sourceforge.net</email>
-      <organization>Research Center Juelich</organization>
-      <organizationUrl>http://www.fz-juelich.de/jsc</organizationUrl>
+      <organization>Forschungszentrum Juelich GmbH</organization>
+      <organizationUrl>https://www.fz-juelich.de/jsc</organizationUrl>
     </developer>
   </developers>
 
@@ -127,6 +127,11 @@
       <artifactId>jetty-rewrite</artifactId>
       <version>${jetty.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.santuario</groupId>
+      <artifactId>xmlsec</artifactId>
+      <version>2.2.2</version>
     </dependency>
     <dependency>
       <groupId>eu.unicore.security</groupId>

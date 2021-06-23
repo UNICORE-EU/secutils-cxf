@@ -154,8 +154,7 @@ public class ETDInHandler extends AbstractSoapInterceptor
 		String consignor = securityTokens.getConsignorName();
 		if (consignor == null)
 		{
-			logger.debug("No CONSIGNOR information present (it means that request wasn't " +
-				"authenticated!). Trust Delegations won't be further processed.");
+			logger.debug("No CONSIGNOR information present (it means that request wasn't authenticated!). Trust Delegations won't be further processed.");
 			return;
 		}
 		
@@ -179,9 +178,8 @@ public class ETDInHandler extends AbstractSoapInterceptor
 				securityTokens.setUserName(consignor);
 			} else
 			{
-				logger.warn("Got request with User set to " + 
-						X500NameUtils.getReadableForm(securityTokens.getUserName()) + 
-						" without a TD! Consignor is " + 
+				logger.warn("Got request with User set to {} without a TD! Consignor is {}",
+						X500NameUtils.getReadableForm(securityTokens.getUserName()),
 						X500NameUtils.getReadableForm(consignor));
 			}
 			return;
@@ -197,9 +195,10 @@ public class ETDInHandler extends AbstractSoapInterceptor
 			{
 				logger.warn("Trust delegation is present but its custodian " +
 						"differ from the requested user. Trust delegation tokens won't " +
-						"be verified and delegation status is set to invalid. TD Custodian: " + 
-						X500NameUtils.getReadableForm(etdCustodianName) + " Requested user: " + 
-						X500NameUtils.getReadableForm(requestedUser));
+						"be verified and delegation status is set to invalid. TD Custodian: {}" + 
+						 " Requested user: {}",
+						 X500NameUtils.getReadableForm(etdCustodianName), 
+						 X500NameUtils.getReadableForm(requestedUser));
 				return;
 			}
 		} else
@@ -239,10 +238,8 @@ public class ETDInHandler extends AbstractSoapInterceptor
 			throws TrustDelegationException
 	{
 		String userName=securityTokens.getUserName();
-		if(logger.isDebugEnabled()){
-			logger.debug("Checking trust delegation, expected custodian is <"
-					+ X500NameUtils.getReadableForm(userName)+">");
-		}
+		logger.debug("Checking trust delegation, expected custodian is <{}>",
+					()->X500NameUtils.getReadableForm(userName));
 		String consignor = securityTokens.getConsignorName();
 
 		//now really check the SAML stuff
@@ -261,9 +258,8 @@ public class ETDInHandler extends AbstractSoapInterceptor
 						ProxyUtils.getEndUserCertificate(etdInitialIssuerCC)});
 			}
 		}
-		if (logger.isDebugEnabled())
-			logger.debug("Final SecurityTokens after ETD processing:\n" + 
-					securityTokens.toString());
+		logger.debug("Final SecurityTokens after ETD processing:\n{}", 
+					()->securityTokens.toString());
 	}
 
 	/**
@@ -311,13 +307,12 @@ public class ETDInHandler extends AbstractSoapInterceptor
 		String delegationTarget = td.get(td.size()-1).getSubjectName();
 		if(logger.isDebugEnabled())
 		{
-			logger.debug("Got TD to <"+delegationTarget+">, dumping the TD chain");
+			logger.debug("Got TD to <{}>, dumping the TD chain", delegationTarget);
 			int i = 0;
 			for(TrustDelegation t: td)
 			{
-				logger.debug("(Entry " + i++ + ") issuer: " + t.getIssuerName()
-						+ " receiver: " + t.getSubjectName() +
-						" custodian: " + t.getCustodianDN());
+				logger.debug("(Entry {}) issuer: {} receiver: {} custodian: {}",
+						i, t.getIssuerName(), t.getSubjectName(), t.getCustodianDN());
 			}
 		}
 		ETDApi etd = UnicoreSecurityFactory.getETDEngine();
@@ -325,18 +320,15 @@ public class ETDInHandler extends AbstractSoapInterceptor
 		if (trustedDelegationIssuers != null)
 			Collections.addAll(trustedIssuers, trustedDelegationIssuers.getTrustedIssuers());
 		ValidationResult res = etd.isTrustDelegated(td, delegationTarget, user, validator, trustedIssuers);
-		if(logger.isDebugEnabled()){
-			logger.debug("Validation of supplied TD result: " + res.isValid());
-		}
+		logger.debug("Validation of supplied TD result: {}", res.isValid());
 		if (res.isValid())
 		{
 			return true;
 		}
 		else
 		{
-			logger.warn("Unsuccessful TD validation (" + 
-						user + " to " + delegationTarget +"), reason: " + 
-						res.getInvalidResaon());
+			logger.warn("Unsuccessful TD validation ({} to {}), reason: {}",
+						user, delegationTarget, res.getInvalidResaon());
 			return false;
 		}
 

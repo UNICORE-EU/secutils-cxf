@@ -170,7 +170,7 @@ public class WSClientFactory {
 		JaxWsProxyFactoryBean factory=new JaxWsProxyFactoryBean();
 		factory.setAddress(url);
 		AbstractDataBinding binding=getBinding(iFace);
-		logger.debug("Using databinding "+binding.getClass().getName());
+		logger.debug("Using databinding {}", binding.getClass().getName());
 		factory.setDataBinding(binding);
 		T proxy=factory.create(iFace);
 		doAddHandlers(proxy);

@@ -83,7 +83,7 @@ public class ExtendedTDOutHandler extends TDOutHandler
 				throw new RuntimeException("Error setting up (extended) TD chain", dse);
 			}
 		}
-		logger.debug("Initialised TD Outhandler, TD chain length = "+assertionList.size());
+		logger.debug("Initialised TD Outhandler, TD chain length = {}", assertionList.size());
 
 		String requestedUser = sec.getRequestedUser();
 		if (requestedUser == null)
@@ -116,8 +116,7 @@ public class ExtendedTDOutHandler extends TDOutHandler
 	}
 
 	private void setupExtendedAssertionList(IClientConfiguration config)
-			throws DSigException, InconsistentTDChainException
-			{
+			throws DSigException, InconsistentTDChainException {
 		ETDClientSettings sec = config.getETDSettings();
 		X509Certificate[] issuer = sec.getIssuerCertificateChain();
 
@@ -144,13 +143,9 @@ public class ExtendedTDOutHandler extends TDOutHandler
 			else{
 				assertionList=extendAssertion(assertionList, issuer, pk, receiverName, restrictions);
 			}
-
-			if(logger.isDebugEnabled()){
-				logger.debug("Initialised trust delegation to receiver <" +
-						X500NameUtils.getReadableForm(receiverName)+">");
-			}
+			logger.debug("Initialised trust delegation to receiver <{}>",X500NameUtils.getReadableForm(receiverName));
 		}
-			}
+	}
 
 	private boolean needCustomUserAssertion(ETDClientSettings sec){
 		return sec!=null && (sec.getRequestedUserAttributes2().size() > 0);
@@ -191,11 +186,11 @@ public class ExtendedTDOutHandler extends TDOutHandler
 		int l=tdList.size();
 		String lastReceiver=tdList.get(l-1).getSubjectName();
 		if(receiver.equals(lastReceiver)){
-			logger.debug("TD chain already includes receiver <"+receiver+">");
+			logger.debug("TD chain already includes receiver <{}>", receiver);
 			return tdList;
 		}
 
-		logger.debug("Extending TD chain to receiver <"+receiver+">");
+		logger.debug("Extending TD chain to receiver <{}>", receiver);
 		ETDApi engine = UnicoreSecurityFactory.getETDEngine();
 		return engine.issueChainedTD(tdList,
 				issuer, 

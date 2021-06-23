@@ -187,14 +187,14 @@ public class DSigOutHandler extends AbstractSoapInterceptor
 		
 		if(logger.isDebugEnabled()){
 			long end = System.currentTimeMillis();
-			logger.debug("Signed outgoing message, processing time: " + (end-start));
+			logger.debug("Signed outgoing message, processing time: {}", (end-start));
 			if(logger.isTraceEnabled())
 			{
 				try 
 				{
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
 					StaxUtils.writeTo(docToSign.getDocumentElement(), bos);
-					logger.trace("Signed message:\n" + bos.toString());
+					logger.trace("Signed message:\n{}", bos.toString());
 				} catch (XMLStreamException e)
 				{
 					logger.fatal("Can not dump signed message to log it", e);

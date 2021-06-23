@@ -101,8 +101,7 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 		Document doc = (Document) message.get(DSigParseInHandler.DOCUMENT_DOM_KEY);
 		if (doc == null)
 		{
-			logger.debug("No DOM representation of message found, " +
-					"signature won't be checked");
+			logger.debug("No DOM representation of message found, signature won't be checked");
 			return;
 		}
 
@@ -110,8 +109,7 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 
 		if (wssHeader == null)
 		{
-			logger.debug("No security header element found, " +
-					"skipping signature verification.");
+			logger.debug("No security header element found, skipping signature verification.");
 			securityTokens.setMessageSignatureStatus(SignatureStatus.UNSIGNED);
 			return;
 		}
@@ -120,8 +118,7 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 		
 		if (getChildElements(secHeader,XML_DS_STRING,"Signature").size()==0)
 		{
-			logger.debug("No Signature was found in header, " +
-					"skipping signature verification.");
+			logger.debug("No Signature was found in header, skipping signature verification.");
 			securityTokens.setMessageSignatureStatus(SignatureStatus.UNSIGNED);
 			return;
 		}
@@ -131,8 +128,7 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 			verify(securityTokens, doc, secHeader);
 		} catch (Exception e)
 		{
-			logger.warn("Error while checking signature of request: " + e + 
-					"\n" + e.getCause());
+			logger.warn("Error while checking signature of request: ", e);
 			securityTokens.setMessageSignatureStatus(SignatureStatus.WRONG);
 			return;
 		}
@@ -151,8 +147,7 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 		X509Certificate[] consignorCC = securityTokens.getConsignor();
 		if (consignorCC == null || consignorCC.length == 0)
 		{
-			logger.debug("No consignor found in security context so" +
-					" skipping signature verification.");
+			logger.debug("No consignor found in security context so skipping signature verification.");
 			return;
 		}
 		X509Certificate consignorCert = consignorCC[0];
@@ -167,8 +162,7 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 			signedOK = verifySignature(doc, consignorsKey);
 		} catch (Exception e)
 		{
-			logger.warn("Error while checking signature of request: " + e + 
-					"\n" + e.getCause());
+			logger.warn("Error while checking signature of request: ", e);
 			securityTokens.setMessageSignatureStatus(SignatureStatus.WRONG);
 			return;
 		}
@@ -182,8 +176,7 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 			securityTokens.setMessageSignatureStatus(SignatureStatus.WRONG);
 		}
 		long end = System.currentTimeMillis();
-		logger.debug("Total time: " + (end-start) + " where actual verification was: " + 
-				(end-preVerify));
+		logger.debug("Total time: {} where actual verification was: {}", (end-start), (end-preVerify));
 	}
 
 	private boolean verifySignature(Document signedDocument, PublicKey validatingKey) 
@@ -245,7 +238,7 @@ public class DSigSecurityInHandler extends AbstractSoapInterceptor
 		List<org.w3c.dom.Element> ret = new ArrayList<org.w3c.dom.Element>();
 		for (WSEncryptionPart part: shallBeSigned)
 		{
-			logger.trace("Required part: " + part.getName());
+			logger.trace("Required part: {}", part.getName());
 			NodeList nl = signedDocument.getElementsByTagNameNS(
 					part.getNamespace(), part.getName());
 			//no such element in document so it can't be signed.

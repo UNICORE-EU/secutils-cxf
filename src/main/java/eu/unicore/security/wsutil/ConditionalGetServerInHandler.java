@@ -95,13 +95,9 @@ public class ConditionalGetServerInHandler extends AbstractSoapInterceptor
 
 		Element imsEl=DOMUtils.getFirstChildWithName(hdr,imsQName);
 		String ims= imsEl!=null? imsEl.getTextContent() : null; 
-
-		if(logger.isDebugEnabled()){
-			logger.debug("Extracted IfNoneMatch="+inm + " IfModifiedSince="+ims);		
-		}
+		logger.debug("Extracted IfNoneMatch={} IfModifiedSince={}", inm, ims);		
 		etag.set(inm);
 		lastModified.set(ims);
-
 	}
 
 	/**

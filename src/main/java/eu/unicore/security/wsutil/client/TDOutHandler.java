@@ -163,8 +163,7 @@ public class TDOutHandler extends AbstractSoapInterceptor {
 					Element elem = StaxUtils.read(is).getDocumentElement();
 					assertionListDOM.add(elem);
 				}
-				logger.debug("Initialised TD Outhandler with " +
-						"TD chain of length = " + assertionList.size());
+				logger.debug("Initialised TD Outhandler with TD chain of length = {}", assertionList.size());
 			} catch(Exception e)
 			{
 				logger.warn("Can't create JDOM representation of TD assertion.",e);

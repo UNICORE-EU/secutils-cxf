@@ -63,8 +63,11 @@ public class SecuritySessionCreateInHandler extends AbstractSoapInterceptor
 		if(Boolean.TRUE.equals(securityTokens.getContext().get(SecuritySessionUtils.REUSED_MARKER_KEY))){
 			return;
 		}
-		
-		createSession(securityTokens);
+		if(securityTokens.getEffectiveUserName()!=null) {
+			createSession(securityTokens);
+		}else {
+			SessionIDServerOutHandler.clear();
+		}
 	}
 
 	/**

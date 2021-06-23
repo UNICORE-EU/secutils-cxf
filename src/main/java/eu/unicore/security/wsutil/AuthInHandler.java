@@ -240,9 +240,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			mainToken.getContext().put(SecuritySessionUtils.REUSED_MARKER_KEY, Boolean.TRUE);
 			// make sure session info goes to the client
 			SessionIDServerOutHandler.setSession(session);
-			if(logger.isDebugEnabled()){
-				logger.debug("Re-using session "+sessionID+" for <"+session.getUserKey()+">");
-			}
+			logger.debug("Re-using session {} for <{}>", sessionID, session.getUserKey());
 		}
 		ctx.put(SecurityTokens.KEY, mainToken);
 	}
@@ -281,7 +279,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			// OAuth token
 			String bearer = CXFUtils.getBearerToken(ctx);
 			if(bearer != null){
-				if(logger.isDebugEnabled())logger.debug("Have OAuth bearer token.");
+				logger.debug("Have OAuth bearer token.");
 				mainToken.getContext().put(OAuthBearerTokenOutInterceptor.TOKEN_KEY, bearer);
 			}
 		}
@@ -382,16 +380,12 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		{
 			String userName = userA.getSubjectName();
 			mainToken.setUserName(userName);
-			if (logger.isDebugEnabled())
-				logger.debug("Requested USER (retrieved as a DN): " + 
-						X500NameUtils.getReadableForm(userName));
+			logger.debug("Requested USER (retrieved as a DN): {}", ()->X500NameUtils.getReadableForm(userName));
 		} else
 		{
 			mainToken.setUser(user);
-			if (logger.isDebugEnabled())
-				logger.debug("Requested USER (retrieved as a full certificate): " +
-						CertificateUtils.format(
-							user[0], FormatMode.COMPACT_ONE_LINE));
+			logger.debug("Requested USER (retrieved as a full certificate): {}",
+					()->CertificateUtils.format(user[0], FormatMode.COMPACT_ONE_LINE));
 		}
 
 		//extract any additional attributes and process them
@@ -466,7 +460,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		try
 		{
 			readableDn = X500NameUtils.getReadableForm(consignorDn);
-			logger.debug("Using consignor info from SAML authentication assertion: " + readableDn);
+			logger.debug("Using consignor info from SAML authentication assertion: {}", readableDn);
 		} catch (Exception e)
 		{
 			Log.logException("Invalid DN in SAML authn assertion", e, logger);
@@ -480,8 +474,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	protected void processConsignor(ConsignorAssertion cAssertion, SecurityTokens mainToken, SoapMessage message)
 	{
 		if (cAssertion == null && useGatewayAssertions)
-			logger.debug("No consignor info in request -> " +
-			"request didn't come through a gateway");
+			logger.debug("No consignor info in request -> request didn't come through a gateway");
 		X509Certificate[] consignor = null;
 		String clientIP = null;
 		
@@ -502,9 +495,8 @@ public class AuthInHandler extends AbstractSoapInterceptor
 				logger.debug("Using consignor info from SSL connection.");
 		}
 
-		if (logger.isDebugEnabled() && consignor != null)
-			logger.debug("Consignor: " + X500NameUtils.getReadableForm(
-					consignor[0].getSubjectX500Principal()));
+		if (consignor != null)
+			logger.debug("Consignor: {}", X500NameUtils.getReadableForm(consignor[0].getSubjectX500Principal()));
 		if (consignor == null)
 			logger.debug("No valid Consignor info received, request is not authenticated.");
 		else
@@ -637,8 +629,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			return ca;
 		} catch (Exception e)
 		{
-			logger.debug("The first assertion is not a valid CONSIGNOR " +
-					"assertion, ignoring: "	+ e.getMessage());
+			logger.debug("The first assertion is not a valid CONSIGNOR assertion, ignoring: {}", e.getMessage());
 			return null;
 		}
 	}
@@ -665,11 +656,8 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			{
 				String subject = (cert == null || cert.length == 0) ? "null" : 
 					X500NameUtils.getReadableForm(cert[0].getSubjectX500Principal());
-				logger.warn("Consignor assertion is "
-						+ "invalid (probably FAKED): "
-						+ res.getInvalidResaon()
-						+ ", inserted consignor was: "
-						+ subject);
+				logger.warn("Consignor assertion is invalid (probably FAKED): {}, inserted consignor was: {}",
+						res.getInvalidResaon(), subject);
 				return null;
 			}
 			logger.debug("Successfully verified consignor assertion.");
@@ -692,8 +680,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			return userA;
 		} catch (Exception e)
 		{
-			logger.warn("The USER assertion is invalid, ignoring: "
-					+ e.getMessage());
+			logger.warn("The USER assertion is invalid, ignoring: {}", e.getMessage());
 			return null;
 		}
 	}	
@@ -709,8 +696,8 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	protected String getSOAPAction(SoapMessage message){
 		String action=CXFUtils.getAction(message);
 				
-		if (logger.isDebugEnabled() && action != null){
-			logger.debug("Setting SOAP action to '" + action + "'");
+		if (action != null){
+			logger.debug("Setting SOAP action to '{}'", action);
 		}
 		return action;
 	}
@@ -718,7 +705,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	
 	protected void throwFault(int httpErrorCode, String message)
 	{
-		logger.debug("AuthN failed: " + message);
+		logger.debug("AuthN failed: {}", message);
 		Fault f = new Fault((Throwable)null); // null is OK
 		f.setStatusCode(httpErrorCode); // unassigned according to IANA ;)
 		f.setMessage(message);

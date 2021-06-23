@@ -69,8 +69,8 @@ public class JsonSecuritySessionPersistence implements SecuritySessionPersistenc
 					}finally{
 						writer.close();
 					}
-					logger.debug("Stored <"+sessions.size()+"> security session ID(s) to <"+
-							sessionIDFile.getAbsolutePath());
+					logger.debug("Stored <{}> security session ID(s) to <{}>",
+							sessions.size(), sessionIDFile.getAbsolutePath());
 				}
 			}
 		}catch(JSONException e){
@@ -96,11 +96,10 @@ public class JsonSecuritySessionPersistence implements SecuritySessionPersistenc
 					String sessionID=info.getString("sessionID");
 					Long lifetime = info.optLong("expiry",-1);
 					if(lifetime!=null && lifetime<System.currentTimeMillis()){
-						if(logger.isDebugEnabled())logger.debug("Session for "+serverID+" expired");
+						logger.debug("Session for {} expired", serverID);
 						continue;
 					}
-					if (logger.isDebugEnabled())
-						logger.debug("Re-adding session for " + serverID + " id " + sessionID);
+					logger.debug("Re-adding session for {} id {}", serverID, sessionID);
 					ClientSecuritySession s = new ClientSecuritySession(sessionID, lifetime, 
 							hash, serverID);
 					sessionProvider.addSession(s);
@@ -108,8 +107,8 @@ public class JsonSecuritySessionPersistence implements SecuritySessionPersistenc
 			}catch(JSONException e){
 				// ignore
 			}
-			logger.debug("Loaded <"+sessionProvider.getAllSessions().size() +
-					"> security session ID(s) from <" + sessionIDFile.getAbsolutePath());
+			logger.debug("Loaded <{}> security session ID(s) from <{}>",
+					sessionProvider.getAllSessions().size(), sessionIDFile.getAbsolutePath());
 		}
 	}
 }
