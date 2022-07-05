@@ -15,7 +15,7 @@
     <wss.version>2.2.2</wss.version>
     <jetty.version>9.4.48.v20220622</jetty.version>
     <httpclient.version>4.5.13</httpclient.version>
-    <seclib.version>5.3.7-SNAPSHOT</seclib.version>
+    <seclib.version>5.3.6</seclib.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
