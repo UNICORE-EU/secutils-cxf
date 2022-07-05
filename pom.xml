@@ -11,12 +11,11 @@
 
   <properties>
     <cxf.version>3.5.3</cxf.version>
-    <saaj.version>1.5.1</saaj.version>
     <jaxws.version>2.3.2</jaxws.version>
     <wss.version>2.2.2</wss.version>
     <jetty.version>9.4.48.v20220622</jetty.version>
     <httpclient.version>4.5.13</httpclient.version>
-    <seclib.version>5.3.6</seclib.version>
+    <seclib.version>5.3.7-SNAPSHOT</seclib.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -170,15 +169,10 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20090211</version>
+      <version>20220320</version>
     </dependency>
     
     <!-- cxf stuff -->
-    <dependency>
-      <groupId>com.sun.xml.messaging.saaj</groupId>
-      <artifactId>saaj-impl</artifactId>
-      <version>${saaj.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.apache.cxf</groupId>
       <artifactId>cxf-rt-frontend-jaxws</artifactId>

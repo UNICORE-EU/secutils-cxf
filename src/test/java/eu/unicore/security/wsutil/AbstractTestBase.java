@@ -12,7 +12,6 @@ import org.apache.cxf.transport.servlet.CXFNonSpringServlet;
 
 import eu.emi.security.authn.x509.impl.KeystoreCertChainValidator;
 import eu.unicore.samly2.trust.TruststoreBasedSamlTrustChecker;
-import eu.unicore.security.wsutil.client.UnicoreWSClientFactory;
 import eu.unicore.security.wsutil.client.WSClientFactory;
 import eu.unicore.util.httpclient.IClientConfiguration;
 import junit.framework.TestCase;
@@ -44,8 +43,6 @@ public abstract class AbstractTestBase extends TestCase
 		
 		List<Interceptor<? extends Message>> s = factory.getInInterceptors();
 		addHandlers(s);
-		factory.getOutInterceptors().add(new ConditionalGetServerOutHandler());
-		factory.getOutInterceptors().add(new SessionIDServerOutHandler());
 		factory.create();
 	}
 
@@ -61,19 +58,8 @@ public abstract class AbstractTestBase extends TestCase
 		authHandler.enableSamlAuthentication(MockSecurityConfig.SERVER_CRED.getSubjectName(), 
 				jetty.getUrls()[0].toExternalForm(), 
 				samlTrustChecker, 0);
-		DSigParseInHandler parseHandler = new DSigParseInHandler(null);
-		DSigSecurityInHandler dsigHandler = new DSigSecurityInHandler(null);
-		AdditionalInHandler addHandler = new AdditionalInHandler();
-		ETDInHandler etdHandler=new ETDInHandler(null, MockSecurityConfig.VALIDATOR, trustedIssuersStore);
-		SecuritySessionCreateInHandler sessionHandler = new SecuritySessionCreateInHandler(sesStore);
 		
 		s.add(authHandler);
-		s.add(parseHandler);
-		s.add(dsigHandler);
-		s.add(addHandler);
-		s.add(etdHandler);
-		s.add(sessionHandler);
-		s.add(new ConditionalGetServerInHandler());
 	}
 	
 	
@@ -105,11 +91,11 @@ public abstract class AbstractTestBase extends TestCase
 
 	protected SimpleSecurityService makeSecuredProxy(IClientConfiguration sec) throws Exception
 	{
-		return new UnicoreWSClientFactory(sec).createPlainWSProxy(SimpleSecurityService.class, getAddress());
+		return new WSClientFactory(sec).createPlainWSProxy(SimpleSecurityService.class, getAddress());
 	}
 
 	protected WSClientFactory getWSClientFactory(IClientConfiguration sec){
-		return new UnicoreWSClientFactory(sec);
+		return new WSClientFactory(sec);
 	}
 	
 	protected String getAddress()

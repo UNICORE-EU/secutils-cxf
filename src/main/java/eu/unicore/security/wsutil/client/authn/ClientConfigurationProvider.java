@@ -26,8 +26,7 @@ public interface ClientConfigurationProvider
 	 * @param delegation delegation settings
 	 * @throws Exception
 	 */
-	public IClientConfiguration getClientConfiguration(String serviceUrl, String serviceIdentity, 
-			DelegationSpecification delegation) throws Exception;
+	public IClientConfiguration getClientConfiguration(String serviceUrl) throws Exception;
 	
 	/**
 	 * Dumps current sessions state to disk

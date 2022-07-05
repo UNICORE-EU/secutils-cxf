@@ -47,15 +47,10 @@ public class TestAuthN extends AbstractTestBase
 			GwHandler gwH = new GwHandler();
 			gwH.reinit(consignorA);
 			xfireClient.getOutInterceptors().add(gwH);
-			ExtraSAMLOutHandler samlH = new ExtraSAMLOutHandler();
-			xfireClient.getOutInterceptors().add(samlH);
-			
 			String consignorRet = s.TestConsignor();
 			assertTrue(X500NameUtils.equal(consignor.getSubjectX500Principal(), consignorRet));
-			
 			String ip = s.TestIP();
 			assertEquals("127.0.0.1", ip);
-
 		} catch (Throwable e)
 		{
 			e.printStackTrace();

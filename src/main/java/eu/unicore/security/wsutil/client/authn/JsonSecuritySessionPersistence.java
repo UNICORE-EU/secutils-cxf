@@ -79,7 +79,6 @@ public class JsonSecuritySessionPersistence implements SecuritySessionPersistenc
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public void readSessionIDs(SessionIDProvider sessionProvider) throws IOException 
 	{
 		if (!sessionsEnabled || sessionProvider == null)

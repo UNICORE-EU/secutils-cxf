@@ -32,13 +32,6 @@ import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.w3c.dom.Element;
 
-import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
-import xmlbeans.org.oasis.saml2.assertion.AttributeStatementType;
-import xmlbeans.org.oasis.saml2.assertion.AttributeType;
-import xmlbeans.org.oasis.saml2.assertion.AuthnStatementType;
-import xmlbeans.org.oasis.saml2.assertion.NameIDType;
-import xmlbeans.org.oasis.saml2.assertion.SubjectLocalityType;
-import xmlbeans.org.oasis.saml2.assertion.SubjectType;
 import eu.emi.security.authn.x509.impl.CertificateUtils;
 import eu.emi.security.authn.x509.impl.FormatMode;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
@@ -56,6 +49,13 @@ import eu.unicore.security.consignor.ConsignorAssertion;
 import eu.unicore.security.user.UserAssertion;
 import eu.unicore.security.wsutil.client.OAuthBearerTokenOutInterceptor;
 import eu.unicore.util.Log;
+import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
+import xmlbeans.org.oasis.saml2.assertion.AttributeStatementType;
+import xmlbeans.org.oasis.saml2.assertion.AttributeType;
+import xmlbeans.org.oasis.saml2.assertion.AuthnStatementType;
+import xmlbeans.org.oasis.saml2.assertion.NameIDType;
+import xmlbeans.org.oasis.saml2.assertion.SubjectLocalityType;
+import xmlbeans.org.oasis.saml2.assertion.SubjectType;
 
 /**
  * Security in-handler for UNICORE. Extracts consignor and user information
@@ -126,15 +126,11 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	private final List<String> alternativeSAMLConsumerNames = new ArrayList<>();
 	
 	private long samlGraceTime;
-	
-	private final String actor;
 
-	private final List<UserAttributeHandler> userAttributeHandlers = new ArrayList<UserAttributeHandler>();
+	private final List<UserAttributeHandler> userAttributeHandlers = new ArrayList<>();
 
-	private final Set<QName>qnameSet=new HashSet<QName>();
-	
-	private final SecuritySessionStore sessionStore;
-	
+	private final Set<QName>qnameSet=new HashSet<>();
+
 	/**
 	 * Constructs instance of the handler. It will accept assertions in the header element
 	 * without the actor set. Note that by default out handlers do not set the actor so
@@ -173,7 +169,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			SecuritySessionStore sessionStore)
 	{
 		super(Phase.PRE_INVOKE);
-		qnameSet.add(new QName(WSSecHeader.WSSE_NS_URI,WSSecHeader.WSSE_LN));
 
 		this.useGatewayAssertions = useGatewayAssertions;
 		this.useHTTPBasic = extractHTTPData;
@@ -187,8 +182,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			this.gatewayC = null;
 			verifyConsignor = false;
 		}
-		this.actor = actor;
-		this.sessionStore = sessionStore;
 	}
 
 	public void enableSamlAuthentication(String consumerSamlName, String consumerEndpointUri, 
@@ -227,40 +220,11 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	@Override
 	public void handleMessage(SoapMessage ctx)
 	{
-		String sessionID=SecuritySessionCreateInHandler.getSecuritySessionID(ctx);
-		SecurityTokens mainToken;
-		if (sessionID==null)
-		{
-			mainToken = new SecurityTokens();
-			process(ctx, mainToken);
-		} else {
-			// re-using session
-			SecuritySession session = getSession(ctx, sessionID);
-			mainToken = session.getTokens();
-			mainToken.getContext().put(SecuritySessionUtils.REUSED_MARKER_KEY, Boolean.TRUE);
-			// make sure session info goes to the client
-			SessionIDServerOutHandler.setSession(session);
-			logger.debug("Re-using session {} for <{}>", sessionID, session.getUserKey());
-		}
+		SecurityTokens mainToken = new SecurityTokens();
+		process(ctx, mainToken);
 		ctx.put(SecurityTokens.KEY, mainToken);
 	}
 
-	/**
-	 * get the stored session
-	 *  
-	 * @param message
-	 * @param sessionID
-	 */
-	protected SecuritySession getSession(SoapMessage message, String sessionID){
-		SecuritySession session = null;
-		session=sessionStore.getSession(sessionID);
-		if (session==null || session.isExpired()){
-			// got a session ID from the client, but no session: fault
-			throwFault(432, "No (valid) security session found, please (re-)send full security data!");
-		}
-		return session;
-	}
-	
 	/**
 	 * process AuthN info from the message and put it into the SecurityToken 
 	 * @param ctx -incoming message
@@ -336,19 +300,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			logger.debug("No SOAP header");
 			return assertions;
 		} 
-
-		Element wsSecEl = null;
-		if (actor != null)
-		{
-			WSSecHeader utilActor = new WSSecHeader(actor, true);
-			wsSecEl = utilActor.findWSSecElement(headers);
-		}
-		if (wsSecEl == null)
-		{
-			WSSecHeader utilNoActor = new WSSecHeader(true);
-			wsSecEl = utilNoActor.findWSSecElement(headers);
-		}
-
 		
 		//This list can contain GW consignor assertion and also other ones inserted by 
 		//older clients (new clients should insert assertions under wssec:Security element)
@@ -360,14 +311,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			}
 		}
 		assertions.addAll(directAssertions);
-		
-		if (wsSecEl != null)
-		{
-			assertions.addAll(DOMUtils.getChildrenWithName(wsSecEl, SAML2_NS, "Assertion"));
-			if (assertions.size() == 0)
-				logger.debug("No assertion found in the wssec:Security element");
-		} else
-			logger.debug("No valid WS Security element found in SOAP header");
 		return assertions;
 	}
 

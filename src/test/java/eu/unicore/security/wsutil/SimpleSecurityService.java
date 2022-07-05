@@ -17,7 +17,6 @@ import javax.jws.WebService;
  * @author K. Benedyczak
  */
 @WebService(targetNamespace="http://cxfutil.security.unicore.eu")
-@OperationsRequiringSignature(operations={"TestSignature2Action"})
 public interface SimpleSecurityService
 {
 	@WebMethod()
@@ -40,20 +39,14 @@ public interface SimpleSecurityService
 	public String TestPreference() throws RemoteException;
 	@WebMethod()
 	public String TestETDValid() throws RemoteException;
-	@RequiresSignature
-	@WebMethod(action="TestSignatureAction")
-	public String TestSignature() throws RemoteException;
-	@WebMethod(action="TestSignature2Action")
+	
+@WebMethod(action="TestSignature2Action")
 	public String TestSignature2() throws RemoteException;
 	
 	public static final String test_action="SomeTestActionValue";
 	
 	@WebMethod(action=test_action)
 	public String TestAction() throws RemoteException;
-	
-	@WebMethod()
-	public String TestConditionalGet() throws RemoteException;
-	
 
 	@WebMethod()
 	public String TestSessionID() throws RemoteException;

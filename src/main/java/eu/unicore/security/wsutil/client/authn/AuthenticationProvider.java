@@ -32,12 +32,9 @@ public interface AuthenticationProvider {
 	 * The main method of this interface is used to retrieve a working 
 	 * {@link IClientConfiguration}. As the returned implementation sometimes needs to be modified,
 	 * the mutable {@link DefaultClientConfiguration} or its extension is required. 
-	 * @param targetAddress address of the service for which the returned settings will be used.
-	 * @param targetDn identity (DN) of the service for which the returned settings will be used
-	 * @param delegation whether to delegate and how
+	 * @param targetAddress address of the service for which the returned settings will be used
 	 */
-	public DefaultClientConfiguration getClientConfiguration(String targetAddress, String targetDn, 
-			DelegationSpecification delegation) throws Exception;
+	public DefaultClientConfiguration getClientConfiguration(String targetAddress) throws Exception;
 
 	/**
 	 * Gives an access to a possibly anonymous client. The client will have its trust settings configured 

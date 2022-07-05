@@ -7,10 +7,8 @@ package eu.unicore.security.wsutil.client.authn;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
-
-import javax.security.auth.x500.X500Principal;
+import java.util.Properties;
 
 import eu.emi.security.authn.x509.ValidationErrorListener;
 import eu.emi.security.authn.x509.X509CertChainValidatorExt;
@@ -23,7 +21,6 @@ import eu.unicore.security.canl.TruststoreProperties;
 import eu.unicore.util.configuration.PropertyMD;
 import eu.unicore.util.httpclient.ClientProperties;
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
-import eu.unicore.util.httpclient.ETDClientSettings;
 
 /**
  * Code useful for various {@link AuthenticationProvider} implementations which are configured with Java Properties.
@@ -98,13 +95,11 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 	}
 
 	@Override
-	public DefaultClientConfiguration getClientConfiguration(String targetAddress,
-			String targetDn, DelegationSpecification delegate) throws Exception
+	public DefaultClientConfiguration getClientConfiguration(String targetAddress) throws Exception
 	{
 		ClientProperties sp=new ClientProperties(properties, truststorePasswordCallback,
 				TruststoreProperties.DEFAULT_PREFIX,
 				CredentialProperties.DEFAULT_PREFIX, ClientProperties.DEFAULT_PREFIX);
-		applyLocalDelegation(sp, targetDn, delegate);
 		setupValidationListener(sp);
 		return sp;
 	}
@@ -139,22 +134,6 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 	protected void setupValidationListener(DefaultClientConfiguration dcc) {
 		if(dcc.getValidator()!=null && validationErrorListener!=null) {
 			dcc.getValidator().addValidationListener(validationErrorListener);
-		}
-	}
-
-	protected void applyLocalDelegation(DefaultClientConfiguration sp, String targetDn, 
-			DelegationSpecification delegate)
-	{
-		if (delegate!=null && delegate.isDelegate())
-		{
-			if (targetDn == null){
-					throw new IllegalArgumentException("When delegation is used the " +
-						"target service DN must be given.");
-			}
-			ETDClientSettings etdSettings = sp.getETDSettings();
-			etdSettings.setExtendTrustDelegation(true);
-			etdSettings.setReceiver(new X500Principal(targetDn));
-			etdSettings.setDelegationRestrictions(delegate.getRestrictions());
 		}
 	}
 

@@ -63,36 +63,12 @@ public class ClientConfigurationProviderImpl implements ClientConfigurationProvi
 	protected ClientConfigurationProviderImpl() {}
 	
 	@Override
-	public IClientConfiguration getClientConfiguration(String serviceUrl, String serviceIdentity, 
-			DelegationSpecification delegate) throws Exception
+	public IClientConfiguration getClientConfiguration(String serviceUrl) throws Exception
 	{
-		if (serviceUrl == null)
-			throw new IllegalArgumentException("Service URL must be always given");
-		if (serviceUrl.startsWith("http://")) //insecure, likely tests, no security
-			return getAnonymousClientConfiguration();
-		
-		if (serviceIdentity == null)
-		{
-			try
-			{
-				serviceIdentity = identityResolver.resolveIdentity(serviceUrl);
-			} catch (IOException e)
-			{
-				if (delegate.isDelegate())
-					throw e;
-				//if no delegation we can try to continue, it depends on authnProvider
-				//whether it can work without the target DN.
-			}
-		} else
-			identityResolver.registerIdentity(serviceUrl, serviceIdentity);
-		//authn,trust and ETD
-		DefaultClientConfiguration securityProperties = authnProvider.getClientConfiguration(serviceUrl,
-				serviceIdentity, delegate);
-		
+		DefaultClientConfiguration securityProperties = authnProvider.getClientConfiguration(serviceUrl);
 		//preferences
 		Map<String, String[]> target = securityProperties.getETDSettings().getRequestedUserAttributes2();
 		target.putAll(securityPreferences);
-		
 		//make sure we use the same session id provider everywhere
 		securityProperties.setSessionIDProvider(basicConfiguration.getSessionIDProvider());
 		return securityProperties;

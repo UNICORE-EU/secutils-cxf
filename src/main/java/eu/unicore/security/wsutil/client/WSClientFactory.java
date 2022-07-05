@@ -87,11 +87,11 @@ public class WSClientFactory {
 	protected IClientConfiguration securityProperties;
 	protected HttpClientProperties settings;
 	
-	protected final List<Interceptor<? extends Message>> inHandlers = new ArrayList<Interceptor<? extends Message>>();
-	protected final List<Interceptor<? extends Message>> outHandlers = new ArrayList<Interceptor<? extends Message>>();
-	protected final List<Interceptor<? extends Message>> faultHandlers = new ArrayList<Interceptor<? extends Message>>();
+	protected final List<Interceptor<? extends Message>> inHandlers = new ArrayList<>();
+	protected final List<Interceptor<? extends Message>> outHandlers = new ArrayList<>();
+	protected final List<Interceptor<? extends Message>> faultHandlers = new ArrayList<>();
 	
-	protected final List<Feature> features = new ArrayList<Feature>();
+	protected final List<Feature> features = new ArrayList<>();
 
 	/**
 	 * @param securityCfg
@@ -127,19 +127,10 @@ public class WSClientFactory {
 	 */
 	protected void initHandlers()
 	{
-		
 		inHandlers.add(new CheckUnderstoodHeadersHandler());
 		outHandlers.add(new CheckUnderstoodHeadersHandler());
-
-		outHandlers.add(new XmlBeansNsHackOutHandler());
-		
-		if(securityProperties.useSecuritySessions()){
-			inHandlers.add(new SessionIDInHandler());
-			outHandlers.add(new SessionIDOutHandler());
-		}
-		
-		outHandlers.add(new OAuthBearerTokenOutInterceptor());
-		
+		outHandlers.add(new XmlBeansNsHackOutHandler());		
+		outHandlers.add(new OAuthBearerTokenOutInterceptor());	
 	}
 	
 	/**
@@ -211,20 +202,18 @@ public class WSClientFactory {
 	 */
 	protected void doAddHandlers(Object proxy){
 		Client client = getWSClient(proxy);
-		
 		for(Interceptor<? extends Message> h: outHandlers){ 
 				client.getOutInterceptors().add(h);
-				client.getOutInterceptors().add(new CleanupHandler(client));
 		}
-		
+		client.getOutInterceptors().add(new CleanupHandler(client));
+
 		for(Interceptor<? extends Message> h: inHandlers){ 
 				client.getInInterceptors().add(h);
 		}
-		
 		for(Interceptor<? extends Message> h:faultHandlers){ 
 				client.getOutFaultInterceptors().add(h);
-				client.getOutFaultInterceptors().add(new CleanupHandler(client));
 		}
+		client.getOutFaultInterceptors().add(new CleanupHandler(client));
 	}
 
 	/**
@@ -242,9 +231,7 @@ public class WSClientFactory {
 	
 	protected boolean isLocal(String url)
 	{
-		if (url == null)
-			return false;
-		return url.startsWith("local://");
+		return url != null && url.startsWith("local://");
 	}
 	
 	/**

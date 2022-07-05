@@ -179,7 +179,6 @@ public class RetryFeature extends FailoverFeature {
 				}
 				
 				if(isInvalidSession){
-					clearSessionID(exchange);
 					RetryFeature.this.setRetryImmediately();
 					if(log.isDebugEnabled()){
 						log.debug("Received alert: No valid security session, retrying ... ");
@@ -211,9 +210,6 @@ public class RetryFeature extends FailoverFeature {
 			return null;
 		}
 
-		protected void clearSessionID(Exchange exchange){
-			SessionIDOutHandler.setSkip(true);
-		}
 	}
 	
 

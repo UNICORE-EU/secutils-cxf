@@ -25,7 +25,6 @@ import eu.unicore.security.HTTPAuthNTokens;
 import eu.unicore.security.SecurityTokens;
 import eu.unicore.security.UserAttributeHandler;
 import eu.unicore.security.etd.TrustDelegation;
-import eu.unicore.security.wsutil.client.ConditionalGetUtil;
 import eu.unicore.security.wsutil.client.OAuthBearerTokenOutInterceptor;
 
 
@@ -101,6 +100,7 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 	
 	public String TestBearerToken() throws RemoteException
 	{
+		System.out.println("XX");
 		SecurityTokens tokens = getTokens();
 		String bearer = (String) tokens.getContext().get(
 				OAuthBearerTokenOutInterceptor.TOKEN_KEY);
@@ -156,20 +156,6 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 	
 	public static String currentRepresentation="test123";
 	public static Calendar lastMod=Calendar.getInstance();
-
-	@Override
-	public String TestConditionalGet() throws RemoteException {
-		getTokens();
-		if(ConditionalGetUtil.Server.mustSendData(lastMod, computeEtag())){
-			return currentRepresentation;	
-		}
-		else return "";
-	}
-
-	private String computeEtag(){
-		return ConditionalGetUtil.Server.md5(currentRepresentation);
-	}
-
 
 	public static class SimpleUserAttributeHandler implements UserAttributeHandler 
 	{

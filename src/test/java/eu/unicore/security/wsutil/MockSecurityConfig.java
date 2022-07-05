@@ -107,13 +107,13 @@ public class MockSecurityConfig extends DefaultClientConfiguration
 	@Override
 	public String[] getOutHandlerClassNames()
 	{
-		return new String[] {AdditionalOutHandler.class.getName()};
+		return new String[] {};
 	}
 
 	@Override
 	public String[] getInHandlerClassNames()
 	{
-		return new String[] {AdditionalInHandler.class.getName()};
+		return new String[] {};
 	}
 
 	public String getCertDN() throws Exception
