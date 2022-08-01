@@ -20,7 +20,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import eu.unicore.util.configuration.ConfigurationException;
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
 import eu.unicore.util.jetty.HttpServerProperties;
-import eu.unicore.util.jetty.JettyLogger;
 import eu.unicore.util.jetty.JettyServerBase;
 
 
@@ -46,8 +45,7 @@ public class JettyServer extends JettyServerBase
 				 new DefaultClientConfiguration(
 						MockSecurityConfig.VALIDATOR,
 						MockSecurityConfig.SERVER_CRED),
-				getJettyProperties(), 
-				JettyLogger.class);
+				getJettyProperties());
 		
 		this.servlet=servlet;
 		initServer();

@@ -34,9 +34,9 @@ public class RetryFeature extends FailoverFeature {
 	
 	private boolean retryImmediately = false; 
 	
-	private final Set<Class<? extends Throwable>>exceptionClasses = new HashSet<Class<? extends Throwable>>();
+	private final Set<Class<? extends Throwable>>exceptionClasses = new HashSet<>();
 	
-	private final Set<ExceptionChecker>exceptionCheckers = new HashSet<ExceptionChecker>();
+	private final Set<ExceptionChecker>exceptionCheckers = new HashSet<>();
 	
 	public RetryFeature(WSClientFactory factory) {
 		super();

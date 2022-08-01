@@ -12,13 +12,13 @@ import java.net.MalformedURLException;
 
 import javax.xml.ws.soap.SOAPFaultException;
 
-import xmlbeans.org.oasis.saml2.protocol.LogoutRequestDocument;
-import xmlbeans.org.oasis.saml2.protocol.LogoutResponseDocument;
 import eu.unicore.samly2.exceptions.SAMLResponderException;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.trust.PKISamlTrustChecker;
 import eu.unicore.samly2.webservice.SAMLLogoutInterface;
 import eu.unicore.util.httpclient.IClientConfiguration;
+import xmlbeans.org.oasis.saml2.protocol.LogoutRequestDocument;
+import xmlbeans.org.oasis.saml2.protocol.LogoutResponseDocument;
 
 /**
  * High level API to use SAML SOAP binding of the Single Logout protocol. Pretty simplistic - a request 

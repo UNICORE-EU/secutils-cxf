@@ -4,18 +4,19 @@
   <groupId>eu.unicore.security</groupId>
   <artifactId>secutils-cxf</artifactId>
   <packaging>jar</packaging>
-  <version>3.2.6-SNAPSHOT</version>
+  <version>3.3.0-SNAPSHOT</version>
   <name>secutils-cxf</name>
   <description>CXF integration library for UNICORE</description>
   <url>https://github.com/UNICORE-EU/secutils-cxf</url>
 
   <properties>
     <cxf.version>3.5.3</cxf.version>
-    <jaxws.version>2.3.2</jaxws.version>
+    <jaxws.version>2.3.5</jaxws.version>
     <wss.version>2.2.2</wss.version>
-    <jetty.version>9.4.48.v20220622</jetty.version>
+    <jetty.version>10.0.11</jetty.version>
     <httpclient.version>4.5.13</httpclient.version>
-    <seclib.version>5.3.6</seclib.version>
+    <seclib.version>5.4.0</seclib.version>
+    <slf.version>1.7.36</slf.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -48,6 +49,16 @@
       <organizationUrl>https://www.fz-juelich.de/jsc</organizationUrl>
     </developer>
   </developers>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+	<groupId>org.slf4j</groupId>
+	<artifactId>slf4j-api</artifactId>
+	<version>${slf.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -105,15 +116,16 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.sun.activation</groupId>
-      <artifactId>javax.activation</artifactId>
-      <version>1.2.0</version>
-    </dependency>
-    <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
       <version>${jetty.version}</version>
       <optional>true</optional>
+      <exclusions>
+	<exclusion>
+	  <groupId>org.slf4j</groupId>
+	  <artifactId>slf4j-api</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
@@ -131,12 +143,6 @@
       <groupId>eu.unicore.security</groupId>
       <artifactId>securityLibrary</artifactId>
       <version>${seclib.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>xalan</artifactId>
-          <groupId>xalan</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
@@ -185,6 +191,10 @@
 	<exclusion>
 	  <groupId>org.jboss.spec.javax.rmi</groupId>
 	  <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>org.apache.cxf</groupId>
+	  <artifactId>cxf-rt-ws-addr</artifactId>
 	</exclusion>
       </exclusions>
     </dependency>
