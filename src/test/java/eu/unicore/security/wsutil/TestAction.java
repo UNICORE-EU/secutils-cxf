@@ -16,8 +16,6 @@ public class TestAction extends AbstractTestBase
 		try
 		{
 			MockSecurityConfig config = new MockSecurityConfig(false, true, true);
-			config.getETDSettings().initializeSimple(JettyServer.SERVER_IDENTITY,
-					config.getCredential());
 			config.setMessageLogging(true);
 			SimpleSecurityService s = makeSecuredProxy(config);
 			

@@ -67,7 +67,7 @@ public class ClientConfigurationProviderImpl implements ClientConfigurationProvi
 	{
 		DefaultClientConfiguration securityProperties = authnProvider.getClientConfiguration(serviceUrl);
 		//preferences
-		Map<String, String[]> target = securityProperties.getETDSettings().getRequestedUserAttributes2();
+		Map<String, String[]> target = securityProperties.getRequestedUserAttributes();
 		target.putAll(securityPreferences);
 		//make sure we use the same session id provider everywhere
 		securityProperties.setSessionIDProvider(basicConfiguration.getSessionIDProvider());
@@ -94,7 +94,7 @@ public class ClientConfigurationProviderImpl implements ClientConfigurationProvi
 	
 	protected void setSecurityPreferences(Map<String, String[]> securityPreferences)
 	{
-		this.securityPreferences = new HashMap<String, String[]>(securityPreferences);
+		this.securityPreferences = new HashMap<>(securityPreferences);
 	}
 
 	protected void setAuthnProvider(AuthenticationProvider authnProvider)

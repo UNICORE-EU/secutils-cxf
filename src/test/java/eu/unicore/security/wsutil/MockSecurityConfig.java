@@ -87,14 +87,11 @@ public class MockSecurityConfig extends DefaultClientConfiguration
 		try
 		{
 			MockSecurityConfig ret = new MockSecurityConfig(doHttpAuthn(), doSSLAuthn(), getCredential());
-			ret.setClassLoader(getClassLoader());
 			ret.setCredential(getCredential());
 			ret.setDoSignMessage(doSignMessage());
-			ret.setEtdSettings(getETDSettings().clone());
+			ret.getRequestedUserAttributes().putAll(getRequestedUserAttributes());
 			ret.setExtraSecurityTokens(getExtraSecurityTokens());
 			ret.setHttpClientProperties(getHttpClientProperties());
-			ret.setInHandlerClassNames(getInHandlerClassNames());
-			ret.setOutHandlerClassNames(getOutHandlerClassNames());
 			ret.setUseSecuritySessions(useSecuritySessions());
 			ret.setSessionIDProvider(getSessionIDProvider());
 			return ret;
@@ -102,18 +99,6 @@ public class MockSecurityConfig extends DefaultClientConfiguration
 		{
 			throw new RuntimeException("Can't clone", e);
 		}
-	}
-
-	@Override
-	public String[] getOutHandlerClassNames()
-	{
-		return new String[] {};
-	}
-
-	@Override
-	public String[] getInHandlerClassNames()
-	{
-		return new String[] {};
 	}
 
 	public String getCertDN() throws Exception
