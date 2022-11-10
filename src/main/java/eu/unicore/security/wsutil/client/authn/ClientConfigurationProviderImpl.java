@@ -7,7 +7,6 @@ package eu.unicore.security.wsutil.client.authn;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
 import eu.unicore.util.httpclient.IClientConfiguration;
@@ -17,12 +16,6 @@ import eu.unicore.util.httpclient.IClientConfiguration;
  * the high-level entry point for retrieving {@link IClientConfiguration} instances. 
  * This class wraps a chosen {@link AuthenticationProvider} implementation 
  * and manages additional cross-cutting features as security sessions and applies user's preferences.
- * <p>
- * The key to use this class is to provide proper collaborators, from which the {@link AuthenticationProvider} is
- * the most important. You can develop your own or use one of the available ones: {@link KeystoreAuthN} or
- * {@link SAMLAuthN}. Those two are configured with {@link Properties} and allow to use the two standard authentication 
- * mechanisms available in UNICORE 7.
- * <p> 
  * This class is thread safe: its internal state is not mutable and all collaborators are thread safe.  
  * 
  * @author K. Benedyczak
@@ -34,8 +27,7 @@ public class ClientConfigurationProviderImpl implements ClientConfigurationProvi
 	private IClientConfiguration basicConfiguration;
 	private IClientConfiguration anonymousConfiguration;
 	private SecuritySessionPersistence sessionsPersistence;
-	private ServiceIdentityResolver identityResolver;
-	
+
 	/**
 	 * 
 	 * @param authnProvider object used to actually configure local credential and trust settings.
@@ -45,13 +37,12 @@ public class ClientConfigurationProviderImpl implements ClientConfigurationProvi
 	 * @throws Exception
 	 */
 	public ClientConfigurationProviderImpl(AuthenticationProvider authnProvider, 
-			SecuritySessionPersistence sessionsPersistence, ServiceIdentityResolver identityResolver,
+			SecuritySessionPersistence sessionsPersistence,
 			Map<String, String[]> securityPreferences) throws Exception
 	{
 		this.securityPreferences = securityPreferences;
 		this.authnProvider = authnProvider;
 		this.sessionsPersistence = sessionsPersistence;
-		this.identityResolver = identityResolver;
 		basicConfiguration = authnProvider.getBaseClientConfiguration();
 		anonymousConfiguration = authnProvider.getAnonymousClientConfiguration();
 		sessionsPersistence.readSessionIDs(basicConfiguration.getSessionIDProvider());
@@ -115,17 +106,6 @@ public class ClientConfigurationProviderImpl implements ClientConfigurationProvi
 	protected void setSessionsPersistence(SecuritySessionPersistence sessionsPersistence)
 	{
 		this.sessionsPersistence = sessionsPersistence;
-	}
-
-	@Override
-	public ServiceIdentityResolver getIdentityResolver()
-	{
-		return identityResolver;
-	}
-
-	protected void setIdentityResolver(ServiceIdentityResolver identityResolver)
-	{
-		this.identityResolver = identityResolver;
 	}
 
 	@Override

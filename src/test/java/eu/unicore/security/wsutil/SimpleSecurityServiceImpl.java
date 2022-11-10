@@ -11,7 +11,6 @@ package eu.unicore.security.wsutil;
 import java.rmi.RemoteException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
-import java.util.List;
 
 import javax.annotation.Resource;
 import javax.jws.WebService;
@@ -24,7 +23,6 @@ import org.apache.xmlbeans.XmlString;
 import eu.unicore.security.HTTPAuthNTokens;
 import eu.unicore.security.SecurityTokens;
 import eu.unicore.security.UserAttributeHandler;
-import eu.unicore.security.etd.TrustDelegation;
 import eu.unicore.security.wsutil.client.OAuthBearerTokenOutInterceptor;
 
 
@@ -48,12 +46,6 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 		return tokens;
 	}
 
-	public String TestSignature() throws RemoteException
-	{
-		SecurityTokens tokens = getTokens();
-		return tokens.getMessageSignatureStatus().name();
-	}
-
 	public String TestSignature2() throws RemoteException
 	{
 		getTokens();
@@ -67,27 +59,6 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 	{
 		SecurityTokens tokens = getTokens();
 		return tokens.getConsignorName();
-	}
-	
-	public String TestETDValid() throws RemoteException
-	{
-		SecurityTokens tokens = getTokens();
-		return ""+(tokens.isConsignorTrusted()&&tokens.getTrustDelegationTokens().size()>0);
-	}
-
-
-	public String TestETDIssuer() throws RemoteException
-	{
-		SecurityTokens tokens = getTokens();
-		List<TrustDelegation> tds = tokens.getTrustDelegationTokens();
-		return tds.get(0).getIssuerName();
-	}
-
-	public String TestETDLastSubject() throws RemoteException
-	{
-		SecurityTokens tokens = getTokens();
-		List<TrustDelegation> tds = tokens.getTrustDelegationTokens();
-		return tds.get(tds.size() - 1).getSubjectName();
 	}
 
 	public String TestHTTPCreds() throws RemoteException

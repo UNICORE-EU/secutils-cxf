@@ -20,14 +20,9 @@ public interface ClientConfigurationProvider
 	/**
 	 * The main method
 	 * @param serviceUrl target service url. Must be given always.
-	 * @param serviceIdentity target service DN. Must be always given when delegation is requested. 
-	 * However when it is null then the {@link ServiceIdentityResolver} is consulted, so if the resolver can provide
-	 * a DN a call to this method with null argument and delegation turned on will succeed. 
-	 * @param delegation delegation settings
-	 * @throws Exception
 	 */
 	public IClientConfiguration getClientConfiguration(String serviceUrl) throws Exception;
-	
+
 	/**
 	 * Dumps current sessions state to disk
 	 * @throws IOException 
@@ -41,7 +36,7 @@ public interface ClientConfigurationProvider
 	 * @throws Exception
 	 */
 	public IClientConfiguration getAnonymousClientConfiguration() throws Exception;
-	
+
 	/**
 	 * In rare cases this method can be used. The returned object is partially configured - is not useful
 	 * for making connections but can be used to retrieve static settings or shared objects.
@@ -53,6 +48,5 @@ public interface ClientConfigurationProvider
 	public AuthenticationProvider getAuthnProvider();
 
 	public SecuritySessionPersistence getSessionsPersistence();
-	
-	public ServiceIdentityResolver getIdentityResolver();
+
 }

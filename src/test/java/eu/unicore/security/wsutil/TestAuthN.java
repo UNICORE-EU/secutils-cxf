@@ -20,9 +20,9 @@ import eu.emi.security.authn.x509.proxy.ProxyCertificate;
 import eu.emi.security.authn.x509.proxy.ProxyCertificateOptions;
 import eu.emi.security.authn.x509.proxy.ProxyGenerator;
 import eu.unicore.samly2.SAMLConstants.AuthNClasses;
-import eu.unicore.security.UnicoreSecurityFactory;
 import eu.unicore.security.consignor.ConsignorAPI;
 import eu.unicore.security.consignor.ConsignorAssertion;
+import eu.unicore.security.consignor.ConsignorImpl;
 import eu.unicore.security.wsutil.client.OAuthBearerTokenOutInterceptor;
 
 public class TestAuthN extends AbstractTestBase
@@ -37,7 +37,7 @@ public class TestAuthN extends AbstractTestBase
 			MockSecurityConfig configWrong = new MockSecurityConfig(false, true, false); 
 			SimpleSecurityService s = makeProxy(config);
 			
-			ConsignorAPI engine = UnicoreSecurityFactory.getConsignorAPI();
+			ConsignorAPI engine = new ConsignorImpl();
 			X509Certificate consignor = configWrong.getCredential().getCertificate();
 			ConsignorAssertion consignorA = engine.generateConsignorToken(
 					MockSecurityConfig.GW_CRED.getSubjectName(),
@@ -68,7 +68,7 @@ public class TestAuthN extends AbstractTestBase
 			MockSecurityConfig configWrong = new MockSecurityConfig(false, true, false); 
 			SimpleSecurityService s = makeProxy(config);
 			
-			ConsignorAPI engine = UnicoreSecurityFactory.getConsignorAPI();
+			ConsignorAPI engine = new ConsignorImpl();
 			X509Certificate[] consignor = configWrong.getCredential().getCertificateChain();
 			
 			ProxyCertificateOptions proxyOpts = new ProxyCertificateOptions(consignor);
@@ -103,7 +103,7 @@ public class TestAuthN extends AbstractTestBase
 			
 			SimpleSecurityService s = makeProxy(config);
 			
-			ConsignorAPI engine = UnicoreSecurityFactory.getConsignorAPI();
+			ConsignorAPI engine = new ConsignorImpl();
 			ConsignorAssertion consignorA = engine.generateConsignorToken(
 					MockSecurityConfig.GW_CRED.getSubjectName());
 			Client xfireClient = ClientProxy.getClient(s);

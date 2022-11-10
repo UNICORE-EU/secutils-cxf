@@ -34,13 +34,11 @@
 package eu.unicore.security.wsutil.client;
 
 import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.configuration.security.AuthorizationPolicy;
 import org.apache.cxf.configuration.security.ProxyAuthorizationPolicy;
@@ -57,9 +55,6 @@ import org.apache.cxf.message.Message;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.ConnectionType;
 import org.apache.cxf.transports.http.configuration.ProxyServerType;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.logging.log4j.Logger;
 
 import eu.unicore.security.wsutil.SecuritySessionUtils;
@@ -68,7 +63,6 @@ import eu.unicore.security.wsutil.XmlBinding;
 import eu.unicore.security.wsutil.cxf.XmlBeansDataBinding;
 import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.HttpClientProperties;
-import eu.unicore.util.httpclient.HttpUtils;
 import eu.unicore.util.httpclient.IClientConfiguration;
 import eu.unicore.util.httpclient.SessionIDProvider;
 
@@ -166,7 +160,6 @@ public class WSClientFactory {
 		T proxy=factory.create(iFace);
 		doAddHandlers(proxy);
 		doAddFeatures(proxy);
-		setupRetry(proxy);
 		setupProxy(proxy, url);
 		setupProxyInterface(iFace, getWSClient(proxy));
 		return proxy;
@@ -288,41 +281,7 @@ public class WSClientFactory {
 		configureHttpProxy(http, uri);
 		
 	}
-	
-	/**
-	 * Create a new and ready-to-use {@link RetryFeature} instance. This object might be further customized by 
-	 * adding additional recoverable exceptions, besides {@link SocketTimeoutException} which is by default set.
-	 */
-	public RetryFeature getDefaultRetryFeature(){
-		RetryFeature r = new RetryFeature(this);
-		r.setMaxRetries(securityProperties.getMaxWSRetries());
-		r.setDelayBetweenRetries(securityProperties.getRetryDelay());
-		r.getRecoverableExceptions().add(SocketTimeoutException.class);
-		return r;
-	}
 
-
-	/**
-	 * Configure the given proxy object with the retry feature<br/>
-	 * The retry feature can later be retrieved with {@link #getRetryFeature(Object)}
-	 * 
-	 * @param proxy - the WS proxy
-	 * @param retry - the {@link RetryFeature}
-	 */
-	public void setupRetry(Object proxy, RetryFeature retry){
-		Client client = getWSClient(proxy);
-		retry.initialize(client, null);	
-		client.getRequestContext().put(RetryFeature.class.getName(), retry);
-	}
-	
-	/**
-	 * setup the default retry feature
-	 * @param proxy
-	 */
-	public void setupRetry(Object proxy){
-		setupRetry(proxy, getDefaultRetryFeature());
-	}
-	
 	private void configureHttpProxy(HTTPConduit http, String uri){
 		if (isNonProxyHost(uri)) 
 			return;
@@ -407,34 +366,6 @@ public class WSClientFactory {
 		return ClientProxy.getClient(proxy);
 	}
 
-	/**
-	 * get the {@link RetryFeature} configured for the given proxy object
-	 * @param proxy
-	 * @return retry feature or <code>null</code> if not yet set
-	 */
-	public static RetryFeature getRetryFeature(Object proxy)
-	{
-		Client c = getWSClient(proxy);
-		return (RetryFeature) c.getRequestContext().get(RetryFeature.class.getName());
-	}
-
-	/**
-	 * For creating a client from WSDL, we need the WSDL of the service. 
-	 * 
-	 * @param url The URL of the service
-	 * @param sec The ISecurityProperties to enable an SSL Connection
-	 * @return the Service WSDL as a String
-	 * @throws Exception
-	 */
-	protected String getServiceWSDL(String url, IClientConfiguration sec) throws Exception 
-	{
-		HttpClient client = HttpUtils.createClient(url, sec);
-		String wsdlurl = url + "?wsdl";
-		HttpGet method = new HttpGet(wsdlurl);
-		HttpResponse response=client.execute(method);
-		return IOUtils.toString(response.getEntity().getContent(),"UFT-8");
-	}
-	
 	public static AbstractDataBinding getBinding(Class<?>clazz){
 		XmlBinding annot=(XmlBinding)clazz.getAnnotation(XmlBinding.class);
 		if(annot==null || "xmlbeans".equalsIgnoreCase(annot.name())){

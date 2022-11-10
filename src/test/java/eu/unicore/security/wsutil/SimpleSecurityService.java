@@ -28,19 +28,13 @@ public interface SimpleSecurityService
 	@WebMethod()
 	public String TestEffectiveUser() throws RemoteException;
 	@WebMethod()
-	public String TestETDIssuer() throws RemoteException;
-	@WebMethod()
-	public String TestETDLastSubject() throws RemoteException;
-	@WebMethod()
 	public String TestHTTPCreds() throws RemoteException;
 	@WebMethod()
 	public String TestBearerToken() throws RemoteException;
 	@WebMethod()
 	public String TestPreference() throws RemoteException;
-	@WebMethod()
-	public String TestETDValid() throws RemoteException;
-	
-@WebMethod(action="TestSignature2Action")
+
+	@WebMethod(action="TestSignature2Action")
 	public String TestSignature2() throws RemoteException;
 	
 	public static final String test_action="SomeTestActionValue";

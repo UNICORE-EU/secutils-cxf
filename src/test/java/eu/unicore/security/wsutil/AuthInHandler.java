@@ -9,7 +9,6 @@
 package eu.unicore.security.wsutil;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,14 +25,10 @@ import org.apache.cxf.headers.Header;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.interceptor.Fault;
 import org.apache.cxf.phase.Phase;
-import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.xmlbeans.XmlException;
-import org.apache.xmlbeans.XmlObject;
 import org.w3c.dom.Element;
 
-import eu.emi.security.authn.x509.impl.CertificateUtils;
-import eu.emi.security.authn.x509.impl.FormatMode;
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.unicore.samly2.SAMLBindings;
 import eu.unicore.samly2.SAMLConstants;
@@ -42,16 +37,13 @@ import eu.unicore.samly2.trust.SamlTrustChecker;
 import eu.unicore.samly2.validators.SSOAuthnAssertionValidator;
 import eu.unicore.security.HTTPAuthNTokens;
 import eu.unicore.security.SecurityTokens;
-import eu.unicore.security.UnicoreSecurityFactory;
 import eu.unicore.security.UserAttributeHandler;
 import eu.unicore.security.consignor.ConsignorAPI;
 import eu.unicore.security.consignor.ConsignorAssertion;
-import eu.unicore.security.user.UserAssertion;
+import eu.unicore.security.consignor.ConsignorImpl;
 import eu.unicore.security.wsutil.client.OAuthBearerTokenOutInterceptor;
 import eu.unicore.util.Log;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
-import xmlbeans.org.oasis.saml2.assertion.AttributeStatementType;
-import xmlbeans.org.oasis.saml2.assertion.AttributeType;
 import xmlbeans.org.oasis.saml2.assertion.AuthnStatementType;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.assertion.SubjectLocalityType;
@@ -249,7 +241,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		}
 
 		ConsignorAssertion cAssertion = null;
-		Element uAssertion = null;
 		Element samlAuthnAssertion = null;
 		if (ctx.hasHeaders())
 		{
@@ -257,7 +248,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 
 			if (useGatewayAssertions)
 				cAssertion = getConsignorAssertion(assertions);
-			uAssertion = getUserAssertion(assertions);
 			samlAuthnAssertion = getSAMLAuthnAssertion(assertions);
 			mainToken.getContext().put(RAW_SAML_ASSERTIONS_KEY, assertions);
 		}
@@ -273,15 +263,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 			}
 				
 			processConsignor(cAssertion, mainToken, ctx);
-		}
-
-		if (uAssertion != null)
-		{
-			try{
-				processUser(uAssertion, mainToken);
-			}catch(IOException i){
-				throw new Fault(i);
-			}
 		}
 
 		mainToken.getContext().put(SecurityTokens.CTX_SCOPE_KEY, 
@@ -312,41 +293,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		}
 		assertions.addAll(directAssertions);
 		return assertions;
-	}
-
-	protected void processUser(Element uAssertion, SecurityTokens mainToken) throws IOException
-	{
-		logger.debug("Found user assertion in request");
-		UserAssertion userA = processUserAssertion(uAssertion);
-		X509Certificate[] user = extractCertPath(userA);
-		if (user == null)
-		{
-			String userName = userA.getSubjectName();
-			mainToken.setUserName(userName);
-			logger.debug("Requested USER (retrieved as a DN): {}", ()->X500NameUtils.getReadableForm(userName));
-		} else
-		{
-			mainToken.setUser(user);
-			logger.debug("Requested USER (retrieved as a full certificate): {}",
-					()->CertificateUtils.format(user[0], FormatMode.COMPACT_ONE_LINE));
-		}
-
-		//extract any additional attributes and process them
-		AttributeStatementType[] attributes=userA.getXMLBean().getAttributeStatementArray();
-		if( attributes!=null && userAttributeHandlers.size()>0){
-			for(AttributeStatementType attrStatement: attributes){
-				for(AttributeType attr: attrStatement.getAttributeArray()){
-					String nameFormat=attr.getNameFormat();
-					if(UserAssertion.ROLE_NAME_FORMAT.equals(nameFormat))continue;
-					String name=attr.getName();
-					XmlObject[] values=attr.getAttributeValueArray();
-					for(UserAttributeHandler h: userAttributeHandlers){
-						h.processUserDefinedAttribute(name, nameFormat, values, mainToken);
-					}
-				}
-			}
-		}
-
 	}
 
 	protected void processSAMLAuthentication(Element samlAuthnAssertion, ConsignorAssertion cAssertion, 
@@ -592,7 +538,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 						+ "checking in this server's configuration");
 				return null;
 			}
-			ConsignorAPI engine = UnicoreSecurityFactory.getConsignorAPI();
+			ConsignorAPI engine = new ConsignorImpl();
 			eu.unicore.security.ValidationResult res = engine.verifyConsignorToken(
 					consignorA, gatewayC);
 			if (!res.isValid())
@@ -608,31 +554,6 @@ public class AuthInHandler extends AbstractSoapInterceptor
 
 		if (cert == null)
 			logger.debug("Anonymous CONSIGNOR");
-		return cert;
-	}
-
-	protected UserAssertion processUserAssertion(Element assertion)
-	{
-		UserAssertion userA;
-		try
-		{
-			ByteArrayOutputStream os=new ByteArrayOutputStream();
-			StaxUtils.writeTo(assertion, os);
-			AssertionDocument aDoc = AssertionDocument.Factory.parse(os.toString());
-			userA = new UserAssertion(aDoc);
-			return userA;
-		} catch (Exception e)
-		{
-			logger.warn("The USER assertion is invalid, ignoring: {}", e.getMessage());
-			return null;
-		}
-	}	
-
-	protected X509Certificate[] extractCertPath(UserAssertion userA)
-	{
-		X509Certificate[] cert = userA.getSubjectFromConfirmation();
-		if (cert == null)
-			logger.debug("USER retrieved, but no certificate is given.");
 		return cert;
 	}
 
