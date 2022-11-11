@@ -12,7 +12,6 @@
   <properties>
     <cxf.version>3.5.4</cxf.version>
     <jaxws.version>2.3.5</jaxws.version>
-    <wss.version>2.2.2</wss.version>
     <jetty.version>10.0.12</jetty.version>
     <httpclient.version>5.2</httpclient.version>
     <seclib.version>6.0.0</seclib.version>
@@ -140,29 +139,6 @@
       <version>${httpclient.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.wss4j</groupId>
-      <artifactId>wss4j-ws-security-dom</artifactId>
-      <version>${wss.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>opensaml-saml-impl</artifactId>
-          <groupId>org.opensaml</groupId>
-        </exclusion>
-	    <exclusion>
-          <artifactId>opensaml-xacml-impl</artifactId>
-          <groupId>org.opensaml</groupId>
-        </exclusion>
-	    <exclusion>
-          <artifactId>opensaml-xacml-saml-impl</artifactId>
-          <groupId>org.opensaml</groupId>
-        </exclusion>
-        <exclusion>
-	      <groupId>org.apache.santuario</groupId>
-	      <artifactId>xmlsec</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
       <version>${json.version}</version>
@@ -252,7 +228,7 @@
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.6.7</version>
+        <version>1.6.13</version>
         <extensions>true</extensions>
         <configuration>
           <serverId>sonatype-nexus-staging</serverId>
