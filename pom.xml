@@ -12,9 +12,9 @@
   <properties>
     <cxf.version>3.5.4</cxf.version>
     <jaxws.version>2.3.5</jaxws.version>
-    <jetty.version>10.0.12</jetty.version>
-    <httpclient.version>5.2</httpclient.version>
-    <seclib.version>6.0.0</seclib.version>
+    <jetty.version>10.0.13</jetty.version>
+    <httpclient.version>5.2.1</httpclient.version>
+    <seclib.version>6.0.5</seclib.version>
     <slf.version>1.7.36</slf.version>
     <json.version>20220924</json.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
