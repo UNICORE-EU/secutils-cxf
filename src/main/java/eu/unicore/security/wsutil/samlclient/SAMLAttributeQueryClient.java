@@ -160,7 +160,7 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 	 * Response is parsed and validated.
 	 *  
 	 * @param attrQuery what to query for
-	 * @param credential for assertion decryption
+	 * @param decryptionCredential for assertion decryption
 	 * @return parsed and verified assertion
 	 * @throws SAMLValidationException
 	 */

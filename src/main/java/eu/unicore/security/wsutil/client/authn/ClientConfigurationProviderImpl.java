@@ -32,7 +32,6 @@ public class ClientConfigurationProviderImpl implements ClientConfigurationProvi
 	 * 
 	 * @param authnProvider object used to actually configure local credential and trust settings.
 	 * @param sessionsPersistence used to persist sessions information (or not to persist ;-))
-	 * @param identityResolver used to discover identity of a service for which a DN was not explicitly given
 	 * @param securityPreferences map with user's preferences to be applied to the configuration.
 	 * @throws Exception
 	 */

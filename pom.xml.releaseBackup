@@ -4,7 +4,7 @@
   <groupId>eu.unicore.security</groupId>
   <artifactId>secutils-cxf</artifactId>
   <packaging>jar</packaging>
-  <version>3.4.3-SNAPSHOT</version>
+  <version>3.4.2-SNAPSHOT</version>
   <name>secutils-cxf</name>
   <description>CXF integration library for UNICORE</description>
   <url>https://github.com/UNICORE-EU/secutils-cxf</url>
@@ -14,7 +14,7 @@
     <jaxws.version>2.3.5</jaxws.version>
     <jetty.version>10.0.15</jetty.version>
     <httpclient.version>5.2.1</httpclient.version>
-    <seclib.version>6.0.8</seclib.version>
+    <seclib.version>6.0.7</seclib.version>
     <slf.version>1.7.36</slf.version>
     <json.version>20230227</json.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

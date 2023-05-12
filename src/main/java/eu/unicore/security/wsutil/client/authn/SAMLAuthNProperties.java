@@ -16,7 +16,7 @@ import eu.unicore.util.configuration.PropertiesHelper;
 import eu.unicore.util.configuration.PropertyMD;
 
 /**
- * Configuration of the {@link SAMLAuthN}
+ * Configuration of SAMLAuthN
  * @author K. Benedyczak
  */
 public class SAMLAuthNProperties extends PropertiesHelper
@@ -30,7 +30,7 @@ public class SAMLAuthNProperties extends PropertiesHelper
 	public static final String PASSWORD = "password";
 	
 	
-	public static final Map<String, PropertyMD> META = new HashMap<String, PropertyMD>();
+	public static final Map<String, PropertyMD> META = new HashMap<>();
 	static
 	{
 		META.put(ADDRESS, new PropertyMD().setMandatory().setDescription(
