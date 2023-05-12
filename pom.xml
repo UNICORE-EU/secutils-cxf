@@ -10,11 +10,11 @@
   <url>https://github.com/UNICORE-EU/secutils-cxf</url>
 
   <properties>
-    <cxf.version>3.5.4</cxf.version>
+    <cxf.version>3.5.5</cxf.version>
     <jaxws.version>2.3.5</jaxws.version>
-    <jetty.version>10.0.13</jetty.version>
+    <jetty.version>10.0.15</jetty.version>
     <httpclient.version>5.2.1</httpclient.version>
-    <seclib.version>6.0.5</seclib.version>
+    <seclib.version>6.0.7</seclib.version>
     <slf.version>1.7.36</slf.version>
     <json.version>20230227</json.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -132,6 +132,16 @@
       <groupId>eu.unicore.security</groupId>
       <artifactId>securityLibrary</artifactId>
       <version>${seclib.version}</version>
+      <exclusions>
+	<exclusion>
+	  <groupId>stax</groupId>
+	  <artifactId>stax-api</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>xml-apis</groupId>
+	  <artifactId>xml-apis</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents.client5</groupId>
@@ -184,6 +194,22 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.11.0</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifestEntries>
+              <Automatic-Module-Name>eu.unicore.security.secutils</Automatic-Module-Name>
+            </manifestEntries>
+          </archive>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
