@@ -57,7 +57,6 @@ import org.apache.cxf.transports.http.configuration.ConnectionType;
 import org.apache.cxf.transports.http.configuration.ProxyServerType;
 import org.apache.logging.log4j.Logger;
 
-import eu.unicore.security.wsutil.SecuritySessionUtils;
 import eu.unicore.security.wsutil.XmlBeansNsHackOutHandler;
 import eu.unicore.security.wsutil.XmlBinding;
 import eu.unicore.security.wsutil.cxf.XmlBeansDataBinding;
@@ -75,6 +74,8 @@ import eu.unicore.util.httpclient.SessionIDProvider;
  * @author golbi
  */
 public class WSClientFactory {
+
+	public static final String UNICORE_SECURITY_SESSION_TARGET_URL = "unicore-security-session-target-url";
 
 	protected static final Logger logger = Log.getLogger(Log.CLIENT, WSClientFactory.class);
 	
@@ -353,7 +354,7 @@ public class WSClientFactory {
 		Client wsClient=getWSClient(proxy);
 		setupWSClientProxy(wsClient, uri);
 		if(securityProperties.useSecuritySessions()){
-			wsClient.getRequestContext().put(SecuritySessionUtils.SESSION_TARGET_URL, uri);
+			wsClient.getRequestContext().put(UNICORE_SECURITY_SESSION_TARGET_URL, uri);
 		}
 	}
 	

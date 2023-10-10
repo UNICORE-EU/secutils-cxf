@@ -4,18 +4,19 @@
   <groupId>eu.unicore.security</groupId>
   <artifactId>secutils-cxf</artifactId>
   <packaging>jar</packaging>
-  <version>3.4.4-SNAPSHOT</version>
+  <version>4.0.0-SNAPSHOT</version>
   <name>secutils-cxf</name>
   <description>CXF integration library for UNICORE</description>
   <url>https://github.com/UNICORE-EU/secutils-cxf</url>
 
   <properties>
-    <cxf.version>3.6.1</cxf.version>
-    <jaxws.version>2.3.5</jaxws.version>
-    <jetty.version>10.0.15</jetty.version>
+    <cxf.version>4.0.3</cxf.version>
+    <jaxws.version>3.0.2</jaxws.version>
+    <wss.version>3.0.1</wss.version>
+    <jetty.version>11.0.17</jetty.version>
     <httpclient.version>5.2.1</httpclient.version>
-    <seclib.version>6.0.9</seclib.version>
-    <slf.version>1.7.36</slf.version>
+    <seclib.version>7.0.0</seclib.version>
+    <slf.version>2.0.9</slf.version>
     <json.version>20230618</json.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>11</maven.compiler.target>
@@ -26,7 +27,6 @@
     <connection>scm:git:git://github.com/UNICORE-EU/secutils-cxf.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/UNICORE-EU/secutils-cxf.git</developerConnection>
     <url>https://github.com/UNICORE-EU/secutils-cxf</url>
-    <tag>secutils-cxf-3.4.2</tag>
   </scm>
   
   <licenses>
@@ -132,16 +132,11 @@
       <groupId>eu.unicore.security</groupId>
       <artifactId>securityLibrary</artifactId>
       <version>${seclib.version}</version>
-      <exclusions>
-	<exclusion>
-	  <groupId>stax</groupId>
-	  <artifactId>stax-api</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>xml-apis</groupId>
-	  <artifactId>xml-apis</artifactId>
-	</exclusion>
-      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.wss4j</groupId>
+      <artifactId>wss4j-ws-security-dom</artifactId>
+      <version>${wss.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents.client5</groupId>
@@ -202,6 +197,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
+        <version>3.3.0</version>
         <configuration>
           <archive>
             <manifestEntries>
@@ -235,8 +231,8 @@
         <version>3.2.0</version>
         <configuration>
           <additionalJOption>-Xdoclint:none</additionalJOption>
-	  <source>8</source>
-	  <detectJavaApiLink>false</detectJavaApiLink>
+	      <source>8</source>
+	      <detectJavaApiLink>false</detectJavaApiLink>
         </configuration>
       </plugin>
       <plugin>

@@ -20,7 +20,6 @@ import javax.xml.namespace.QName;
 
 import org.apache.cxf.binding.soap.SoapMessage;
 import org.apache.cxf.binding.soap.interceptor.AbstractSoapInterceptor;
-import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.headers.Header;
 import org.apache.cxf.helpers.DOMUtils;
 import org.apache.cxf.interceptor.Fault;
@@ -89,23 +88,23 @@ import xmlbeans.org.oasis.saml2.assertion.SubjectType;
  * 
  * @author K. Benedyczak
  */
-public class AuthInHandler extends AbstractSoapInterceptor
+class AuthInHandler extends AbstractSoapInterceptor
 {
-	protected static final Logger logger = Log.getLogger(Log.SECURITY, AuthInHandler.class);
+	private static final Logger logger = Log.getLogger(Log.SECURITY, AuthInHandler.class);
 	
-	public static final String SAML2_NS = "urn:oasis:names:tc:SAML:2.0:assertion";
+	private static final String SAML2_NS = "urn:oasis:names:tc:SAML:2.0:assertion";
 	/**
 	 * Under this key in the context of SecurityTokens all saml assertions that were not consumed by
 	 * this handler will be stored. So all assertions except Consignor and User.
 	 */
-	public static final String RAW_SAML_ASSERTIONS_KEY = AuthInHandler.class.getName() + 
+	private static final String RAW_SAML_ASSERTIONS_KEY = AuthInHandler.class.getName() + 
 			".RAW_SAML_ASSERTIONS";
 
 	// special header for forwarding the client's IP address to the VSite
-	public final static String CONSIGNOR_IP_HEADER = "X-UNICORE-Consignor-IP";
+	private final static String CONSIGNOR_IP_HEADER = "X-UNICORE-Consignor-IP";
 
 	// special header used by the gateway for forwarding the GW URL (as sent by the client) to the VSite
-	public final static String GW_EXTERNAL_URL = "X-UNICORE-Gateway";
+	private final static String GW_EXTERNAL_URL = "X-UNICORE-Gateway";
 
 	private final boolean useGatewayAssertions;
 	private final boolean useHTTPBasic;
@@ -137,10 +136,10 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	 * make sense only when useGatewayAssertions is true otherwise is ignored.
 	 * @param sessionStore security session storage
 	 */
-	public AuthInHandler(boolean useGatewayAssertions, boolean useSSLData,
-			boolean extractHTTPData, X509Certificate gatewayC, SecuritySessionStore sessionStore)
+	AuthInHandler(boolean useGatewayAssertions, boolean useSSLData,
+			boolean extractHTTPData, X509Certificate gatewayC)
 	{
-		this(useGatewayAssertions, useSSLData, extractHTTPData, gatewayC, null, sessionStore);
+		this(useGatewayAssertions, useSSLData, extractHTTPData, gatewayC, null);
 	}
 
 	/**
@@ -156,9 +155,8 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	 * @param actor Name of this service as used in WSSecurity actor field.
 	 * @param sessionStore security session storage
 	 */
-	public AuthInHandler(boolean useGatewayAssertions, boolean useSSLData,
-			boolean extractHTTPData, X509Certificate gatewayC, String actor,
-			SecuritySessionStore sessionStore)
+	private AuthInHandler(boolean useGatewayAssertions, boolean useSSLData,
+			boolean extractHTTPData, X509Certificate gatewayC, String actor)
 	{
 		super(Phase.PRE_INVOKE);
 
@@ -176,7 +174,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		}
 	}
 
-	public void enableSamlAuthentication(String consumerSamlName, String consumerEndpointUri, 
+	private void enableSamlAuthentication(String consumerSamlName, String consumerEndpointUri, 
 			SamlTrustChecker samlTrustChecker, long samlValidityGraceTime, List<String>alternativeConsumerNames)
 	{
 		this.samlAuthnTrustChecker = samlTrustChecker;
@@ -186,20 +184,14 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		this.alternativeSAMLConsumerNames.addAll(alternativeConsumerNames);
 	}
 	
-	public void enableSamlAuthentication(String consumerSamlName, String consumerEndpointUri,
+	void enableSamlAuthentication(String consumerSamlName, String consumerEndpointUri,
 			SamlTrustChecker samlTrustChecker, long samlValidityGraceTime)
 	{
 		enableSamlAuthentication(consumerSamlName, consumerEndpointUri,
 				samlTrustChecker, samlValidityGraceTime, Collections.emptyList());
 	}
 	
-	public void disableSamlAuthentication()
-	{
-		this.samlAuthnTrustChecker = null;
-	}
-	
-	
-	public void addUserAttributeHandler(UserAttributeHandler uh){
+	void addUserAttributeHandler(UserAttributeHandler uh){
 		userAttributeHandlers.add(uh);
 	}
 	
@@ -222,7 +214,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	 * @param ctx -incoming message
 	 * @param mainToken - security tokens for this request
 	 */
-	protected void process(SoapMessage ctx, SecurityTokens mainToken){
+	private void process(SoapMessage ctx, SecurityTokens mainToken){
 
 		if (useHTTPBasic)
 		{
@@ -271,10 +263,10 @@ public class AuthInHandler extends AbstractSoapInterceptor
 				getSOAPAction(ctx));
 	}
 	
-	protected List<Element> extractSAMLAssertions(SoapMessage message)
+	private List<Element> extractSAMLAssertions(SoapMessage message)
 	{
 		List<Header> headers=message.getHeaders();
-		List<Element> assertions = new ArrayList<Element>();
+		List<Element> assertions = new ArrayList<>();
 		
 		if (headers.size()==0)
 		{
@@ -285,7 +277,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		//This list can contain GW consignor assertion and also other ones inserted by 
 		//older clients (new clients should insert assertions under wssec:Security element)
 		
-		List<Element> directAssertions = new ArrayList<Element>();
+		List<Element> directAssertions = new ArrayList<>();
 		for(Header h: headers){
 			if(SAML2_NS.equals(h.getName().getNamespaceURI()) && "Assertion".equals(h.getName().getLocalPart())){
 				directAssertions.add((Element)h.getObject());
@@ -295,7 +287,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		return assertions;
 	}
 
-	protected void processSAMLAuthentication(Element samlAuthnAssertion, ConsignorAssertion cAssertion, 
+	private void processSAMLAuthentication(Element samlAuthnAssertion, ConsignorAssertion cAssertion, 
 			SecurityTokens mainToken, SoapMessage message)
 	{
 		String endpoint = samlConsumerEndpointUri;
@@ -360,7 +352,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	}	
 
 	
-	protected void processConsignor(ConsignorAssertion cAssertion, SecurityTokens mainToken, SoapMessage message)
+	private void processConsignor(ConsignorAssertion cAssertion, SecurityTokens mainToken, SoapMessage message)
 	{
 		if (cAssertion == null && useGatewayAssertions)
 			logger.debug("No consignor info in request -> request didn't come through a gateway");
@@ -401,7 +393,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	 * @param mainToken
 	 * @param message
 	 */
-	protected void establishIP(ConsignorAssertion cAssertion, SecurityTokens mainToken, SoapMessage message)
+	private void establishIP(ConsignorAssertion cAssertion, SecurityTokens mainToken, SoapMessage message)
 	{
 		String clientIP = null;
 		if (cAssertion != null && useGatewayAssertions)
@@ -422,17 +414,17 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		mainToken.setClientIP(clientIP);
 	}
 	
-	protected X509Certificate[] getSSLCertPath(SoapMessage message)
+	private X509Certificate[] getSSLCertPath(SoapMessage message)
 	{
 		return CXFUtils.getSSLCerts(message);
 	}
 
-	protected String getClientIP(SoapMessage message)
+	private String getClientIP(SoapMessage message)
 	{
 		return CXFUtils.getClientIP(message);
 	}
 
-	protected String extractIPFromConsignorAssertion(ConsignorAssertion cAssertion)
+	private String extractIPFromConsignorAssertion(ConsignorAssertion cAssertion)
 	{
 		AuthnStatementType[] authNs = cAssertion.getXMLBean().getAuthnStatementArray();
 		if (authNs == null || authNs.length == 0)
@@ -443,41 +435,12 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		return loc.getAddress();
 	}
 
-	protected HTTPAuthNTokens getHTTPCredentials(SoapMessage message)
+	private HTTPAuthNTokens getHTTPCredentials(SoapMessage message)
 	{
 		return CXFUtils.getHTTPCredentials(message);
 	}
 
-	protected Element getUserAssertion(List<Element> assertions)
-	{
-		for (int i=assertions.size()-1; i>=0; i--)
-		{
-			Element a = (Element) assertions.get(i);
-			List<Element> ass=DOMUtils.getChildrenWithName(a, SAML2_NS, "AttributeStatement");
-			if(ass.size()==0)continue;
-			Element as = ass.get(0);
-			if (as == null) continue;
-			
-			List<Element> attrs = DOMUtils.getChildrenWithName(as, SAML2_NS, "Attribute");
-			for (Element attr: attrs)
-			{
-				String a1 = attr.getAttribute("Name");
-				String a2 = attr.getAttribute("NameFormat");
-				if (StringUtils.isEmpty(a1)|| StringUtils.isEmpty(a2))
-					continue;
-
-				if (a1.equals("USER") && a2.equals("urn:unicore:subject-role"))
-				{
-					assertions.remove(i);
-					return a;
-				}
-			}
-
-		}
-		return null;
-	}
-
-	protected Element getSAMLAuthnAssertion(List<Element> assertions)
+	private Element getSAMLAuthnAssertion(List<Element> assertions)
 	{
 		Element ret = null;
 		for (int i=assertions.size()-1; i>=0; i--)
@@ -503,7 +466,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	 * attribute tag.
 	 * @param assertions
 	 */
-	protected ConsignorAssertion getConsignorAssertion(List<Element> assertions)
+	private ConsignorAssertion getConsignorAssertion(List<Element> assertions)
 	{
 		if (assertions.size() == 0) 
 			return null;
@@ -523,7 +486,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		}
 	}
 
-	protected X509Certificate[] processConsignorAssertion(ConsignorAssertion consignorA)
+	private X509Certificate[] processConsignorAssertion(ConsignorAssertion consignorA)
 	{
 		X509Certificate[] cert = consignorA.getConsignor();
 		if (verifyConsignor)
@@ -557,7 +520,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 		return cert;
 	}
 
-	protected String getSOAPAction(SoapMessage message){
+	private String getSOAPAction(SoapMessage message){
 		String action=CXFUtils.getAction(message);
 				
 		if (action != null){
@@ -567,7 +530,7 @@ public class AuthInHandler extends AbstractSoapInterceptor
 	}
 
 	
-	protected void throwFault(int httpErrorCode, String message)
+	private void throwFault(int httpErrorCode, String message)
 	{
 		logger.debug("AuthN failed: {}", message);
 		Fault f = new Fault((Throwable)null); // null is OK

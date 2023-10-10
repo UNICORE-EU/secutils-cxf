@@ -47,11 +47,10 @@ public abstract class AbstractTestBase extends TestCase
 	}
 
 	protected void addHandlers(List<Interceptor<? extends Message>> s)throws Exception{
-		SecuritySessionStore sesStore = new SecuritySessionStore();
 		KeystoreCertChainValidator trustedIssuersStore = new KeystoreCertChainValidator(
 				"src/test/resources/certs/idp.jks", 
 				"the!test".toCharArray(), "JKS", -1);
-		AuthInHandler authHandler = new AuthInHandler(true, true, true, null, sesStore);
+		AuthInHandler authHandler = new AuthInHandler(true, true, true, null);
 		authHandler.addUserAttributeHandler(new SimpleSecurityServiceImpl.SimpleUserAttributeHandler());
 		TruststoreBasedSamlTrustChecker samlTrustChecker = new TruststoreBasedSamlTrustChecker(
 				trustedIssuersStore);
@@ -69,13 +68,6 @@ public abstract class AbstractTestBase extends TestCase
 		jetty.stop();
 	}
 
-	/**
-	 * make proxy for the given service
-	 * 
-	 * @param s
-	 * @return proxy
-	 * @throws Exception
-	 */
 	protected SimpleSecurityService makeProxy(IClientConfiguration sec) throws Exception
 	{
 		return getWSClientFactory(sec).createPlainWSProxy(SimpleSecurityService.class, getAddress());

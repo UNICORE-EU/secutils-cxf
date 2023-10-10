@@ -120,22 +120,14 @@ public class TestAuthN extends AbstractTestBase
 		}
 	}
 	
-	public void testSSLConsignor()
+	public void testSSLConsignor() throws Exception
 	{
-		try
-		{
-			System.out.println("\nTest SSL\n");
-			MockSecurityConfig config = new MockSecurityConfig(false, true, true); 
-			SimpleSecurityService s = makeProxy(config);
-			
-			String consignorRet = s.TestConsignor();
-			String consignor = config.getCertDN();
-			assertTrue(consignor.equals(consignorRet));
-		} catch (Throwable e)
-		{
-			e.printStackTrace();
-			fail();
-		}
+		MockSecurityConfig config = new MockSecurityConfig(false, true, true); 
+		SimpleSecurityService s = makeProxy(config);
+
+		String consignorRet = s.TestConsignor();
+		String consignor = config.getCertDN();
+		assertEquals(consignor, consignorRet);
 	}
 
 	public void testNoSSLConsignor()

@@ -12,8 +12,6 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.ws.soap.SOAPFaultException;
-
 import eu.unicore.samly2.SAMLBindings;
 import eu.unicore.samly2.assertion.AssertionParser;
 import eu.unicore.samly2.assertion.AttributeAssertionParser;
@@ -27,6 +25,7 @@ import eu.unicore.samly2.validators.AssertionValidator;
 import eu.unicore.samly2.validators.SSOAuthnResponseValidator;
 import eu.unicore.samly2.webservice.SAMLAuthnInterface;
 import eu.unicore.util.httpclient.IClientConfiguration;
+import jakarta.xml.ws.soap.SOAPFaultException;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.protocol.AuthnRequestDocument;
 import xmlbeans.org.oasis.saml2.protocol.AuthnRequestType;

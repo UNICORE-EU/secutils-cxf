@@ -10,13 +10,12 @@ package eu.unicore.security.wsutil.samlclient;
 
 import java.net.MalformedURLException;
 
-import javax.xml.ws.soap.SOAPFaultException;
-
 import eu.unicore.samly2.exceptions.SAMLResponderException;
 import eu.unicore.samly2.exceptions.SAMLValidationException;
 import eu.unicore.samly2.trust.PKISamlTrustChecker;
 import eu.unicore.samly2.webservice.SAMLLogoutInterface;
 import eu.unicore.util.httpclient.IClientConfiguration;
+import jakarta.xml.ws.soap.SOAPFaultException;
 import xmlbeans.org.oasis.saml2.protocol.LogoutRequestDocument;
 import xmlbeans.org.oasis.saml2.protocol.LogoutResponseDocument;
 

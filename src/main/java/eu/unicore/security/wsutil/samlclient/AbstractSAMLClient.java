@@ -67,14 +67,7 @@ public abstract class AbstractSAMLClient
 			SAMLConstants.NFORMAT_DN);
 	}
 	
-	/**
-	 * Full constructor
-	 * @param address
-	 * @param secCfg
-	 * @param issuer
-	 * @param trustChecker
-	 * @throws MalformedURLException
-	 */
+	@SuppressWarnings("unused")
 	protected AbstractSAMLClient(String address, IClientConfiguration secCfg, NameID issuer, 
 			SamlTrustChecker trustChecker) throws MalformedURLException
 	{

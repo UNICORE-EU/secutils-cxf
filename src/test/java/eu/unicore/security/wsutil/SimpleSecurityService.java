@@ -10,12 +10,9 @@ package eu.unicore.security.wsutil;
 
 import java.rmi.RemoteException;
 
-import javax.jws.WebMethod;
-import javax.jws.WebService;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
 
-/**
- * @author K. Benedyczak
- */
 @WebService(targetNamespace="http://cxfutil.security.unicore.eu")
 public interface SimpleSecurityService
 {
@@ -33,7 +30,6 @@ public interface SimpleSecurityService
 	public String TestBearerToken() throws RemoteException;
 	@WebMethod()
 	public String TestPreference() throws RemoteException;
-
 	@WebMethod(action="TestSignature2Action")
 	public String TestSignature2() throws RemoteException;
 	

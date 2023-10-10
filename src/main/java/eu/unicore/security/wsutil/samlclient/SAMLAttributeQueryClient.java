@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.xml.ws.soap.SOAPFaultException;
-
 import org.apache.logging.log4j.Logger;
 
 import eu.emi.security.authn.x509.X509Credential;
@@ -36,6 +34,7 @@ import eu.unicore.security.dsig.DSigException;
 import eu.unicore.security.dsig.DigSignatureUtil;
 import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.IClientConfiguration;
+import jakarta.xml.ws.soap.SOAPFaultException;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
 import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;

@@ -6,7 +6,6 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -33,6 +32,7 @@ import org.w3c.dom.Node;
 
 import eu.unicore.security.HTTPAuthNTokens;
 import eu.unicore.util.Log;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class CXFUtils {
 
@@ -124,7 +124,7 @@ public class CXFUtils {
 		X509Certificate[] certs =null;
 		HttpServletRequest req =(HttpServletRequest)message.get(AbstractHTTPDestination.HTTP_REQUEST);
 		if(req!=null){
-			certs = (X509Certificate[])req.getAttribute("javax.servlet.request.X509Certificate");
+			certs = (X509Certificate[])req.getAttribute("jakarta.servlet.request.X509Certificate");
 		}
 		return certs;
 	}

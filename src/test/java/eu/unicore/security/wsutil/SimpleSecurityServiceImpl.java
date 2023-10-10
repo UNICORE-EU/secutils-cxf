@@ -12,11 +12,6 @@ import java.rmi.RemoteException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 
-import javax.annotation.Resource;
-import javax.jws.WebService;
-import javax.xml.ws.WebServiceContext;
-import javax.xml.ws.handler.MessageContext;
-
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlString;
 
@@ -24,11 +19,13 @@ import eu.unicore.security.HTTPAuthNTokens;
 import eu.unicore.security.SecurityTokens;
 import eu.unicore.security.UserAttributeHandler;
 import eu.unicore.security.wsutil.client.OAuthBearerTokenOutInterceptor;
+import eu.unicore.security.wsutil.client.WSClientFactory;
+import jakarta.annotation.Resource;
+import jakarta.jws.WebService;
+import jakarta.xml.ws.WebServiceContext;
+import jakarta.xml.ws.handler.MessageContext;
 
 
-/**
- * @author K. Benedyczak
- */
 @WebService(endpointInterface="eu.unicore.security.wsutil.SimpleSecurityService")
 public class SimpleSecurityServiceImpl implements SimpleSecurityService
 {
@@ -120,7 +117,7 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 	public String TestSessionID(){
 		SecurityTokens tokens = getTokens();
 		
-		String sessionID=(String)tokens.getContext().get(SecuritySessionUtils.SESSION_ID_KEY);
+		String sessionID=(String)tokens.getContext().get(WSClientFactory.UNICORE_SECURITY_SESSION_TARGET_URL);
 		
 		return sessionID;
 	}
