@@ -147,24 +147,9 @@ public class CXFUtils {
 	public static HTTPAuthNTokens getHTTPCredentials(Message message) {
 		String decoded = getTokenValue("Basic",message,true);
 		if(decoded == null)return null;
-		
-		String []split = decoded.split(":");
-		if (split.length > 2)
-		{
-			logger.warn("Ignoring malformed Authorization HTTP header element" +
-					" (to many ':' after decode: " + decoded + ")");
-			return null;
-		}
-		if (split.length == 2)
-			return new HTTPAuthNTokens(split[0], split[1]);
-		else if (split.length == 1)
-			return new HTTPAuthNTokens(split[0], null);
-		else
-		{
-			logger.warn("Ignoring malformed Authorization HTTP header element" +
-					" (empty string after decode)");
-			return null;
-		}
+		String[]split = decoded.split(":",2);
+		return split.length == 2 ? 
+			new HTTPAuthNTokens(split[0], split[1]) : new HTTPAuthNTokens(split[0], null);
 	}
 
 	/**

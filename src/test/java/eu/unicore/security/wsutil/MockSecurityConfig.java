@@ -59,7 +59,7 @@ public class MockSecurityConfig extends DefaultClientConfiguration
 		}
 	}
 	
-	public static final String HTTP_PASSWD = "123";
+	public static final String HTTP_PASSWD = "123:abc";
 	public static final String HTTP_USER = "qwer";
 	
 	public MockSecurityConfig(boolean doHTTPAuthN,
