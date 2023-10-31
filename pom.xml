@@ -16,7 +16,7 @@
 		<httpclient.version>5.2.1</httpclient.version>
 		<seclib.version>7.0.0</seclib.version>
 		<slf.version>2.0.9</slf.version>
-		<json.version>20230618</json.version>
+		<json.version>20231013</json.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.release>11</maven.compiler.release>
 	</properties>
