@@ -12,7 +12,6 @@
 	<properties>
 		<cxf.version>4.0.3</cxf.version>
 		<jaxws.version>3.0.2</jaxws.version>
-		<wss.version>3.0.1</wss.version>
 		<jetty.version>11.0.17</jetty.version>
 		<httpclient.version>5.2.1</httpclient.version>
 		<seclib.version>7.0.0</seclib.version>
@@ -85,11 +84,6 @@
 			<groupId>eu.unicore.security</groupId>
 			<artifactId>securityLibrary</artifactId>
 			<version>${seclib.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.wss4j</groupId>
-			<artifactId>wss4j-ws-security-dom</artifactId>
-			<version>${wss.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents.client5</groupId>
