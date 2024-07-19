@@ -10,7 +10,7 @@
 	<url>https://github.com/UNICORE-EU/secutils-cxf</url>
 
 	<properties>
-		<cxf.version>4.0.3</cxf.version>
+		<cxf.version>4.0.5</cxf.version>
 		<jaxws.version>3.0.2</jaxws.version>
 		<jetty.version>11.0.17</jetty.version>
 		<httpclient.version>5.2.1</httpclient.version>
