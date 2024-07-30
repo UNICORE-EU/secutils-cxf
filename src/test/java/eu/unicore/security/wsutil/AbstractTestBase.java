@@ -1,6 +1,5 @@
 package eu.unicore.security.wsutil;
 
-
 import java.util.List;
 
 import javax.xml.namespace.QName;
@@ -9,25 +8,26 @@ import org.apache.cxf.interceptor.Interceptor;
 import org.apache.cxf.jaxws.JaxWsServerFactoryBean;
 import org.apache.cxf.message.Message;
 import org.apache.cxf.transport.servlet.CXFNonSpringServlet;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import eu.emi.security.authn.x509.impl.KeystoreCertChainValidator;
 import eu.unicore.samly2.trust.TruststoreBasedSamlTrustChecker;
 import eu.unicore.security.wsutil.client.WSClientFactory;
 import eu.unicore.util.httpclient.IClientConfiguration;
-import junit.framework.TestCase;
 
 /**
  * @author schuller
  * @author golbi
  */
-public abstract class AbstractTestBase extends TestCase
-{
+public abstract class AbstractTestBase {
 
 	protected JettyServer jetty; 
 
 	protected String serviceName="SimpleSecurityService";
 	protected QName serviceQName=new QName("foo", serviceName);
 	
+	@BeforeEach
 	protected void setUp() throws Exception
 	{
 		CXFNonSpringServlet servlet=new CXFNonSpringServlet();
@@ -61,8 +61,7 @@ public abstract class AbstractTestBase extends TestCase
 		s.add(authHandler);
 	}
 	
-	
-	@Override
+	@AfterEach
 	protected void tearDown() throws Exception
 	{
 		jetty.stop();

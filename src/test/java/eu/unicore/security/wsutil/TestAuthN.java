@@ -8,12 +8,17 @@
 
 package eu.unicore.security.wsutil;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.SSLException;
 
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
+import org.junit.jupiter.api.Test;
 
 import eu.emi.security.authn.x509.impl.X500NameUtils;
 import eu.emi.security.authn.x509.proxy.ProxyCertificate;
@@ -27,10 +32,9 @@ import eu.unicore.security.wsutil.client.OAuthBearerTokenOutInterceptor;
 
 public class TestAuthN extends AbstractTestBase
 {
-	public void testGWConsignorNormal()
+	@Test
+	public void testGWConsignorNormal() throws Exception
 	{
-		try
-		{
 			System.out.println("\nTest GW assertion\n");
 
 			MockSecurityConfig config = new MockSecurityConfig(false, true, true); 
@@ -51,11 +55,6 @@ public class TestAuthN extends AbstractTestBase
 			assertTrue(X500NameUtils.equal(consignor.getSubjectX500Principal(), consignorRet));
 			String ip = s.TestIP();
 			assertEquals("127.0.0.1", ip);
-		} catch (Throwable e)
-		{
-			e.printStackTrace();
-			fail();
-		}
 	}
 
 	public void testGWConsignorProxy()

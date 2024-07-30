@@ -1,14 +1,18 @@
 package eu.unicore.security.wsutil;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.apache.cxf.configuration.security.ProxyAuthorizationPolicy;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.frontend.ClientProxy;
 import org.apache.cxf.transport.http.HTTPConduit;
+import org.junit.jupiter.api.Test;
 
 import eu.unicore.util.httpclient.HttpClientProperties;
 
-public class TestClient extends AbstractTestBase{
+public class TestClient extends AbstractTestBase {
 
+	@Test
 	public void testHttpProxySettings()throws Exception{
 
 		MockSecurityConfig sec = new MockSecurityConfig(true, false, false); 

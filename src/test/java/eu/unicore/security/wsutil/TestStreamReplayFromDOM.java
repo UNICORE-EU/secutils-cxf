@@ -4,18 +4,17 @@
  */
 package eu.unicore.security.wsutil;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.FileInputStream;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import junit.framework.TestCase;
-
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamReader;
-import org.junit.Assert;
+import org.apache.xmlbeans.impl.tool.XSTCTester.TestCase;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
-
-import eu.unicore.security.dsig.StandaloneCanonizer;
 
 /**
  * This tests whether a document read to DOM and then canonized is equal to this document
@@ -28,9 +27,10 @@ import eu.unicore.security.dsig.StandaloneCanonizer;
  */
 public class TestStreamReplayFromDOM extends TestCase
 {
-	
+
 	private final String PFX = "src/test/resources/merlin-xmldsig-eight/example-";
 
+	@Test
 	public void test() throws Exception
 	{
 		//TODO - the current, fixed implementation doesn't process XML
@@ -41,8 +41,7 @@ public class TestStreamReplayFromDOM extends TestCase
 			System.out.println("\n\n==============================\n");
 		}
 	}
-	
-	
+
 	private void testSingle(String file) throws Exception
 	{
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -55,14 +54,12 @@ public class TestStreamReplayFromDOM extends TestCase
 
 		Document doc2 = StaxUtils.read(dbf.newDocumentBuilder(), 
 			replayStream, false);
-		
-		//System.out.println(DOMUtilities.getDOMAsRawString(doc2));
-		
+
 		String mangledShot = canon.fireCanon(doc2, false);
 
 		System.out.println(origShot + "\n\n---------\n");
 
 		System.out.println(mangledShot);
-		Assert.assertEquals(origShot, mangledShot);
+		assertEquals(origShot, mangledShot);
 	}
 }

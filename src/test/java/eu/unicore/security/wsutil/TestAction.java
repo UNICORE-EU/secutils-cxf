@@ -8,25 +8,20 @@
 
 package eu.unicore.security.wsutil;
 
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 public class TestAction extends AbstractTestBase
 {
-	public void testAction()
-	{
-		try
-		{
-			MockSecurityConfig config = new MockSecurityConfig(false, true, true);
-			config.setMessageLogging(true);
-			SimpleSecurityService s = makeSecuredProxy(config);
-			
-			String userRet = s.TestAction();
-			assertNotNull(userRet);
-			assertTrue("Got: " + userRet, SimpleSecurityService.test_action.equals(userRet));
-		} catch (Exception e)
-		{
-			e.printStackTrace();
-			fail();
-		}
+	@Test
+	public void testAction() throws Exception {
+		MockSecurityConfig config = new MockSecurityConfig(false, true, true);
+		config.setMessageLogging(true);
+		SimpleSecurityService s = makeSecuredProxy(config);
+
+		String userRet = s.TestAction();
+		assertNotNull(userRet);
+		assertTrue(SimpleSecurityService.test_action.equals(userRet));
 	}
 	
 }

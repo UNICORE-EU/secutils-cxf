@@ -1,10 +1,14 @@
 package eu.unicore.security.wsutil;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.apache.cxf.Bus;
 import org.apache.cxf.endpoint.Client;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.feature.Feature;
 import org.apache.cxf.interceptor.InterceptorProvider;
+import org.junit.jupiter.api.Test;
 
 import eu.unicore.security.wsutil.client.WSClientFactory;
 import eu.unicore.util.httpclient.IClientConfiguration;
@@ -15,6 +19,7 @@ public class TestAddonFeature extends AbstractTestBase
 
 	static boolean featureWasSetup=false;
 
+	@Test
 	public void testAddFeature()throws Exception
 	{
 		featureWasSetup=false;
