@@ -14,10 +14,8 @@
     <jaxws.version>3.0.2</jaxws.version>
     <jetty.version>11.0.22</jetty.version>
     <httpclient.version>5.3.1</httpclient.version>
-    <seclib.version>7.1.0</seclib.version>
-    <bc.version>1.78.1</bc.version>
-    <commons-io.version>2.16.1</commons-io.version>
-    <slf.version>2.0.9</slf.version>
+    <seclib.version>7.1.1</seclib.version>
+    <slf.version>2.0.13</slf.version>
     <json.version>20240303</json.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>11</maven.compiler.release>
@@ -59,11 +57,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>${slf.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
       <version>${jetty.version}</version>
@@ -87,19 +80,9 @@
       <version>${seclib.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcprov-jdk18on</artifactId>
-      <version>${bc.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.bouncycastle</groupId>
-      <artifactId>bcpkix-jdk18on</artifactId>
-      <version>${bc.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>${commons-io.version}</version>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents.client5</groupId>
@@ -120,6 +103,10 @@
         <exclusion>
           <groupId>org.apache.cxf</groupId>
           <artifactId>cxf-rt-ws-addr</artifactId>
+        </exclusion>
+	<exclusion>
+          <groupId>org.eclipse.angus</groupId>
+          <artifactId>angus-mail</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
