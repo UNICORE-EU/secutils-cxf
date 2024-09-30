@@ -10,11 +10,12 @@
   <url>https://github.com/UNICORE-EU/secutils-cxf</url>
 
   <properties>
+    <junit.version>5.11.1</junit.version>
     <cxf.version>4.0.5</cxf.version>
     <jaxws.version>3.0.2</jaxws.version>
-    <jetty.version>11.0.22</jetty.version>
-    <httpclient.version>5.3.1</httpclient.version>
-    <seclib.version>7.1.1</seclib.version>
+    <jetty.version>11.0.24</jetty.version>
+    <httpclient.version>5.4</httpclient.version>
+    <seclib.version>7.1.2</seclib.version>
     <slf.version>2.0.13</slf.version>
     <json.version>20240303</json.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -53,7 +54,7 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>5.10.3</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
