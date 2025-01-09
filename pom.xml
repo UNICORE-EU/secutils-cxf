@@ -10,14 +10,14 @@
   <url>https://github.com/UNICORE-EU/secutils-cxf</url>
 
   <properties>
-    <junit.version>5.11.1</junit.version>
-    <cxf.version>4.0.5</cxf.version>
+    <junit.version>5.11.4</junit.version>
+    <cxf.version>4.0.6</cxf.version>
     <jaxws.version>3.0.2</jaxws.version>
     <jetty.version>11.0.24</jetty.version>
-    <httpclient.version>5.4</httpclient.version>
+    <httpclient.version>5.4.1</httpclient.version>
     <seclib.version>7.1.2</seclib.version>
     <slf.version>2.0.13</slf.version>
-    <json.version>20240303</json.version>
+    <json.version>20250107</json.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>11</maven.compiler.release>
   </properties>
