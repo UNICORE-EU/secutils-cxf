@@ -12,9 +12,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.cxf.staxutils.StaxUtils;
 import org.apache.cxf.staxutils.W3CDOMStreamReader;
-import org.apache.xmlbeans.impl.tool.XSTCTester.TestCase;
 import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
+
+import eu.unicore.security.dsig.StandaloneCanonizer;
 
 /**
  * This tests whether a document read to DOM and then canonized is equal to this document
@@ -25,7 +26,7 @@ import org.w3c.dom.Document;
  * XMLs for tests are taken from the XML c14n test suite. 
  * @author K. Benedyczak
  */
-public class TestStreamReplayFromDOM extends TestCase
+public class TestStreamReplayFromDOM 
 {
 
 	private final String PFX = "src/test/resources/merlin-xmldsig-eight/example-";

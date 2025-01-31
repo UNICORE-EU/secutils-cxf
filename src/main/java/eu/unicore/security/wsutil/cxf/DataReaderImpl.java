@@ -86,7 +86,7 @@ public class DataReaderImpl implements DataReader<XMLStreamReader> {
                       false);
     }
 
-    private Object doRead(XMLStreamReader reader, Class<?> partTypeClass, 
+    Object doRead(XMLStreamReader reader, Class<?> partTypeClass, 
                           Class<?> typeClass, SchemaType st, boolean unwrap) {
         boolean isOutClass = false;
         Class<?> encClass = typeClass.getEnclosingClass();
@@ -94,26 +94,25 @@ public class DataReaderImpl implements DataReader<XMLStreamReader> {
             typeClass = encClass;
             isOutClass = true;
         }
-        Class<?> cls[] = typeClass.getDeclaredClasses();
+        Field c = null;
         Object obj = null;
-        for (Class<?> c : cls) {
-            if ("Factory".equals(c.getSimpleName())) {
-                try {
-                    XmlOptions options = new XmlOptions();
-                    if (validate) {
-                        options.setValidateOnSet();
-                    }
-                    if (st != null && !st.isDocumentType() && !isOutClass) {
-                        options.setLoadReplaceDocumentElement(null);
-                    }
-                    Method meth = c.getMethod("parse", XMLStreamReader.class, XmlOptions.class);
-                    obj = meth.invoke(null, reader, options);                    
-                    break;
-                } catch (Exception e) {
-                    throw new Fault(new Message("UNMARSHAL_ERROR", LOG, partTypeClass, e));
-                }
-            }
+        try {
+        	c = typeClass.getDeclaredField("Factory");
+        	Object factory = c.get(typeClass);
+        	Class<?> factoryClass = c.get(typeClass).getClass();
+        	XmlOptions options = new XmlOptions();
+        	if (validate) {
+        		options.setValidateOnSet();
+        	}
+        	if (st != null && !st.isDocumentType() && !isOutClass) {
+        		options.setLoadReplaceDocumentElement(null);
+        	}
+        	Method meth = factoryClass.getMethod("parse", XMLStreamReader.class, XmlOptions.class);
+        	obj = meth.invoke(factory, reader, options);                    
+        } catch (Exception e) {
+        	throw new Fault(new Message("UNMARSHAL_ERROR", LOG, partTypeClass, e));
         }
+
         if (unwrap && obj != null) {
             try {
                 Class<?> tc = partTypeClass; 
