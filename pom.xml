@@ -4,7 +4,7 @@
   <groupId>eu.unicore.security</groupId>
   <artifactId>secutils-cxf</artifactId>
   <packaging>jar</packaging>
-  <version>4.2.0-SNAPSHOT</version>
+  <version>4.2.0</version>
   <name>secutils-cxf</name>
   <description>CXF integration library for UNICORE</description>
   <url>https://github.com/UNICORE-EU/secutils-cxf</url>
@@ -26,7 +26,7 @@
     <connection>scm:git:git://github.com/UNICORE-EU/secutils-cxf.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/UNICORE-EU/secutils-cxf.git</developerConnection>
     <url>https://github.com/UNICORE-EU/secutils-cxf</url>
-    <tag>HEAD</tag>
+    <tag>secutils-cxf-4.2.0</tag>
   </scm>
 
   <licenses>
