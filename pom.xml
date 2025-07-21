@@ -14,7 +14,7 @@
     <cxf.version>4.0.6</cxf.version>
     <jetty.version>11.0.25</jetty.version>
     <httpclient.version>5.5</httpclient.version>
-    <seclib.version>7.2.0</seclib.version>
+    <seclib.version>7.2.1</seclib.version>
     <slf.version>2.0.13</slf.version>
     <json.version>20250517</json.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -199,15 +199,17 @@
           </execution>
         </executions>
       </plugin>
+      <!-- publishing to central, requires auth user and token
+           in settings.xml created via central.sonatype.com
+      -->
       <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.6.13</version>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.8.0</version>
         <extensions>true</extensions>
         <configuration>
-          <serverId>sonatype-nexus-staging</serverId>
-          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-          <autoReleaseAfterClose>true</autoReleaseAfterClose>
+          <publishingServerId>central</publishingServerId>
+	  <autoPublish>true</autoPublish>
         </configuration>
       </plugin>
     </plugins>
