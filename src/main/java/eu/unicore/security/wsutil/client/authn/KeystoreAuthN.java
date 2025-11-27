@@ -7,45 +7,39 @@ import eu.unicore.security.canl.PasswordCallback;
 import eu.unicore.security.canl.TruststoreProperties;
 
 /**
- * Classic UNICORE 6 authentication method: local X.509 certificate is used, 
- * configured using the standard "credential.*" and "truststore.*" properties<br/>
- * <p>
+ * Authenticate with a local X.509 certificate, configured using the
+ * standard "credential.*" and "truststore.*" properties<br/>
+ *
  * The class is thread safe
  * @author schuller
  */
 public class KeystoreAuthN extends PropertiesBasedAuthenticationProvider implements AuthenticationProvider {
 
-	public static final String X509="X509";
-	
 	public KeystoreAuthN(Properties properties, PasswordCallback passwordCallback)
 	{
 		super(properties, passwordCallback);
 	}
 
-	protected KeystoreAuthN()
-	{
-	}
-	
+	protected KeystoreAuthN(){}
+
 	@Override
 	public String getName() {
-		return X509;
+		return "X509";
 	}
 
 	@Override
 	public String getDescription() {
-		return "Uses a local keystore and optional truststore file.";
+		return "Uses a local keystore and optional truststore.";
 	}
 
 	@Override
 	public String getUsage()
 	{
 		StringBuilder ret = new StringBuilder();
-		ret.append("The following properties can be used in the UCC preference file " +
-				"to configure the X509 authentication. Many of these are optional. Refer to the " +
-				"manual and/or the example files.\n");
+		ret.append("The following properties can be used to configure the X509 authentication.");
+		ret.append(" Many of these are optional. Refer to the manual and the example files.\n");
 		ret.append("\nFor configuring your credential:\n");
 		ret.append(getMeta(CredentialProperties.class, CredentialProperties.DEFAULT_PREFIX));
-
 		ret.append("\nFor configuring your trusted CAs and certificates:\n");
 		ret.append(getMeta(TruststoreProperties.class, TruststoreProperties.DEFAULT_PREFIX));
 		return ret.toString();
