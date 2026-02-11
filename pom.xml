@@ -4,21 +4,20 @@
   <groupId>eu.unicore.security</groupId>
   <artifactId>secutils-cxf</artifactId>
   <packaging>jar</packaging>
-  <version>4.3.2-SNAPSHOT</version>
+  <version>5.0.0-SNAPSHOT</version>
   <name>secutils-cxf</name>
   <description>CXF integration library for UNICORE</description>
   <url>https://github.com/UNICORE-EU/secutils-cxf</url>
 
   <properties>
-    <junit.version>5.12.0</junit.version>
-    <cxf.version>4.0.6</cxf.version>
-    <jetty.version>11.0.26</jetty.version>
-    <httpclient.version>5.6</httpclient.version>
-    <seclib.version>7.3.1</seclib.version>
-    <slf.version>2.0.17</slf.version>
-    <json.version>20251224</json.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.release>11</maven.compiler.release>
+    <maven.compiler.release>17</maven.compiler.release>
+    <junit.version>5.12.0</junit.version>
+    <cxf.version>4.1.4</cxf.version>
+    <jetty.version>12.1.6</jetty.version>
+    <httpclient.version>5.6</httpclient.version>
+    <seclib.version>8.0.0</seclib.version>
+    <json.version>20251224</json.version>
   </properties>
 
   <scm>
@@ -57,14 +56,13 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
+      <groupId>org.eclipse.jetty.ee10</groupId>
+      <artifactId>jetty-ee10-servlet</artifactId>
       <version>${jetty.version}</version>
-      <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlets</artifactId>
+      <groupId>org.eclipse.jetty.ee10</groupId>
+      <artifactId>jetty-ee10-servlets</artifactId>
       <version>${jetty.version}</version>
       <scope>test</scope>
     </dependency>
@@ -75,14 +73,21 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.eclipse.jetty.compression</groupId>
+      <artifactId>jetty-compression-server</artifactId>
+      <version>${jetty.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.compression</groupId>
+      <artifactId>jetty-compression-gzip</artifactId>
+      <version>${jetty.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>eu.unicore.security</groupId>
       <artifactId>securityLibrary</artifactId>
       <version>${seclib.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>${slf.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents.client5</groupId>
@@ -137,7 +142,7 @@
             <configuration>
               <rules>
                 <requireMavenVersion>
-                  <version>3.2.5</version>
+                  <version>3.6.3</version>
                 </requireMavenVersion>
               </rules>
             </configuration>
@@ -147,7 +152,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
+        <version>3.13.0</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -188,7 +193,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.8</version>
         <executions>
           <execution>
             <id>sign-artifacts</id>
@@ -205,7 +210,7 @@
       <plugin>
         <groupId>org.sonatype.central</groupId>
         <artifactId>central-publishing-maven-plugin</artifactId>
-        <version>0.8.0</version>
+        <version>0.9.0</version>
         <extensions>true</extensions>
         <configuration>
           <publishingServerId>central</publishingServerId>

@@ -40,7 +40,7 @@ public abstract class AbstractTestBase {
 		factory.setEndpointName(serviceQName);
 		factory.setAddress("/"+serviceName);
 		factory.setServiceName(new QName("unicore.eu",serviceName));
-		
+
 		List<Interceptor<? extends Message>> s = factory.getInInterceptors();
 		addHandlers(s);
 		factory.create();

@@ -1,11 +1,3 @@
-/*
- * Copyright (c) 2007, 2008 ICM Uniwersytet Warszawski All rights reserved.
- * See LICENCE.ICM file for licencing information.
- *
- * Created on May 31, 2007
- * Author: K. Benedyczak <golbi@mat.umk.pl>
- */
-
 package eu.unicore.security.wsutil;
 
 import java.io.ByteArrayOutputStream;

@@ -1,11 +1,3 @@
-/*
- * Copyright (c) 2007, 2008 ICM Uniwersytet Warszawski All rights reserved.
- * See LICENCE file for licencing information.
- *
- * Created on Aug 8, 2007
- * Author: K. Benedyczak <golbi@mat.umk.pl>
- */
-
 package eu.unicore.security.wsutil;
 
 import java.net.URL;
@@ -13,9 +5,9 @@ import java.net.URL;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.cxf.transport.servlet.CXFNonSpringServlet;
+import org.eclipse.jetty.ee10.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee10.servlet.ServletHolder;
 import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 
 import eu.unicore.util.configuration.ConfigurationException;
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
@@ -61,9 +53,8 @@ public class JettyServer extends JettyServerBase
 	@Override
 	protected Handler createRootHandler() throws ConfigurationException
 	{
-		ServletContextHandler root = new ServletContextHandler(getServer(), "/", ServletContextHandler.SESSIONS);
+		ServletContextHandler root = new ServletContextHandler("/", ServletContextHandler.SESSIONS);
 		root.addServlet(new ServletHolder(servlet), "/services/*");
 		return root;
-
 	}
 }
