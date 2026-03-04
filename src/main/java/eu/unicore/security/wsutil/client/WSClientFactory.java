@@ -45,14 +45,14 @@ public class WSClientFactory {
 	public static final String UNICORE_SECURITY_SESSION_TARGET_URL = "unicore-security-session-target-url";
 
 	protected static final Logger logger = Log.getLogger(Log.CLIENT, WSClientFactory.class);
-	
-	protected IClientConfiguration securityProperties;
-	protected HttpClientProperties settings;
-	
+
+	protected final IClientConfiguration securityProperties;
+	protected final HttpClientProperties settings;
+
 	protected final List<Interceptor<? extends Message>> inHandlers = new ArrayList<>();
 	protected final List<Interceptor<? extends Message>> outHandlers = new ArrayList<>();
 	protected final List<Interceptor<? extends Message>> faultHandlers = new ArrayList<>();
-	
+
 	protected final List<Feature> features = new ArrayList<>();
 
 	/**
@@ -83,7 +83,7 @@ public class WSClientFactory {
 				((Configurable) i).configure((IClientConfiguration) securityProperties);
 		}
 	}
-	
+
 	/**
 	 * add default in/out/fault handlers<br/>
 	 */
@@ -94,7 +94,7 @@ public class WSClientFactory {
 		outHandlers.add(new XmlBeansNsHackOutHandler());		
 		outHandlers.add(new OAuthBearerTokenOutInterceptor());	
 	}
-	
+
 	/**
 	 * Add {@link Feature} classes for client calls. 
 	 * Invoked only when the proxy is created.<br/>
