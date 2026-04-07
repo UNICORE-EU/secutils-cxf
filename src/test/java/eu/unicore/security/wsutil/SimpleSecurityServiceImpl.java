@@ -1,7 +1,6 @@
 package eu.unicore.security.wsutil;
 
 import java.rmi.RemoteException;
-import java.security.cert.X509Certificate;
 import java.util.Calendar;
 
 import org.apache.xmlbeans.XmlObject;
@@ -35,21 +34,7 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 		return tokens;
 	}
 
-	public String TestSignature2() throws RemoteException
-	{
-		getTokens();
-		MessageContext ctx = context.getMessageContext();
-		if (ctx.get("tola") != null)
-			return "OK";
-		return "baad";
-	}
-
-	public String TestConsignor() throws RemoteException
-	{
-		SecurityTokens tokens = getTokens();
-		return tokens.getConsignorName();
-	}
-
+	@Override
 	public String TestHTTPCreds() throws RemoteException
 	{
 		SecurityTokens tokens = getTokens();
@@ -57,7 +42,8 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 				SecurityTokens.CTX_LOGIN_HTTP);
 		return a.getUserName() + "-" + a.getPasswd();
 	}
-	
+
+	@Override
 	public String TestBearerToken() throws RemoteException
 	{
 		System.out.println("XX");
@@ -65,31 +51,6 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 		String bearer = (String) tokens.getContext().get(
 				OAuthBearerTokenOutInterceptor.TOKEN_KEY);
 		return "Got OAuth Bearer token: " + bearer;
-	}
-
-	public String TestUser() throws RemoteException
-	{
-		SecurityTokens tokens = getTokens();
-		X509Certificate cert = tokens.getUserCertificate(); 
-		if (cert != null)
-			return cert.getSubjectX500Principal().getName();
-		else
-			return tokens.getUserName();
-	}
-
-	public String TestEffectiveUser() throws RemoteException
-	{
-		SecurityTokens tokens = getTokens();
-		String effUser = tokens.getEffectiveUserName(); 
-		return effUser == null ? null : effUser;
-	}
-
-	@Override
-	public String TestPreference() throws RemoteException
-	{
-		SecurityTokens tokens = getTokens();
-		String v = (String) tokens.getContext().get("PREF_preference");
-		return "preference|"+v;
 	}
 
 	@Override
@@ -100,18 +61,8 @@ public class SimpleSecurityServiceImpl implements SimpleSecurityService
 	}
 
 	@Override
-	public String TestIP() throws RemoteException {
-		SecurityTokens tokens = getTokens();
-		return tokens.getClientIP();
-	}
-
-	@Override
 	public String TestSessionID(){
-		SecurityTokens tokens = getTokens();
-		
-		String sessionID=(String)tokens.getContext().get(WSClientFactory.UNICORE_SECURITY_SESSION_TARGET_URL);
-		
-		return sessionID;
+		return (String)getTokens().getContext().get(WSClientFactory.UNICORE_SECURITY_SESSION_TARGET_URL);
 	}
 	
 	public static String currentRepresentation="test123";

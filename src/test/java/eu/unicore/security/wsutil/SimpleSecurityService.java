@@ -9,21 +9,9 @@ import jakarta.jws.WebService;
 public interface SimpleSecurityService
 {
 	@WebMethod()
-	public String TestIP() throws RemoteException;
-	@WebMethod()
-	public String TestConsignor() throws RemoteException;
-	@WebMethod()
-	public String TestUser() throws RemoteException;
-	@WebMethod()
-	public String TestEffectiveUser() throws RemoteException;
-	@WebMethod()
 	public String TestHTTPCreds() throws RemoteException;
 	@WebMethod()
 	public String TestBearerToken() throws RemoteException;
-	@WebMethod()
-	public String TestPreference() throws RemoteException;
-	@WebMethod(action="TestSignature2Action")
-	public String TestSignature2() throws RemoteException;
 	
 	public static final String test_action="SomeTestActionValue";
 	

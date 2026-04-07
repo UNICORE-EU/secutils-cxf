@@ -135,17 +135,16 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 				throw new SAMLValidationException("Can't sign request", e);
 			}
 		}
-
-		try
+		if(logger.isTraceEnabled()) try
 		{
-			logger.trace("Attribute query document: " + DigSignatureUtil
-					.dumpDOMToString(SAMLUtils.getDOM(attrQuery.getXMLBeanDoc())));
+			logger.trace("Attribute query document: " +  DigSignatureUtil.dumpDOMToString(SAMLUtils.getDOM(attrQuery.getXMLBeanDoc())));
 		} catch (DSigException e)
 		{
-			logger.error("Can not dump query document to log");
+			logger.trace("Can not dump query document to log");
 		}
 		return attrQuery;
 	}
+
 	/**
 	 * Performs a SAML query using a provided AttributeQUery argument. 
 	 * Response is parsed and validated.

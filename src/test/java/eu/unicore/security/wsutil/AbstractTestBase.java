@@ -11,8 +11,6 @@ import org.apache.cxf.transport.servlet.CXFNonSpringServlet;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
-import eu.emi.security.authn.x509.impl.KeystoreCertChainValidator;
-import eu.unicore.samly2.trust.TruststoreBasedSamlTrustChecker;
 import eu.unicore.security.wsutil.client.WSClientFactory;
 import eu.unicore.util.httpclient.IClientConfiguration;
 
@@ -47,17 +45,8 @@ public abstract class AbstractTestBase {
 	}
 
 	protected void addHandlers(List<Interceptor<? extends Message>> s)throws Exception{
-		KeystoreCertChainValidator trustedIssuersStore = new KeystoreCertChainValidator(
-				"src/test/resources/certs/idp.jks", 
-				"the!test".toCharArray(), "JKS", -1);
 		AuthInHandler authHandler = new AuthInHandler(true, true, true, null);
 		authHandler.addUserAttributeHandler(new SimpleSecurityServiceImpl.SimpleUserAttributeHandler());
-		TruststoreBasedSamlTrustChecker samlTrustChecker = new TruststoreBasedSamlTrustChecker(
-				trustedIssuersStore);
-		authHandler.enableSamlAuthentication(MockSecurityConfig.SERVER_CRED.getSubjectName(), 
-				jetty.getUrls()[0].toExternalForm(), 
-				samlTrustChecker, 0);
-		
 		s.add(authHandler);
 	}
 	

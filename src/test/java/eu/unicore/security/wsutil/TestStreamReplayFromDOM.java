@@ -45,17 +45,12 @@ public class TestStreamReplayFromDOM
 		dbf.setNamespaceAware(true);
 		Document doc = dbf.newDocumentBuilder().parse(new FileInputStream(file), "");
 		W3CDOMStreamReader replayStream = new W3CDOMStreamReader(doc.getDocumentElement());
-
 		StandaloneCanonizer canon = new StandaloneCanonizer();
 		String origShot = canon.fireCanon(doc, false);
-
 		Document doc2 = StaxUtils.read(dbf.newDocumentBuilder(), 
 			replayStream, false);
-
 		String mangledShot = canon.fireCanon(doc2, false);
-
 		System.out.println(origShot + "\n\n---------\n");
-
 		System.out.println(mangledShot);
 		assertEquals(origShot, mangledShot);
 	}
