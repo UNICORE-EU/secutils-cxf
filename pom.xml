@@ -16,7 +16,7 @@
     <cxf.version>4.1.5</cxf.version>
     <jetty.version>12.1.8</jetty.version>
     <httpclient.version>5.6</httpclient.version>
-    <seclib.version>8.1.2-SNAPSHOT</seclib.version>
+    <seclib.version>8.1.2</seclib.version>
     <json.version>20251224</json.version>
   </properties>
 
@@ -42,7 +42,6 @@
     </developer>
     <developer>
       <name>Bernd Schuller</name>
-      <email>bschuller at users.sourceforge.net</email>
       <organization>Forschungszentrum Juelich GmbH</organization>
       <organizationUrl>https://www.fz-juelich.de/jsc</organizationUrl>
     </developer>
