@@ -19,8 +19,8 @@ import xmlbeans.org.oasis.saml2.protocol.LogoutResponseDocument;
  */
 public class SAMLLogoutClient extends AbstractSAMLClient
 {
-	private SAMLLogoutInterface logoutProxy;
 
+	private final SAMLLogoutInterface logoutProxy;
 	
 	public SAMLLogoutClient(String address, IClientConfiguration clientConfiguration) 
 		throws MalformedURLException
@@ -38,7 +38,7 @@ public class SAMLLogoutClient extends AbstractSAMLClient
 	{
 		return performSAMLQuery(request);
 	}
-	
+
 	/*-********************************************************
 	 * INTERNAL methods 
 	 *-********************************************************/
@@ -53,16 +53,13 @@ public class SAMLLogoutClient extends AbstractSAMLClient
 	protected LogoutResponseDocument performSAMLQuery(LogoutRequestDocument request)
 			throws SAMLValidationException
 	{
-		LogoutResponseDocument xmlRespDoc;
-
 		try
 		{
-			xmlRespDoc = logoutProxy.logoutRequest(request);
+			return logoutProxy.logoutRequest(request);
 		} catch (SOAPFaultException e)
 		{
 			throw new SAMLResponderException("SAML service invocation failed: " + e.getMessage(), e);
 		}
-		
-		return xmlRespDoc;
 	}
+
 }

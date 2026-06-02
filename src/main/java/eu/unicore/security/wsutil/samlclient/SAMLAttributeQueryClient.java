@@ -51,9 +51,8 @@ import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
 public class SAMLAttributeQueryClient extends AbstractSAMLClient
 {
 	private static final Logger logger = Log.getLogger(Log.CLIENT, SAMLAttributeQueryClient.class);
-	
-	private final SAMLQueryInterface queryProxy;
 
+	private final SAMLQueryInterface queryProxy;
 	
 	public SAMLAttributeQueryClient(String address, IClientConfiguration clientConfiguration)
 			throws MalformedURLException
@@ -69,7 +68,7 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 		queryProxy = factory.createPlainWSProxy(SAMLQueryInterface.class, address);
 
 	}
-	
+
 	public SAMLAttributeQueryClient(String address, IClientConfiguration clientConfiguration,
 			SamlTrustChecker trustChecker, SAMLQueryInterface queryProxy) throws MalformedURLException
 	{
@@ -107,7 +106,7 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 	{
 		return performRawSAMLQuery(prepareQuery(whose, requesterSamlName, attributes, signingCredential));
 	}
-	
+
 	/*-********************************************************
 	 * INTERNAL methods 
 	 *-********************************************************/
@@ -118,7 +117,7 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 	{
 		return performSAMLQuery(prepareQuery(whose, requesterSamlName, attributes, signingCredential), decryptionCredential);
 	}
-	
+
 	private AttributeQuery prepareQuery(NameID whose, NameID requesterSamlName, Set<SAMLAttribute> attributes,
 			Optional<X509Credential> signingCredential) throws SAMLValidationException
 	{
@@ -169,7 +168,7 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 				//support assertion decryption
 				decryptionCredential.isPresent() ? decryptionCredential.get().getKey() : null);
 		validator.validate(xmlRespDoc);
-		
+
 		List<AssertionDocument> assertions = validator.getAttributeAssertions();
 		
 		if (assertions.size() == 0)
@@ -179,9 +178,8 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 				"More than one assertion was returned. It is OK," +
 					"however this implementation supports only " +
 					"responses with a single assertion.");
-		AssertionDocument assertion = assertions.get(0);
 
-		return new AttributeAssertionParser(assertion);
+		return new AttributeAssertionParser(assertions.get(0));
 	}
 	
 	/**
@@ -194,17 +192,13 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 	 */
 	protected ResponseDocument performRawSAMLQuery(AttributeQuery attrQuery) throws SAMLValidationException
 	{
-		ResponseDocument xmlRespDoc;
-
 		try
 		{
-			xmlRespDoc = queryProxy.attributeQuery(attrQuery.getXMLBeanDoc());
+			return queryProxy.attributeQuery(attrQuery.getXMLBeanDoc());
 		} catch (SOAPFaultException e)
 		{
 			throw new SAMLResponderException("SAML service invocation failed: " + e.getMessage(), e);
 		}
-
-		return xmlRespDoc;
 	}
 
 	protected AttributeQuery createQuery(NameID whose, NameID requesterSamlName) throws SAMLValidationException

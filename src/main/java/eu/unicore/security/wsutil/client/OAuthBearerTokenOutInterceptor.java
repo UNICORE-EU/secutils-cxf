@@ -23,9 +23,9 @@ public class OAuthBearerTokenOutInterceptor extends AbstractPhaseInterceptor<Mes
 	 * key for putting the Bearer token into the {@link IClientConfiguration#getExtraSecurityTokens()}
 	 */
 	public static final String TOKEN_KEY = "____OAUTH2_BEARER_TOKEN";
-	
+
 	private String token;
-	
+
 	public OAuthBearerTokenOutInterceptor() {
 		super(Phase.WRITE);
 	}

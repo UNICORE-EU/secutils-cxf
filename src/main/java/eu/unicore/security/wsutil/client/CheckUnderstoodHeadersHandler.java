@@ -23,7 +23,7 @@ import org.apache.cxf.ws.addressing.Names;
  */
 public class CheckUnderstoodHeadersHandler extends AbstractSoapInterceptor {
 
-	private final Set<QName> understoodHeaders=new HashSet<QName>();
+	private final Set<QName> understoodHeaders = new HashSet<QName>();
 	private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
 	
 	//default headers that the stack understands. This can be
@@ -39,7 +39,7 @@ public class CheckUnderstoodHeadersHandler extends AbstractSoapInterceptor {
 		Names.WSA_MESSAGEID_QNAME,
 		Names.WSA_RELATESTO_QNAME,
 	}; 
-	
+
 	/**
 	 * add a handler which claims to understand the default list of headers
 	 * @see CheckUnderstoodHeadersHandler#defaultHeaders
@@ -49,7 +49,7 @@ public class CheckUnderstoodHeadersHandler extends AbstractSoapInterceptor {
 		super(Phase.PRE_PROTOCOL);
 		addUnderstoodHeaders(defaultHeaders);
 	}
-	
+
 	public void addUnderstoodHeaders(QName[] qn){
 		rwLock.writeLock().lock();
 		for(int l=0;l<qn.length;l++)understoodHeaders.add(qn[l]);
@@ -66,7 +66,6 @@ public class CheckUnderstoodHeadersHandler extends AbstractSoapInterceptor {
 	}
 
 	@Override
-	public void handleMessage(SoapMessage message) throws Fault {
-	}
-	
+	public void handleMessage(SoapMessage message) throws Fault {}
+
 }

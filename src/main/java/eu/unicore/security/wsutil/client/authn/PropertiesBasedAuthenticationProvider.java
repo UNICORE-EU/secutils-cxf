@@ -104,7 +104,7 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 	@SuppressWarnings("unchecked")
 	protected Map<String,PropertyMD>getMeta(Class<?> props){
 		try{
-			Field f=props.getDeclaredField("META");
+			Field f = props.getDeclaredField("META");
 			f.setAccessible(true);
 			return(Map<String,PropertyMD>)f.get(null);
 		}catch(Exception ex){
@@ -118,7 +118,7 @@ public abstract class PropertiesBasedAuthenticationProvider implements Authentic
 		StringBuilder ret = new StringBuilder();
 		String nl = System.getProperty("line.separator");
 		for(Entry<String, PropertyMD> entry: getMeta(clazz).entrySet()){
-			PropertyMD prop=entry.getValue();
+			PropertyMD prop = entry.getValue();
 			if(!prop.isHidden()){
 				ret.append(prefix).append(entry.getKey()).append(" : ").append(prop.getDescription());
 				ret.append(nl);

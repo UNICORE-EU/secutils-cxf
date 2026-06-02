@@ -14,5 +14,5 @@ public interface Configurable {
 	 * @param properties - {@link IClientConfiguration}
 	 */
 	public void configure(IClientConfiguration properties);
-	
+
 }

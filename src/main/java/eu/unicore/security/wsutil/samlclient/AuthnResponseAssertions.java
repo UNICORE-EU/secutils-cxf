@@ -17,7 +17,7 @@ public class AuthnResponseAssertions
 	protected List<AssertionParser> authNAssertions;
 	protected List<AttributeAssertionParser> attributeAssertions;
 	protected List<AssertionDocument> otherAssertions;
-	
+
 	public AuthnResponseAssertions(List<AssertionParser> authNAssertions,
 			List<AttributeAssertionParser> attributeAssertions,
 			List<AssertionDocument> otherAssertions)
@@ -27,15 +27,17 @@ public class AuthnResponseAssertions
 		this.attributeAssertions = attributeAssertions;
 		this.otherAssertions = otherAssertions;
 	}
-	
+
 	public List<AssertionParser> getAuthNAssertions()
 	{
 		return authNAssertions;
 	}
+
 	public List<AttributeAssertionParser> getAttributeAssertions()
 	{
 		return attributeAssertions;
 	}
+
 	public List<AssertionDocument> getOtherAssertions()
 	{
 		return otherAssertions;

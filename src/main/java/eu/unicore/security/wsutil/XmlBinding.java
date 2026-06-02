@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Inherited
 public @interface XmlBinding {
-	
+
 	/**
 	 * return the name of the binding to use (jaxb, xmlbeans, ...)
 	 */

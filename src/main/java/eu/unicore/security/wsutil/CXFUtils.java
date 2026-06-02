@@ -24,8 +24,6 @@ import org.apache.cxf.service.invoker.MethodDispatcher;
 import org.apache.cxf.service.model.BindingOperationInfo;
 import org.apache.cxf.transport.http.AbstractHTTPDestination;
 import org.apache.cxf.transport.servlet.ServletDestination;
-import org.apache.cxf.ws.addressing.AddressingProperties;
-import org.apache.cxf.ws.addressing.ContextUtils;
 import org.apache.cxf.ws.addressing.Names;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Node;
@@ -37,7 +35,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public class CXFUtils {
 
 	private static final Logger logger = Log.getLogger(Log.SERVICES, CXFUtils.class);
-	
+
 	public static boolean isLocalCall(Exchange exch){
 		return isLocalCall(exch.getInMessage());
 	}
@@ -48,9 +46,7 @@ public class CXFUtils {
 
 	public static String getAction(Message message){
 		if(message==null)return null;
-
-		String action=null;
-
+		String action = null;
 		if(message.get(Message.PROTOCOL_HEADERS)!=null){
 			Map<String, List<String>> headers = CastUtils.cast((Map<?, ?>)message.get(Message.PROTOCOL_HEADERS));
 			if (headers != null) {
@@ -71,21 +67,20 @@ public class CXFUtils {
 			}
 		}
 		if(action==null){
-			Method m=getMethod(message);
+			Method m = getMethod(message);
 			action = m!=null ? m.getName() : null;
 		}
 		return  action;
 	}
 
 	public static Method getMethod(Message message){
-		Exchange ex=message.getExchange();
+		Exchange ex = message.getExchange();
 		BindingOperationInfo bop = ex.get(BindingOperationInfo.class);
-		if(bop==null)
-			return null;
-
-		MethodDispatcher md = (MethodDispatcher)ex.getService().get(MethodDispatcher.class.getName());
-		return md.getMethod(bop);
-	}
+		return bop!=null ?
+			((MethodDispatcher)ex.getService().get(MethodDispatcher.class.getName()))
+				.getMethod(bop)
+			: null;
+		}
 
 	/**
 	 * write DOM node to output stream in raw format (no indent)
@@ -106,13 +101,6 @@ public class CXFUtils {
 	 */
 	public static Message getCurrentMessage(){
 		return PhaseInterceptorChain.getCurrentMessage();
-	}
-
-	/**
-	 * get the ws-addressing properties from the current message
-	 */
-	public static AddressingProperties getAddressingProperties(){
-		return ContextUtils.retrieveMAPs(getCurrentMessage(), false, false);
 	}
 
 	/**
@@ -145,7 +133,7 @@ public class CXFUtils {
 	 * @return HTTPAuthNTokens or <code>null</code> if not available
 	 */
 	public static HTTPAuthNTokens getHTTPCredentials(Message message) {
-		String decoded = getTokenValue("Basic",message,true);
+		String decoded = getTokenValue("Basic", message, true);
 		if(decoded == null)return null;
 		String[]split = decoded.split(":",2);
 		return split.length == 2 ? 
@@ -184,7 +172,7 @@ public class CXFUtils {
 		String encoded = aa.substring(type.length()+1);
 		return decode ? new String(Base64.decodeBase64(encoded.getBytes())) : encoded;
 	}
-	
+
 	/**
 	 * get the HttpServletRequest
 	 * @param message - the incoming SOAP message

@@ -30,7 +30,7 @@ public class SecuritySessionStore
 	 * store security tokens keyed by security session ID
 	 */
 	protected Map<String, SecuritySession> sessions = new HashMap<>();
-			
+
 	/**
 	 * stores number of sessions per user (identified as effective DN + Client IP)
 	 * If this exceeds a threshold, the least-recently-used session is removed
@@ -56,17 +56,14 @@ public class SecuritySessionStore
 
 	public synchronized void storeSession(SecuritySession session, SecurityTokens tokens)
 	{
-		String userKey=getUserKey(tokens);
+		String userKey = getUserKey(tokens);
 		session.setUserKey(userKey);
 		sessions.put(session.getSessionID(), session);
 		
 		AtomicInteger i = getOrCreateSessionCounter(userKey);
-		int sessions=i.incrementAndGet();
-		
-		if(log.isDebugEnabled()){
-			log.debug("Created new security session <"+session.getSessionID()+" for <"+userKey+
-					"> will expire in " + (session.getLifetime()/1000.0) + "s");
-		}
+		int sessions = i.incrementAndGet();
+		log.debug("Created new security session <{}> for <{}> will expire in {}s",
+					session.getSessionID(), userKey, session.getLifetime()/1000);
 
 		if (lastCleanup + CLEANUP_INTERVAL < System.currentTimeMillis())
 			expelExpiredSessions();
@@ -86,20 +83,18 @@ public class SecuritySessionStore
 
 	// retrieve the session counter
 	private synchronized AtomicInteger getOrCreateSessionCounter(String userKey){
-		AtomicInteger i=sessionsPerUser.get(userKey);
+		AtomicInteger i = sessionsPerUser.get(userKey);
 		if (i==null) {
-			i=new AtomicInteger(0);
+			i = new AtomicInteger(0);
 			sessionsPerUser.put(userKey, i);
 		}
 		return i;
 	}
 
 	private void decrementUserSessionCounter(String userKey){
-		AtomicInteger i=getOrCreateSessionCounter(userKey);
-		int sessions=i.decrementAndGet();
-		if(log.isDebugEnabled()){
-			log.debug("Sessions for "+userKey+" : "+sessions);
-		}
+		AtomicInteger i = getOrCreateSessionCounter(userKey);
+		int sessions = i.decrementAndGet();
+		log.debug("Sessions for {} : {}", userKey, sessions);
 	}
 
 	/**
@@ -129,9 +124,7 @@ public class SecuritySessionStore
 			}
 		}
 		if (lru!=null){
-			if(log.isDebugEnabled()){
-				log.debug("Removing LRU session for "+key);
-			}
+			log.debug("Removing LRU session for {}", key);
 			if(null!=sessions.remove(lru.getSessionID())){
 				decrementUserSessionCounter(key);
 			}

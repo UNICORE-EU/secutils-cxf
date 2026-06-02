@@ -41,14 +41,13 @@ public class DataWriterImpl implements DataWriter<XMLStreamWriter> {
     private static final Logger LOG = LogUtils.getLogger(XmlBeansDataBinding.class);
     private Schema schema;
     private Message message;
-    
-    public DataWriterImpl() {
-    }
+
+    public DataWriterImpl() {}
     
     public void write(Object obj, XMLStreamWriter output) {
         write(obj, null, output);
     }
-    
+
     public void write(Object obj, MessagePartInfo part, XMLStreamWriter output) {
         try {
             Class<?> typeClass = part != null ? part.getTypeClass() : null;
@@ -80,7 +79,6 @@ public class DataWriterImpl implements DataWriter<XMLStreamWriter> {
                 }
             }
 
-            
             if (obj != null) {
                 XmlOptions options = new XmlOptions();
                 if (schema != null) {
@@ -98,7 +96,7 @@ public class DataWriterImpl implements DataWriter<XMLStreamWriter> {
                         XmlTokenSource source = (XmlTokenSource)obj;
                         dom = source.newDomNode(options);
                     }
-                    
+
                     if (dom instanceof Document) {
                         org.w3c.dom.Element e = ((Document)dom).getDocumentElement();
                         StaxUtils.copy(e, output);
@@ -120,7 +118,7 @@ public class DataWriterImpl implements DataWriter<XMLStreamWriter> {
                     }
                     return;
                 }
-                
+
                 XMLStreamReader reader;
                 if (obj instanceof XmlObjectBase) {
                     XmlObjectBase source = (XmlObjectBase)obj;
@@ -193,8 +191,7 @@ public class DataWriterImpl implements DataWriter<XMLStreamWriter> {
         return false;
     }
 
-    public void setAttachments(Collection<Attachment> attachments) {
-    }
+    public void setAttachments(Collection<Attachment> attachments) {}
 
     public void setProperty(String key, Object value) {
         if (Message.class.getName().equals(key)) {

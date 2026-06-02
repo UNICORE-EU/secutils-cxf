@@ -14,10 +14,10 @@ import eu.unicore.util.Log;
 public class InMemoryAssertionCache implements AssertionsCache {
 
 	protected final static Logger logger = Log.getLogger(Log.SECURITY, AssertionsCache.class);
-	
+
 	protected final Map<String, AuthnResponseAssertions>store = 
 			new ConcurrentHashMap<String, AuthnResponseAssertions>();
-	
+
 	@Override
 	public AuthnResponseAssertions get(String key) {
 		return store.get(key);

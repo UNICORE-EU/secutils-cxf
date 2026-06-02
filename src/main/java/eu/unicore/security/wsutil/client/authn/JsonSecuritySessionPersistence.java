@@ -27,17 +27,19 @@ public class JsonSecuritySessionPersistence implements SecuritySessionPersistenc
 {
 	private static final Logger logger = Log.getLogger(Log.SECURITY, JsonSecuritySessionPersistence.class);
 
-	private boolean sessionsEnabled;
-	private File sessionIDFile;
+	private final boolean sessionsEnabled;
+	private final File sessionIDFile;
 
 	public JsonSecuritySessionPersistence(boolean sessionsEnabled, String sessionsFile)
 	{
 		this.sessionsEnabled = sessionsEnabled;
-		this.sessionIDFile = null;
+		
 		if (sessionsFile != null && sessionsEnabled)
 		{
 			this.sessionIDFile = new File(sessionsFile);
 			FilePermHelper.set0600(this.sessionIDFile);			
+		}else {
+			this.sessionIDFile = null;
 		}
 	}
 
@@ -50,7 +52,7 @@ public class JsonSecuritySessionPersistence implements SecuritySessionPersistenc
 		JSONObject sessionsJson = new JSONObject();
 		try{
 			for(ClientSecuritySession entry: sessions){
-				String serverID=entry.getScope();
+				String serverID = entry.getScope();
 				JSONObject info = new JSONObject();
 				info.put("sessionID", entry.getSessionId());
 				info.put("hash", entry.getSessionHash());
@@ -59,7 +61,7 @@ public class JsonSecuritySessionPersistence implements SecuritySessionPersistenc
 			}
 			if (sessions.size()>0) {
 				if (sessionIDFile != null) {
-					FileWriter writer=new FileWriter(sessionIDFile);
+					FileWriter writer = new FileWriter(sessionIDFile);
 					try{
 						sessionsJson.write(writer);
 					}finally{

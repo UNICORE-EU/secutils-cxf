@@ -26,7 +26,7 @@ import org.apache.xmlbeans.XmlOptions;
 public class DataReaderImpl implements DataReader<XMLStreamReader> {
     private static final Logger LOG = LogUtils.getLogger(XmlBeansDataBinding.class);
     private boolean validate;
-    
+
     public DataReaderImpl() {
     }
 
@@ -59,7 +59,6 @@ public class DataReaderImpl implements DataReader<XMLStreamReader> {
             es.printStackTrace();
             return null;
         }
-        
         return doRead(reader,
                       typeClass, 
                       typeClass, 
@@ -134,12 +133,10 @@ public class DataReaderImpl implements DataReader<XMLStreamReader> {
         }
         return obj;
     }
-    
-    public void setAttachments(Collection<Attachment> attachments) {
-    }
 
-    public void setProperty(String prop, Object value) {
-    }
+    public void setAttachments(Collection<Attachment> attachments) {}
+
+    public void setProperty(String prop, Object value) {}
 
     public void setSchema(Schema s) {
         validate = s != null;

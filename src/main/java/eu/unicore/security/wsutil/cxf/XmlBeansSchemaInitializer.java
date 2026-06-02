@@ -139,18 +139,12 @@ class XmlBeansSchemaInitializer extends ServiceModelVisitor {
         }
 
         try {
-            InputSource fileSource = schemaResolver.resolveEntity(null, 
-                                                                        file, 
-                                                                        null);
-            String systemId = removePrefix(fileSource.getSystemId(),
-                                           XML_BEANS_SCHEMA_PREFIX);
-
+            InputSource fileSource = schemaResolver.resolveEntity(null, file, null);
+            String systemId = removePrefix(fileSource.getSystemId(), XML_BEANS_SCHEMA_PREFIX);
             return getSchemaInternal(sts, systemId);
         } catch (XmlSchemaException e) {
-            if (LOG.isLoggable(Level.FINEST)) {
-                LOG.log(Level.FINEST,
+            LOG.log(Level.FINEST,
                         "The XML catalog is not configured to map the file [" + file + "] ", e);
-            }
         }
         return getSchemaInternal(sts, file);
     }
@@ -196,7 +190,7 @@ class XmlBeansSchemaInitializer extends ServiceModelVisitor {
     protected String removePrefix(String value, String prefixSuffix) {
         return value.substring(value.indexOf(prefixSuffix) + prefixSuffix.length());
     } 
-    
+
     @Override
     public void begin(MessagePartInfo part) {
         LOG.finest(part.getName().toString());
@@ -205,7 +199,7 @@ class XmlBeansSchemaInitializer extends ServiceModelVisitor {
             checkForExistence(part);
             return;
         }
-        
+
         Class<?> clazz = part.getTypeClass();
         if (clazz == null) {
             return;
@@ -218,9 +212,7 @@ class XmlBeansSchemaInitializer extends ServiceModelVisitor {
         mapClass(part, clazz);
     }
     private void mapClass(MessagePartInfo part, Class<?> clazz) {
-        
         if (!XmlObject.class.isAssignableFrom(clazz)) {
-            
             Class<? extends XmlAnySimpleType> type = CLASS_MAP.get(clazz);
             if (type == null) {
                 LOG.log(Level.SEVERE, clazz.getName() + " was not found in class map");
@@ -228,7 +220,6 @@ class XmlBeansSchemaInitializer extends ServiceModelVisitor {
             }
             SchemaTypeSystem sts = BuiltinSchemaTypeSystem.get();
             SchemaType st2 = sts.typeForClassname(type.getName());
-
             part.setProperty(SchemaType.class.getName(), st2);
             part.setProperty(XmlAnySimpleType.class.getName(), type);
             part.setTypeQName(st2.getName());
@@ -236,7 +227,6 @@ class XmlBeansSchemaInitializer extends ServiceModelVisitor {
             part.setXmlSchema(xmlSchema);
             return;
         }
-        
         try {
             Field field = clazz.getField("type");
             SchemaType st = (SchemaType)field.get(null);
@@ -286,7 +276,7 @@ class XmlBeansSchemaInitializer extends ServiceModelVisitor {
             throw new RuntimeException(ex);
         }        
     }
-    
+
     public void checkForExistence(MessagePartInfo part) {
         QName qn = part.getElementQName();
         if (qn != null) {
@@ -305,5 +295,5 @@ class XmlBeansSchemaInitializer extends ServiceModelVisitor {
             }
         }
     }
-    
+
 }

@@ -98,7 +98,6 @@ public class WSClientFactory {
 	/**
 	 * Add {@link Feature} classes for client calls. 
 	 * Invoked only when the proxy is created.<br/>
-	 * The default implementation does nothing
 	 */
 	protected void initFeatures(){
 		if(securityProperties.isMessageLogging()){
@@ -108,14 +107,12 @@ public class WSClientFactory {
 
 	/**
 	 * 
-	 * Create a proxy for the plain web service at the given URL, 
-	 * i.e. not using ws-addressing
+	 * Create a proxy for the plain web service at the given URL
 	 * 
 	 * @param iFace
 	 * @param url
 	 * @return a proxy for the service defined by the interface iFace
-	 * @throws MalformedURLException 
-	 * @throws Exception
+	 * @throws MalformedURLException
 	 */
 	public synchronized <T> T createPlainWSProxy(Class<T> iFace, String url) 
 			throws MalformedURLException
@@ -150,7 +147,7 @@ public class WSClientFactory {
 	public Client createDynamicClient(String url) throws Exception 
 	{
 		JaxWsDynamicClientFactory dcf = JaxWsDynamicClientFactory.newInstance();
-		Client client=dcf.createClient(url);
+		Client client = dcf.createClient(url);
 		setupProxy(client,url);
 		return client;
 	}
@@ -167,7 +164,6 @@ public class WSClientFactory {
 				client.getOutInterceptors().add(h);
 		}
 		client.getOutInterceptors().add(new CleanupHandler(client));
-
 		for(Interceptor<? extends Message> h: inHandlers){ 
 				client.getInInterceptors().add(h);
 		}

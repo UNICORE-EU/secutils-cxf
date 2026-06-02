@@ -27,23 +27,19 @@ import org.apache.cxf.service.Service;
 import org.apache.cxf.service.model.ServiceInfo;
 
 
-
-
 /**
  * 
  */
 public class XmlBeansDataBinding extends AbstractDataBinding implements WrapperCapableDatabinding {
-    public static final String XMLBEANS_NAMESPACE_HACK
-        = XmlBeansDataBinding.class.getName() + ".NamespaceHack";
-    
-    
+
+	public static final String XMLBEANS_NAMESPACE_HACK = XmlBeansDataBinding.class.getName() + ".NamespaceHack";
+
     private static final Logger LOG = LogUtils.getLogger(XmlBeansDataBinding.class);
 
     private static final Class<?> SUPPORTED_READER_FORMATS[] = new Class<?>[] {XMLStreamReader.class};
     private static final Class<?> SUPPORTED_WRITER_FORMATS[]
         = new Class<?>[] {XMLStreamWriter.class, Node.class};
-    
-    
+
     @SuppressWarnings("unchecked")
     public <T> DataWriter<T> createWriter(Class<T> c) {
         if (c == XMLStreamWriter.class) {
@@ -62,7 +58,6 @@ public class XmlBeansDataBinding extends AbstractDataBinding implements WrapperC
         }
         return dr;
     }
-    
 
     /**
      * XmlBeans has no declared namespace prefixes.
@@ -81,17 +76,13 @@ public class XmlBeansDataBinding extends AbstractDataBinding implements WrapperC
     }
 
     public void initialize(Service service) {
-        if (LOG.isLoggable(Level.FINER)) {
-            LOG.log(Level.FINER, "Creating XmlBeansDatabinding for " + service.getName());
-        }
+        LOG.log(Level.FINER, "Creating XmlBeansDatabinding for " + service.getName());
         for (ServiceInfo serviceInfo : service.getServiceInfos()) {
             SchemaCollection col = serviceInfo.getXmlSchemaCollection();
-
             if (col.getXmlSchemas().length > 1) {
                 // someone has already filled in the types
                 continue;
             } 
-            
             XmlBeansSchemaInitializer schemaInit 
                 = new XmlBeansSchemaInitializer(serviceInfo, col, this);
             schemaInit.walk();
@@ -100,11 +91,10 @@ public class XmlBeansDataBinding extends AbstractDataBinding implements WrapperC
 
     public WrapperHelper createWrapperHelper(Class<?> wrapperType, QName wrapperName, List<String> partNames,
                                              List<String> elTypeNames, List<Class<?>> partClasses) {
-        
         List<Method> getMethods = new ArrayList<Method>(partNames.size());
         List<Method> setMethods = new ArrayList<Method>(partNames.size());        
         List<Field> fields = new ArrayList<Field>(partNames.size());
-        
+
         for (int x = 0; x < partNames.size(); x++) {
             String partName = partNames.get(x);            
             if (partName == null) {
@@ -112,15 +102,14 @@ public class XmlBeansDataBinding extends AbstractDataBinding implements WrapperC
                 setMethods.add(null);
                 fields.add(null);
                 continue;
-            }
-                                   
+            }                       
             String getAccessor = JAXBUtils.nameToIdentifier(partName, JAXBUtils.IdentifierType.GETTER);
             String setAccessor = JAXBUtils.nameToIdentifier(partName, JAXBUtils.IdentifierType.SETTER);
             Method getMethod = null;
             Method setMethod = null;
             Class<?> valueClass = XmlBeansWrapperHelper.getXMLBeansValueType(wrapperType);
             Method[] allMethods = valueClass.getMethods();
-            
+
             try {
                 getMethod = valueClass.getMethod(getAccessor, AbstractWrapperHelper.NO_CLASSES);
             } catch (NoSuchMethodException ex) {
@@ -132,7 +121,7 @@ public class XmlBeansDataBinding extends AbstractDataBinding implements WrapperC
                     //ignore for now
                 }
             }
-                        
+     
             for (Method method : allMethods) {
                 if (method.getParameterTypes() != null && method.getParameterTypes().length == 1
                     && (setAccessor.equals(method.getName()))) {                        
@@ -140,14 +129,13 @@ public class XmlBeansDataBinding extends AbstractDataBinding implements WrapperC
                     break;
                 }
             }
-            
+
             getMethods.add(getMethod);
             setMethods.add(setMethod);
             // There is no filed in the XMLBeans type class
             fields.add(null);
-            
         }
-        
+
         return new XmlBeansWrapperHelper(wrapperType,
                                  setMethods.toArray(new Method[setMethods.size()]),
                                  getMethods.toArray(new Method[getMethods.size()]),

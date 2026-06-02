@@ -13,12 +13,12 @@ import org.apache.cxf.service.model.MessagePartInfo;
 import org.apache.cxf.staxutils.W3CDOMStreamWriter;
 
 public class NodeDataWriterImpl implements DataWriter<Node> {
-    DataWriterImpl writer;
+    final DataWriterImpl writer;
     
     public NodeDataWriterImpl() {
         writer = new DataWriterImpl();
     }
-    
+
     public void write(Object obj, Node output) {
         write(obj, null, output);
     }

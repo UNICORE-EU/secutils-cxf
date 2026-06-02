@@ -47,11 +47,10 @@ import eu.unicore.util.httpclient.NoAuthKeyManager;
 
 public class MySSLSocketFactory extends SSLSocketFactory
 {
-	private static final Logger log = Log.getLogger(Log.SECURITY,
-			MySSLSocketFactory.class);
+	private static final Logger log = Log.getLogger(Log.SECURITY, MySSLSocketFactory.class);
 
 	private SSLContext sslcontext = null;
-	private IClientConfiguration sec;
+	private final IClientConfiguration sec;
 
 	public MySSLSocketFactory(IClientConfiguration sec)
 	{
@@ -87,7 +86,7 @@ public class MySSLSocketFactory extends SSLSocketFactory
 			return sslcontext;
 		} catch (Exception e)
 		{
-			log.fatal(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 			throw new RuntimeException(e);
 		}
 	}
@@ -97,7 +96,7 @@ public class MySSLSocketFactory extends SSLSocketFactory
 		X509Certificate trustedCerts[] = validator.getTrustedIssuers();
 		for (X509Certificate cert: trustedCerts)
 		{
-			log.trace("Currently(!) trusted certificate:\n" + 
+			log.trace("Currently(!) trusted certificate:\n{}", 
 					CertificateUtils.format(cert, FormatMode.FULL));
 		}
 	}
@@ -106,7 +105,7 @@ public class MySSLSocketFactory extends SSLSocketFactory
 	{
 		X509Certificate[] certs = c.getCertificateChain();
 		X509Certificate[] certs509 = CertificateUtils.convertToX509Chain(certs);
-		log.trace("Client's certificate chain:" + 
+		log.trace("Client's certificate chain: {}", 
 				CertificateUtils.format(certs509, FormatMode.FULL));
 	}	
 	

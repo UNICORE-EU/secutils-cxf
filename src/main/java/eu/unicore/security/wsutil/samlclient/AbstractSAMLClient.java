@@ -24,7 +24,7 @@ public abstract class AbstractSAMLClient
 	protected WSClientFactory factory;
 	protected SamlTrustChecker trustChecker;
 	protected transient X509CertChainValidator validator;
-	
+
 	/**
 	 * @param address
 	 * @param secProv
@@ -44,7 +44,7 @@ public abstract class AbstractSAMLClient
 	{
 		return localIssuer;
 	}
-	
+
 	/**
 	 * @return issuer generated from the local identity.
 	 */
@@ -58,8 +58,7 @@ public abstract class AbstractSAMLClient
 		return new NameID(certificateC[0].getSubjectX500Principal().getName(), 
 			SAMLConstants.NFORMAT_DN);
 	}
-	
-	@SuppressWarnings("unused")
+
 	protected AbstractSAMLClient(String address, IClientConfiguration secCfg, NameID issuer, 
 			SamlTrustChecker trustChecker) throws MalformedURLException
 	{

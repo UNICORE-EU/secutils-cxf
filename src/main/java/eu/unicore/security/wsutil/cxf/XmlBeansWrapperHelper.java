@@ -8,7 +8,7 @@ import org.apache.xmlbeans.XmlOptions;
 
 
 public class XmlBeansWrapperHelper extends AbstractWrapperHelper {
-    
+
     public XmlBeansWrapperHelper(Class<?> wt, Method[] sets, Method[] gets, Field[] f) {
         super(wt, sets, gets, f);
        

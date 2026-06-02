@@ -10,9 +10,9 @@ import eu.unicore.security.SecurityTokens;
  * @author schuller
  */
 public class SecuritySession implements Serializable {
-	
+
 	private static final long serialVersionUID=1l;
-	
+
 	private final String sessionID;
 
 	private final SecurityTokens tokens;
@@ -30,10 +30,10 @@ public class SecuritySession implements Serializable {
 	 * @param lifetime - the lifetime in millis
 	 */
 	public SecuritySession(String sessionID, SecurityTokens tokens, long lifetime){
-		this.sessionID=sessionID;
+		this.sessionID = sessionID;
 		this.tokens = tokens;
-		this.expires=System.currentTimeMillis()+lifetime;
-		this.lastAccessed=System.currentTimeMillis();
+		this.expires = System.currentTimeMillis()+lifetime;
+		this.lastAccessed = System.currentTimeMillis();
 	}
 
 	/**
@@ -74,11 +74,11 @@ public class SecuritySession implements Serializable {
 	public long getLastAccessed(){
 		return lastAccessed;
 	}
-	
+
 	public void setLastAccessed(long lastAccessed){
 		this.lastAccessed = lastAccessed;
 	}
-	
+
 	/**
 	 * return the remaining lifetime in milliseconds
 	 */

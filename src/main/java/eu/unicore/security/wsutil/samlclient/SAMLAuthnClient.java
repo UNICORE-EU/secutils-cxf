@@ -43,8 +43,8 @@ import xmlbeans.org.oasis.saml2.protocol.ResponseDocument;
  */
 public class SAMLAuthnClient extends AbstractSAMLClient
 {
-	private SAMLAuthnInterface authnProxy;
 
+	private final SAMLAuthnInterface authnProxy;
 	
 	public SAMLAuthnClient(String address, IClientConfiguration clientConfiguration) 
 		throws MalformedURLException
@@ -104,7 +104,7 @@ public class SAMLAuthnClient extends AbstractSAMLClient
 	{
 		return performSAMLQuery(request);
 	}
-	
+
 	/*-********************************************************
 	 * INTERNAL methods 
 	 *-********************************************************/
@@ -136,8 +136,7 @@ public class SAMLAuthnClient extends AbstractSAMLClient
 		authnReq.getNameIDPolicy().setAllowCreate(allowCreate);
 		return performSAMLQuery(request.getXMLBeanDoc());
 	}
-	
-	
+
 	/**
 	 * Performs a SAML query using a provided AttributeQUery argument. 
 	 * Response is parsed and validated.
@@ -168,12 +167,12 @@ public class SAMLAuthnClient extends AbstractSAMLClient
 				null, //replay checking not needed for direct connection
 				SAMLBindings.SOAP);
 		validator.validate(xmlRespDoc, new XMLExpandedMessage(xmlRespDoc, xmlRespDoc.getResponse()));
-		
+
 		List<AssertionDocument> authnAssertionsXml = validator.getAuthNAssertions();
 		List<AssertionParser> authAssertions = new ArrayList<AssertionParser>(authnAssertionsXml.size());
 		for (int i=0; i<authnAssertionsXml.size(); i++)
 			authAssertions.add(new AssertionParser(authnAssertionsXml.get(i)));
-		
+
 		List<AssertionDocument> otherAssertionsXml = validator.getOtherAssertions();
 		List<AttributeAssertionParser> attributeAssertions = new ArrayList<AttributeAssertionParser>(
 				otherAssertionsXml.size());
@@ -187,7 +186,7 @@ public class SAMLAuthnClient extends AbstractSAMLClient
 				i--;
 			}
 		}
-		
+
 		return new AuthnResponseAssertions(authAssertions, attributeAssertions, otherAssertionsXml);
 	}
 }

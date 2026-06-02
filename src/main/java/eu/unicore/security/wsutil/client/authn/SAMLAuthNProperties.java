@@ -24,8 +24,7 @@ public class SAMLAuthNProperties extends PropertiesHelper
 	public static final String ADDRESS = "address";
 	public static final String USERNAME = "username";
 	public static final String PASSWORD = "password";
-	
-	
+
 	public static final Map<String, PropertyMD> META = new HashMap<>();
 	static
 	{
