@@ -4,12 +4,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 
-import eu.emi.security.authn.x509.X509CertChainValidator;
 import eu.unicore.samly2.SAMLConstants;
 import eu.unicore.samly2.elements.NameID;
 import eu.unicore.samly2.trust.SamlTrustChecker;
 import eu.unicore.security.wsutil.client.WSClientFactory;
 import eu.unicore.util.httpclient.IClientConfiguration;
+import io.imunity.tanl.x509.X509CertChainValidator;
 
 /**
  * This class provides a base for SAML client implementations which use

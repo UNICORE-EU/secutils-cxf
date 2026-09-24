@@ -1,10 +1,10 @@
 package eu.unicore.security.wsutil;
 
-import eu.emi.security.authn.x509.X509CertChainValidatorExt;
-import eu.emi.security.authn.x509.X509Credential;
-import eu.emi.security.authn.x509.impl.KeystoreCertChainValidator;
-import eu.emi.security.authn.x509.impl.KeystoreCredential;
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
+import io.imunity.tanl.x509.X509CertChainValidatorExt;
+import io.imunity.tanl.x509.X509Credential;
+import io.imunity.tanl.x509.impl.KeystoreCertChainValidator;
+import io.imunity.tanl.x509.impl.KeystoreCredential;
 
 
 /**

@@ -15,17 +15,17 @@ import javax.net.ssl.X509TrustManager;
 
 import org.apache.logging.log4j.Logger;
 
-import eu.emi.security.authn.x509.X509CertChainValidator;
-import eu.emi.security.authn.x509.X509Credential;
-import eu.emi.security.authn.x509.impl.CertificateUtils;
-import eu.emi.security.authn.x509.impl.FormatMode;
-import eu.emi.security.authn.x509.impl.SocketFactoryCreator2;
 import eu.unicore.security.canl.LoggingX509TrustManager;
 import eu.unicore.security.canl.SSLContextCreator;
 import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.HostnameMismatchCallbackImpl;
 import eu.unicore.util.httpclient.IClientConfiguration;
 import eu.unicore.util.httpclient.NoAuthKeyManager;
+import io.imunity.tanl.x509.X509CertChainValidator;
+import io.imunity.tanl.x509.X509Credential;
+import io.imunity.tanl.x509.impl.CertificateUtils;
+import io.imunity.tanl.x509.impl.FormatMode;
+import io.imunity.tanl.x509.impl.SocketFactoryCreator2;
 
 
 /**

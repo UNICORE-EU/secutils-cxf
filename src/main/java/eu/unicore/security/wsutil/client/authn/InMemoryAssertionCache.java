@@ -5,11 +5,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
 
-import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
-
 import eu.unicore.samly2.assertion.AssertionParser;
 import eu.unicore.security.wsutil.samlclient.AuthnResponseAssertions;
 import eu.unicore.util.Log;
+import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 
 public class InMemoryAssertionCache implements AssertionsCache {
 

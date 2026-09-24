@@ -16,12 +16,6 @@ import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
-import org.xml.sax.InputSource;
-
 import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.common.xmlschema.SchemaCollection;
@@ -43,6 +37,10 @@ import org.apache.xmlbeans.XmlAnySimpleType;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.impl.schema.BuiltinSchemaTypeSystem;
 import org.apache.xmlbeans.impl.schema.SchemaTypeSystemImpl;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 /**
  * Walks the service model and sets up the element/type names.

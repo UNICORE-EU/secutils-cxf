@@ -2,15 +2,15 @@ package eu.unicore.security.wsutil.cxf;
 
 
 import java.util.Collection;
-import javax.xml.validation.Schema;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import javax.xml.validation.Schema;
 
 import org.apache.cxf.databinding.DataWriter;
 import org.apache.cxf.message.Attachment;
 import org.apache.cxf.service.model.MessagePartInfo;
 import org.apache.cxf.staxutils.W3CDOMStreamWriter;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 public class NodeDataWriterImpl implements DataWriter<Node> {
     final DataWriterImpl writer;

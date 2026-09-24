@@ -13,13 +13,6 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.validation.Schema;
 
-import org.w3c.dom.Comment;
-import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.Text;
-
 import org.apache.cxf.common.logging.LogUtils;
 import org.apache.cxf.common.util.StringUtils;
 import org.apache.cxf.databinding.DataWriter;
@@ -36,6 +29,12 @@ import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
 import org.apache.xmlbeans.XmlTokenSource;
 import org.apache.xmlbeans.impl.values.XmlObjectBase;
+import org.w3c.dom.Comment;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 
 public class DataWriterImpl implements DataWriter<XMLStreamWriter> {
     private static final Logger LOG = LogUtils.getLogger(XmlBeansDataBinding.class);

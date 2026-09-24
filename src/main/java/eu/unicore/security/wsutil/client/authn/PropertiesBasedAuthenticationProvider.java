@@ -6,9 +6,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import eu.emi.security.authn.x509.ValidationErrorListener;
-import eu.emi.security.authn.x509.X509CertChainValidatorExt;
-import eu.emi.security.authn.x509.helpers.BinaryCertChainValidator;
 import eu.unicore.security.canl.CredentialProperties;
 import eu.unicore.security.canl.DefaultAuthnAndTrustConfiguration;
 import eu.unicore.security.canl.LoggingStoreUpdateListener;
@@ -17,6 +14,9 @@ import eu.unicore.security.canl.TruststoreProperties;
 import eu.unicore.util.configuration.PropertyMD;
 import eu.unicore.util.httpclient.ClientProperties;
 import eu.unicore.util.httpclient.DefaultClientConfiguration;
+import io.imunity.tanl.x509.ValidationErrorListener;
+import io.imunity.tanl.x509.X509CertChainValidatorExt;
+import io.imunity.tanl.x509.helpers.BinaryCertChainValidator;
 
 /**
  * Code useful for various {@link AuthenticationProvider} implementations which are configured with Java Properties.

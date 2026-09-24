@@ -4,7 +4,6 @@ import java.util.List;
 
 import eu.unicore.samly2.assertion.AssertionParser;
 import eu.unicore.samly2.assertion.AttributeAssertionParser;
-
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 
 /**

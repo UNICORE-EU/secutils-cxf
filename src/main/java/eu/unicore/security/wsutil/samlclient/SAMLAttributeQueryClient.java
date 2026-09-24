@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import eu.emi.security.authn.x509.X509Credential;
 import eu.unicore.samly2.SAMLUtils;
 import eu.unicore.samly2.assertion.AttributeAssertionParser;
 import eu.unicore.samly2.elements.NameID;
@@ -22,10 +21,11 @@ import eu.unicore.samly2.trust.SamlTrustChecker;
 import eu.unicore.samly2.validators.AssertionValidator;
 import eu.unicore.samly2.validators.AttributeAssertionResponseValidator;
 import eu.unicore.samly2.webservice.SAMLQueryInterface;
+import eu.unicore.security.dsig.DOMUtilities;
 import eu.unicore.security.dsig.DSigException;
-import eu.unicore.security.dsig.DigSignatureUtil;
 import eu.unicore.util.Log;
 import eu.unicore.util.httpclient.IClientConfiguration;
+import io.imunity.tanl.x509.X509Credential;
 import jakarta.xml.ws.soap.SOAPFaultException;
 import xmlbeans.org.oasis.saml2.assertion.AssertionDocument;
 import xmlbeans.org.oasis.saml2.assertion.NameIDType;
@@ -136,7 +136,8 @@ public class SAMLAttributeQueryClient extends AbstractSAMLClient
 		}
 		if(logger.isTraceEnabled()) try
 		{
-			logger.trace("Attribute query document: " +  DigSignatureUtil.dumpDOMToString(SAMLUtils.getDOM(attrQuery.getXMLBeanDoc())));
+			logger.trace("Attribute query document: " +
+					DOMUtilities.dumpNodeToString(SAMLUtils.getDOM(attrQuery.getXMLBeanDoc())));
 		} catch (DSigException e)
 		{
 			logger.trace("Can not dump query document to log");
